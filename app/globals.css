@@ -1,26 +1,162 @@
 @import "tailwindcss";
 
+/* Enable class-based dark mode (Tailwind v4). The `.dark` class is toggled on <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ------------------------------------------------------------------ */
+/* Design tokens — Wanbai Store                                        */
+/* Brand: violet -> fuchsia primary, cyan accent. Light + dark.        */
+/* ------------------------------------------------------------------ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f6f7fb;
+  --surface: #ffffff;
+  --surface-2: #f1f2f8;
+  --surface-3: #e7e9f3;
+  --foreground: #15131f;
+  --muted: #65627a;
+  --border: #e3e2ee;
+
+  --primary: #7c3aed;
+  --primary-strong: #6d28d9;
+  --primary-foreground: #ffffff;
+  --accent: #06b6d4;
+  --accent-foreground: #052e30;
+
+  --brand-from: #7c3aed;
+  --brand-via: #a21caf;
+  --brand-to: #db2777;
+
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --ring: #7c3aed;
+
+  --shadow-color: 250 30% 30%;
+}
+
+.dark {
+  --background: #0a0912;
+  --surface: #131125;
+  --surface-2: #1b1830;
+  --surface-3: #262240;
+  --foreground: #f4f3fb;
+  --muted: #a29fbb;
+  --border: #2a2640;
+
+  --primary: #8b5cf6;
+  --primary-strong: #7c3aed;
+  --primary-foreground: #ffffff;
+  --accent: #22d3ee;
+  --accent-foreground: #04181a;
+
+  --brand-from: #8b5cf6;
+  --brand-via: #c026d3;
+  --brand-to: #f43f7e;
+
+  --ring: #8b5cf6;
+
+  --shadow-color: 260 60% 3%;
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-strong: var(--primary-strong);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-ring: var(--ring);
+
+  --font-sans: var(--font-sans-stack);
+
+  --radius-xs: 0.375rem;
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.75rem;
+
+  --shadow-card: 0 1px 2px hsl(var(--shadow-color) / 0.08),
+    0 8px 24px -12px hsl(var(--shadow-color) / 0.18);
+  --shadow-pop: 0 12px 40px -12px hsl(var(--shadow-color) / 0.35);
+
+  --animate-marquee: marquee 32s linear infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-50% - 1.5rem));
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* In RTL the marquee should travel the other direction. */
+[dir="rtl"] .marquee-track {
+  animation-direction: reverse;
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans-stack);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--primary) 28%, transparent);
+  }
+
+  /* Thin, theme-aware scrollbars for horizontal scroll rows */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@layer components {
+  .brand-gradient {
+    background-image: linear-gradient(
+      120deg,
+      var(--brand-from),
+      var(--brand-via),
+      var(--brand-to)
+    );
+  }
+  .brand-text {
+    background-image: linear-gradient(
+      120deg,
+      var(--brand-from),
+      var(--brand-via),
+      var(--brand-to)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .glass {
+    background-color: color-mix(in srgb, var(--surface) 70%, transparent);
+    backdrop-filter: blur(14px) saturate(140%);
+  }
 }

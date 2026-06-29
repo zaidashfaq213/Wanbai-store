@@ -1,0 +1,103 @@
+{
+  "meta": {
+    "title": "Wanbai Store | Instant Game Top-Ups & Digital Cards",
+    "description": "Wanbai Store sells game top-ups, gift cards and digital subscriptions with instant, secure delivery by email."
+  },
+  "brand": {
+    "name": "Wanbai Store",
+    "tagline": "Your digital goods destination"
+  },
+  "header": {
+    "home": "Home",
+    "allCategories": "All Categories",
+    "search": "Search for a product...",
+    "login": "Login / Register",
+    "account": "My Account",
+    "wallet": "Wallet",
+    "orders": "My Orders",
+    "favorites": "Favorites",
+    "notifications": "Notifications",
+    "logout": "Log out",
+    "currency": "Currency",
+    "language": "Language",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark"
+  },
+  "bottomNav": {
+    "home": "Home",
+    "favorites": "Favorites",
+    "orders": "Orders",
+    "notifications": "Alerts",
+    "support": "Support"
+  },
+  "hero": {
+    "slides": [
+      {
+        "eyebrow": "Instant delivery",
+        "title": "Top up your favorite games in seconds",
+        "subtitle": "Free Fire gems, PUBG UC and more at the best prices",
+        "cta": "Top up now"
+      },
+      {
+        "eyebrow": "Gift cards",
+        "title": "Digital cards for every platform",
+        "subtitle": "Steam, PlayStation, Xbox, iTunes and beyond",
+        "cta": "Browse cards"
+      },
+      {
+        "eyebrow": "Subscriptions",
+        "title": "Your entertainment, one tap away",
+        "subtitle": "Netflix, Spotify, Shahid VIP and more",
+        "cta": "Subscribe now"
+      }
+    ]
+  },
+  "categories": {
+    "heading": "Shop by category",
+    "viewAll": "View all"
+  },
+  "trust": {
+    "secure": "Secure payment",
+    "instant": "Instant delivery",
+    "support": "24/7 support",
+    "trusted": "Trusted"
+  },
+  "testimonials": {
+    "heading": "What our customers say",
+    "subheading": "Over 50,000 successful purchases",
+    "role": "Customer · Wanbai Store"
+  },
+  "partners": {
+    "heading": "Our partners worldwide",
+    "count": "{count}+ trusted brands"
+  },
+  "newsletter": {
+    "heading": "Subscribe for the latest deals",
+    "subheading": "Exclusive offers and discounts on digital products, straight to your inbox",
+    "placeholder": "Your email address",
+    "cta": "Subscribe"
+  },
+  "product": {
+    "from": "From",
+    "buyNow": "Buy now",
+    "reviews": "reviews"
+  },
+  "footer": {
+    "blurb": "A digital store specialized in game top-ups and cards with instant, secure delivery and round-the-clock support.",
+    "support": "Support",
+    "helpCenter": "Help Center",
+    "contact": "Contact Us",
+    "blog": "Blog",
+    "legal": "Legal",
+    "about": "About Us",
+    "terms": "Terms of Service",
+    "privacy": "Privacy Policy",
+    "returns": "Return Policy",
+    "cookies": "Cookie Policy",
+    "gdpr": "Data Protection",
+    "follow": "Follow us",
+    "payments": "Accepted payment methods",
+    "rights": "All rights reserved"
+  }
+}
