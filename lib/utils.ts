@@ -2,6 +2,16 @@ export function cn(...classes: Array<string | false | null | undefined>): string
   return classes.filter(Boolean).join(" ");
 }
 
+/** Replace {key} placeholders in a string with values. */
+export function fmt(
+  template: string,
+  vars: Record<string, string | number>,
+): string {
+  return template.replace(/\{(\w+)\}/g, (_, k) =>
+    k in vars ? String(vars[k]) : `{${k}}`,
+  );
+}
+
 /** Write a year-long, lax cookie from the client. */
 export function setCookie(name: string, value: string): void {
   document.cookie = `${name}=${value}; path=/; max-age=31536000; samesite=lax`;

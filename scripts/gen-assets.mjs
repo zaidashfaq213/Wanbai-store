@@ -45,6 +45,7 @@ const emblems = {
   windows: `<g fill="#fff"><rect x="74" y="74" width="48" height="48" rx="4"/><rect x="134" y="74" width="48" height="48" rx="4"/><rect x="74" y="134" width="48" height="48" rx="4"/><rect x="134" y="134" width="48" height="48" rx="4"/></g>`,
   receipt: `<g fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"><path d="M86 70h84v116l-16-10-14 10-14-10-14 10-16-10z"/><path d="M104 100h48M104 124h48M104 148h30"/></g>`,
   amazon: `<g><text x="128" y="120" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" fill="#fff" font-size="50">amazon</text><path d="M86 150c26 18 60 18 86 0" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round"/><path d="M168 150l8 2-4 8z" fill="#fff"/></g>`,
+  eightball: `<g><circle cx="128" cy="128" r="62" fill="#161616"/><circle cx="106" cy="106" r="16" fill="#ffffff" opacity="0.85"/><circle cx="128" cy="134" r="30" fill="#ffffff"/><text x="128" y="148" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="40" fill="#111">8</text></g>`,
 };
 
 function emblem(key) {
@@ -74,6 +75,12 @@ const products = [
   ["call-of-duty", "#3D3D3D", "#000000", wordmark(["CALL OF", "DUTY"])],
   ["mobile-legends", "#2D7DF6", "#0A2A66", wordmark(["MOBILE", "LEGENDS"])],
   ["genshin-impact", "#58C5F2", "#2B6CB0", wordmark(["Genshin"])],
+  ["clash-of-clans", "#F2A93B", "#C2410C", wordmark(["CLASH OF", "CLANS"])],
+  ["blood-strike", "#E11D2A", "#1A1A1A", wordmark(["BLOOD", "STRIKE"])],
+  ["brawl-stars", "#FFB300", "#FF6F00", wordmark(["BRAWL", "STARS"])],
+  ["8-ball-pool", "#16A34A", "#0B5E2E", emblem("eightball")],
+  ["pubg-new-state", "#2B2B2B", "#0D0D0D", wordmark(["PUBG", "NEW STATE"])],
+  ["jawaker", "#C0392B", "#7B241C", wordmark(["JAWAKER"])],
   ["steam", "#2A475E", "#16202D", glyph("Steam")],
   ["roblox", "#3B3F45", "#16181C", glyph("Roblox")],
   ["playstation", "#0070D1", "#003791", glyph("PlayStation")],
@@ -84,6 +91,7 @@ const products = [
   ["starlink", "#1F2937", "#0B1220", wordmark(["STARLINK"])],
   ["tiktok-coins", "#25303A", "#0B0F14", glyph("TikTok")],
   ["x-twitter", "#1A1A1A", "#000000", glyph("X")],
+  ["facebook", "#1877F2", "#0A4DBE", glyph("Facebook")],
   ["snapchat", "#FFFC00", "#FFE600", glyph("Snapchat")],
   ["instagram", "#F77737", "#C13584", glyph("Instagram")],
   ["youtube", "#FF0000", "#C4302B", glyph("YouTube")],

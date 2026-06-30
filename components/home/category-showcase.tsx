@@ -5,20 +5,22 @@ import type { Category, Currency } from "@/lib/data/catalog";
 import { productsByCategory } from "@/lib/data/catalog";
 import { cn } from "@/lib/utils";
 import { ProductCard } from "@/components/ui/product-card";
-import { ArrowIcon } from "@/components/ui/icons";
+import { ArrowIcon, SwipeIcon } from "@/components/ui/icons";
 
 export function CategoryShowcase({
   category,
   locale,
   currency,
   dict,
+  limit = 6,
 }: {
   category: Category;
   locale: Locale;
   currency: Currency;
   dict: Dictionary;
+  limit?: number;
 }) {
-  const items = productsByCategory(category.slug, 6);
+  const items = productsByCategory(category.slug, limit);
   if (items.length === 0) return null;
 
   return (
@@ -35,23 +37,34 @@ export function CategoryShowcase({
           </span>
           <h2 className="text-lg font-extrabold sm:text-xl">{category.name[locale]}</h2>
         </div>
-        <Link
-          href={`/${locale}/cards/${category.slug}`}
-          className="inline-flex shrink-0 items-center gap-1 text-sm font-bold text-primary transition-colors hover:text-primary-strong"
-        >
-          {dict.categories.viewAll}
-          <ArrowIcon className="size-4 rtl:rotate-180" />
-        </Link>
-      </div>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        {items.map((product) => (
-          <ProductCard
-            key={product.slug}
-            product={product}
-            locale={locale}
-            currency={currency}
-            dict={dict}
+        <div className="flex shrink-0 items-center gap-3">
+          <SwipeIcon
+            aria-hidden
+            className="size-5 animate-pulse text-muted sm:hidden"
           />
+          <Link
+            href={`/${locale}/cards/${category.slug}`}
+            className="inline-flex items-center gap-1 text-sm font-bold text-primary transition-colors hover:text-primary-strong"
+          >
+            {dict.categories.viewAll}
+            <ArrowIcon className="size-4 rtl:rotate-180" />
+          </Link>
+        </div>
+      </div>
+      {/* Mobile: one swipeable row. sm+: responsive grid. */}
+      <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 no-scrollbar sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible sm:px-0 lg:grid-cols-6">
+        {items.map((product) => (
+          <div
+            key={product.slug}
+            className="w-[42vw] max-w-44 shrink-0 snap-start sm:w-auto sm:max-w-none"
+          >
+            <ProductCard
+              product={product}
+              locale={locale}
+              currency={currency}
+              dict={dict}
+            />
+          </div>
         ))}
       </div>
     </section>

@@ -81,7 +81,58 @@
   "product": {
     "from": "From",
     "buyNow": "Buy now",
-    "reviews": "reviews"
+    "reviews": "reviews",
+    "review": "review",
+    "delivery": "Instant delivery via email",
+    "codeDelivery": "Code delivered instantly by email and in your account",
+    "share": "Share",
+    "save": "Save",
+    "saved": "Saved",
+    "badgeSafe": "Safe",
+    "badgeInstant": "Instant",
+    "badgeTrusted": "Trusted",
+    "selectPackage": "Select package",
+    "enterDetails": "Order details",
+    "popular": "Most popular",
+    "total": "Total",
+    "buyNote": "No login required — guest checkout available",
+    "needPackage": "Please select a package first",
+    "needFields": "Please fill in all required fields",
+    "orderPlaced": "Order added! Payment goes live in the next phase.",
+    "overview": "Overview",
+    "howToUse": "How to use",
+    "faqTitle": "Frequently asked questions",
+    "reviewsTitle": "Ratings & reviews",
+    "basedOn": "Based on {count} reviews",
+    "writeReview": "Write a review",
+    "showMore": "Show more",
+    "related": "Related products"
+  },
+  "listing": {
+    "gridView": "Grid view",
+    "listView": "List view",
+    "results": "{count} products",
+    "empty": "No products in this category yet",
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page",
+    "of": "of"
+  },
+  "catalog": {
+    "title": "All Categories",
+    "subtitle": "Browse every digital product category and pick what suits you",
+    "browse": "Browse category",
+    "productsCount": "{count} products"
+  },
+  "search": {
+    "title": "Search results",
+    "resultsFor": "Search results for “{q}”",
+    "count": "{count} results",
+    "empty": "No results match your search",
+    "emptyHint": "Try different keywords or browse the categories"
+  },
+  "breadcrumb": {
+    "categories": "Categories"
   },
   "footer": {
     "blurb": "A digital store specialized in game top-ups and cards with instant, secure delivery and round-the-clock support.",

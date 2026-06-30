@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { categories } from "@/lib/data/catalog";
@@ -31,6 +32,13 @@ export function Header({
   const [scrolled, setScrolled] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const router = useRouter();
+
+  function onSearch(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const q = new FormData(e.currentTarget).get("q")?.toString().trim() ?? "";
+    if (q) router.push(`/${locale}/search?q=${encodeURIComponent(q)}`);
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -110,14 +118,15 @@ export function Header({
         </nav>
 
         {/* Search (desktop) */}
-        <div className="relative hidden flex-1 md:block">
+        <form onSubmit={onSearch} className="relative hidden flex-1 md:block">
           <SearchIcon className="pointer-events-none absolute top-1/2 size-[18px] -translate-y-1/2 text-muted ltr:left-3 rtl:right-3" />
           <input
             type="search"
+            name="q"
             placeholder={dict.header.search}
             className="h-10 w-full rounded-xl border border-border bg-surface-2 text-sm outline-none transition-colors placeholder:text-muted focus:border-primary/50 focus:bg-surface ltr:pl-10 ltr:pr-4 rtl:pr-10 rtl:pl-4"
           />
-        </div>
+        </form>
 
         {/* Right cluster */}
         <div className="flex items-center gap-2 ltr:ml-auto rtl:mr-auto md:ltr:ml-0 md:rtl:mr-0">
@@ -136,14 +145,15 @@ export function Header({
 
       {/* Mobile search */}
       <Container className="pb-3 md:hidden">
-        <div className="relative">
+        <form onSubmit={onSearch} className="relative">
           <SearchIcon className="pointer-events-none absolute top-1/2 size-[18px] -translate-y-1/2 text-muted ltr:left-3 rtl:right-3" />
           <input
             type="search"
+            name="q"
             placeholder={dict.header.search}
             className="h-10 w-full rounded-xl border border-border bg-surface-2 text-sm outline-none placeholder:text-muted focus:border-primary/50 focus:bg-surface ltr:pl-10 ltr:pr-4 rtl:pr-10 rtl:pl-4"
           />
-        </div>
+        </form>
       </Container>
 
       {/* Mobile categories drawer */}

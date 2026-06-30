@@ -37,6 +37,7 @@ export default async function HomePage({
           locale={locale}
           currency={currency}
           dict={dict}
+          limit={category.slug === "game-fill" ? 12 : 6}
         />
       ))}
 

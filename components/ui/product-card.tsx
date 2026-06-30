@@ -2,24 +2,30 @@ import Link from "next/link";
 import type { Locale } from "@/lib/i18n/config";
 import type { Product, Currency } from "@/lib/data/catalog";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
-import { formatPrice } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 import { BoltIcon, StarIcon } from "./icons";
 
 export function ProductArt({
-  slug,
+  src,
   name,
+  cover = false,
   className = "",
 }: {
-  slug: string;
+  src: string;
   name: string;
+  cover?: boolean;
   className?: string;
 }) {
   return (
     <div
       role="img"
       aria-label={name}
-      style={{ backgroundImage: `url(/products/${slug}.svg)` }}
-      className={`bg-surface-2 bg-contain bg-center bg-no-repeat ${className}`}
+      style={{ backgroundImage: `url(${src})` }}
+      className={cn(
+        "bg-center bg-no-repeat",
+        cover ? "bg-cover" : "bg-contain",
+        className,
+      )}
     />
   );
 }
@@ -40,9 +46,15 @@ export function ProductCard({
       href={`/${locale}/product/${product.slug}`}
       className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-[var(--shadow-card)] transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-[var(--shadow-pop)]"
     >
-      <div className="relative aspect-square w-full bg-gradient-to-br from-surface-2 to-surface-3 p-4">
+      <div
+        className={cn(
+          "relative aspect-square w-full overflow-hidden",
+          product.image ? "bg-surface-2" : "bg-gradient-to-br from-surface-2 to-surface-3 p-4",
+        )}
+      >
         <ProductArt
-          slug={product.slug}
+          src={product.image ?? `/products/${product.slug}.svg`}
+          cover={Boolean(product.image)}
           name={product.name[locale]}
           className="h-full w-full transition-transform duration-200 group-hover:scale-105"
         />

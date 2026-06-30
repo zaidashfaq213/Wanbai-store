@@ -1,6 +1,6 @@
 import type { Locale } from "@/lib/i18n/config";
 
-type Localized = Record<Locale, string>;
+export type Localized = Record<Locale, string>;
 
 export type Category = {
   slug: string;
@@ -19,6 +19,12 @@ export type Product = {
   priceFrom: number; // base price in USD
   rating: number;
   reviews: number;
+  /**
+   * Optional path to a real, licensed product image (full-bleed cover art,
+   * e.g. "/products/art/free-fire.jpg"). When set it replaces the generated
+   * logo tile. Leave undefined to use the generated brand tile.
+   */
+  image?: string;
 };
 
 export const categories: Category[] = [
@@ -106,6 +112,12 @@ export const products: Product[] = [
   p("call-of-duty", "كول أوف ديوتي", "Call of Duty", "game-fill", "COD", 20, 1.2, 4.9, 27),
   p("mobile-legends", "موبايل ليجندز", "Mobile Legends", "game-fill", "ML", 200, 0.8, 4.7, 22),
   p("genshin-impact", "جينشن امباكت", "Genshin Impact", "game-fill", "GI", 45, 0.99, 4.9, 33),
+  p("clash-of-clans", "كلاش أوف كلانس", "Clash of Clans", "game-fill", "COC", 32, 0.99, 4.8, 24),
+  p("blood-strike", "بلود سترايك", "Blood Strike", "game-fill", "BS", 0, 0.99, 4.7, 13),
+  p("brawl-stars", "براول ستارز", "Brawl Stars", "game-fill", "BR", 45, 0.99, 4.8, 19),
+  p("8-ball-pool", "8 بول بول", "8 Ball Pool", "game-fill", "8", 140, 0.99, 4.7, 16),
+  p("pubg-new-state", "ببجي نيو ستيت", "PUBG New State", "game-fill", "NS", 40, 1.5, 4.6, 9),
+  p("jawaker", "جواكر", "Jawaker", "game-fill", "JW", 0, 1.0, 4.7, 12),
 
   // Game Cards
   p("steam", "ستيم", "Steam", "game-cards", "S", 210, 5.0, 5.0, 64, "بطاقة رقمية", "Gift card"),
@@ -122,6 +134,7 @@ export const products: Product[] = [
 
   // Social Media
   p("x-twitter", "اكس / تويتر", "X / Twitter", "social-media", "X", 205, 2.0, 4.6, 11, "خدمة", "Service"),
+  p("facebook", "فيسبوك", "Facebook", "social-media", "F", 215, 2.0, 4.8, 23, "خدمة", "Service"),
   p("snapchat", "سناب شات", "Snapchat", "social-media", "SC", 55, 2.0, 4.7, 14, "خدمة", "Service"),
   p("instagram", "انستغرام", "Instagram", "social-media", "IG", 320, 2.5, 4.8, 26, "خدمة", "Service"),
   p("youtube", "يوتيوب", "YouTube", "social-media", "YT", 0, 3.0, 4.7, 17, "خدمة", "Service"),
@@ -232,10 +245,8 @@ export type Currency = {
 
 export const currencies: Currency[] = [
   { code: "USD", symbol: "$", flag: "🇺🇸", rate: 1 },
-  { code: "SAR", symbol: "ر.س", flag: "🇸🇦", rate: 3.75 },
-  { code: "AED", symbol: "د.إ", flag: "🇦🇪", rate: 3.67 },
   { code: "EGP", symbol: "ج.م", flag: "🇪🇬", rate: 48.5 },
-  { code: "KWD", symbol: "د.ك", flag: "🇰🇼", rate: 0.31 },
+  { code: "SDG", symbol: "ج.س", flag: "🇸🇩", rate: 600 },
 ];
 
 export const partnerCount = 13;

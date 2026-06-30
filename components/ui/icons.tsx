@@ -132,6 +132,49 @@ export const StarIcon = (p: IconProps) => (
   </svg>
 );
 
+export const MailIcon = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <rect x="3" y="5" width="18" height="14" rx="2.5" />
+    <path d="m4 7 8 6 8-6" />
+  </svg>
+);
+
+export const ShareIcon = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <circle cx="6" cy="12" r="2.5" />
+    <circle cx="18" cy="5.5" r="2.5" />
+    <circle cx="18" cy="18.5" r="2.5" />
+    <path d="m8.2 10.8 7.6-4M8.2 13.2l7.6 4" />
+  </svg>
+);
+
+export const GridIcon = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <rect x="4" y="4" width="7" height="7" rx="1.5" />
+    <rect x="13" y="4" width="7" height="7" rx="1.5" />
+    <rect x="4" y="13" width="7" height="7" rx="1.5" />
+    <rect x="13" y="13" width="7" height="7" rx="1.5" />
+  </svg>
+);
+
+export const ListIcon = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <path d="M8 6h12M8 12h12M8 18h12" />
+    <circle cx="4" cy="6" r="1.2" fill="currentColor" />
+    <circle cx="4" cy="12" r="1.2" fill="currentColor" />
+    <circle cx="4" cy="18" r="1.2" fill="currentColor" />
+  </svg>
+);
+
+export const SwipeIcon = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <path d="M8 11V6.5a1.5 1.5 0 0 1 3 0V10" />
+    <path d="M11 9.5a1.5 1.5 0 0 1 3 0V11" />
+    <path d="M14 10a1.5 1.5 0 0 1 3 0v3.5c0 2.8-1.9 4.5-4.5 4.5h-1.2c-1.6 0-2.6-.7-3.4-2L6 15c-.6-1-.2-2 .9-2.2L9 12.4" />
+    <path d="M3.5 6.5 1.8 8.2l1.7 1.7M20.5 6.5l1.7 1.7-1.7 1.7" />
+  </svg>
+);
+
 export const ArrowIcon = (p: IconProps) => (
   <svg {...base} {...p}>
     <path d="M5 12h14" />
