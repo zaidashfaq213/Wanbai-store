@@ -1,5 +1,6 @@
 "use client";
 
+import { setCookie } from "@/lib/utils";
 import { MoonIcon, SunIcon } from "./icons";
 
 export function ThemeToggle({ label }: { label: string }) {
@@ -7,9 +8,9 @@ export function ThemeToggle({ label }: { label: string }) {
     const next = !document.documentElement.classList.contains("dark");
     document.documentElement.classList.toggle("dark", next);
     document.documentElement.style.colorScheme = next ? "dark" : "light";
-    try {
-      localStorage.setItem("theme", next ? "dark" : "light");
-    } catch {}
+    // Persist as a cookie so the server renders the correct theme on the next
+    // request (same pattern as currency) — no pre-paint <script> needed.
+    setCookie("theme", next ? "dark" : "light");
   }
 
   return (
