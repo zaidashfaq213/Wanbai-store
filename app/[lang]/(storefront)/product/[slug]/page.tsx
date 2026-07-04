@@ -4,6 +4,8 @@ import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { categories } from "@/lib/data/catalog";
 import { getCurrency } from "@/lib/data/currency";
+import { getSessionUser } from "@/lib/auth/session";
+import { isFavorited, getWalletSummary } from "@/lib/data/account";
 import {
   getProductBySlug,
   getProductDetail,
@@ -51,6 +53,15 @@ export default async function ProductPage({
   const currency = await getCurrency();
   const detail = getProductDetail(product);
   const category = categories.find((c) => c.slug === product.category);
+
+  const user = await getSessionUser();
+  const isAuthed = Boolean(user);
+  let initialSaved = false;
+  let walletBalanceCents = 0;
+  if (user) {
+    initialSaved = await isFavorited(user.id, product.slug);
+    walletBalanceCents = (await getWalletSummary(user.id)).balance;
+  }
   const related = relatedProducts(product);
   const totalReviews = detail.ratingBreakdown.reduce((a, b) => a + b, 0);
   const p = dict.product;
@@ -115,7 +126,14 @@ export default async function ProductPage({
                 </span>
               </div>
             </div>
-            <ShareSaveButtons dict={dict} name={product.name[locale]} />
+            <ShareSaveButtons
+              dict={dict}
+              locale={locale}
+              name={product.name[locale]}
+              productSlug={product.slug}
+              isAuthed={isAuthed}
+              initialSaved={initialSaved}
+            />
           </div>
 
           <p className="mt-3 inline-flex items-center gap-2 rounded-xl bg-primary/5 px-3 py-2 text-sm font-semibold text-primary">
@@ -125,12 +143,19 @@ export default async function ProductPage({
 
           <div className="mt-6">
             <PurchasePanel
+              product={{
+                slug: product.slug,
+                name: product.name[locale],
+                categorySlug: product.category,
+              }}
               variantGroups={detail.variantGroups}
               inputs={detail.inputs}
               fulfillment={detail.fulfillment}
               currency={currency}
               locale={locale}
               dict={dict}
+              isAuthed={isAuthed}
+              walletBalanceCents={walletBalanceCents}
             />
           </div>
         </div>

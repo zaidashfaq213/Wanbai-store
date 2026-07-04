@@ -31,3 +31,13 @@ export function formatPrice(
   }).format(value);
   return locale === "ar" ? `${formatted} ${symbol}` : `${symbol}${formatted}`;
 }
+
+/** Format an integer USD-cents amount into the selected currency. */
+export function formatCents(
+  cents: number,
+  symbol: string,
+  rate: number,
+  locale: string,
+): string {
+  return formatPrice(cents / 100, symbol, rate, locale);
+}

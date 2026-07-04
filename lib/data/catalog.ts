@@ -163,6 +163,10 @@ export const products: Product[] = [
   p("nordvpn", "نورد VPN", "NordVPN", "app-subscriptions", "NV", 210, 4.0, 4.9, 18, "اشتراك", "Subscription"),
 ];
 
+export function productBySlug(slug: string): Product | undefined {
+  return products.find((product) => product.slug === slug);
+}
+
 export function productsByCategory(slug: string, limit = 6): Product[] {
   return products.filter((product) => product.category === slug).slice(0, limit);
 }

@@ -1,0 +1,284 @@
+// WANBAI-STORE — Prisma schema
+// Milestone 3: User Accounts, Wallet & Checkout
+//
+// Provider: PostgreSQL. Set DATABASE_URL in .env, then:
+//   npx prisma migrate dev --name init      (creates tables)
+//   npx prisma generate                      (generates the client)
+//
+// The product catalog itself lives in code (lib/data/*) for now, so orders and
+// favorites reference products by their stable `slug` and store a price/name
+// snapshot on each order line — this keeps history correct even if the catalog
+// changes later, and avoids seeding the whole catalog into the DB.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Auth.js (NextAuth v5) core models — User / Account / Session / tokens
+// ---------------------------------------------------------------------------
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  // Null for OAuth-only accounts (Google/Facebook). Set for email/password.
+  passwordHash  String?
+  role          Role      @default(USER)
+
+  // Wallet balance is stored in USD cents to avoid floating-point drift.
+  walletBalance Int       @default(0)
+
+  // Preferences mirrored from the storefront selectors.
+  preferredLocale   String? // "ar" | "en"
+  preferredCurrency String? // e.g. "USD"
+
+  accounts            Account[]
+  sessions            Session[]
+  orders              Order[]
+  favorites           Favorite[]
+  notifications       Notification[]
+  walletTransactions  WalletTransaction[]
+  passwordResetTokens PasswordResetToken[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+// OAuth provider links (Google, Facebook) managed by the Prisma adapter.
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// Used by Auth.js for email verification flows.
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Forgot-password flow: a single-use, expiring token emailed to the user.
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique // sha256 of the token; the raw token is only emailed
+  expires   DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// Signup email verification: a short-lived 6-digit code emailed to the user.
+model EmailVerificationCode {
+  id        String   @id @default(cuid())
+  email     String
+  codeHash  String // sha256 of the 6-digit code
+  expires   DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+}
+
+// ---------------------------------------------------------------------------
+// Wallet
+// ---------------------------------------------------------------------------
+
+enum WalletTxType {
+  TOPUP // credit added to the wallet
+  PURCHASE // debit for an order paid with wallet
+  REFUND // credit returned after a refund
+  ADJUSTMENT // manual admin correction
+}
+
+model WalletTransaction {
+  id          String       @id @default(cuid())
+  userId      String
+  // Signed amount in USD cents: positive = credit, negative = debit.
+  amount      Int
+  type        WalletTxType
+  description String?
+  // Optional link to the order this transaction settled.
+  orderId     String?
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([orderId])
+}
+
+// ---------------------------------------------------------------------------
+// Orders — guest checkout supported (userId is nullable)
+// ---------------------------------------------------------------------------
+
+enum OrderStatus {
+  PENDING // created, awaiting payment
+  PAID // payment captured
+  DELIVERED // codes/top-up delivered
+  FAILED // payment or fulfillment failed
+  REFUNDED // refunded to wallet / gateway
+  CANCELLED
+}
+
+enum PaymentMethod {
+  WALLET
+  GATEWAY // external gateway (integrated in M4)
+}
+
+model Order {
+  id     String @id @default(cuid())
+  // Human-friendly reference shown to the customer, e.g. "WB-8F3K2A".
+  ref    String @unique
+
+  // Null for guest checkout; the email is always captured for delivery.
+  userId String?
+  email  String
+
+  status        OrderStatus   @default(PENDING)
+  paymentMethod PaymentMethod @default(GATEWAY)
+
+  // Money snapshot in USD cents at time of purchase.
+  subtotal Int
+  total    Int
+  // Currency the customer was viewing (display only; amounts stored in USD).
+  currency String @default("USD")
+  locale   String @default("ar")
+
+  items              OrderItem[]
+  walletTransactions WalletTransaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([email])
+}
+
+enum DeliveryType {
+  TOPUP
+  CODE
+  SERVICE
+}
+
+model OrderItem {
+  id      String @id @default(cuid())
+  orderId String
+
+  // Product snapshot (catalog lives in code, referenced by slug).
+  productSlug String
+  productName String
+  categorySlug String
+  // Selected variant group + package labels, snapshotted for history.
+  variantLabel String?
+  packageLabel String
+  unitPrice    Int // USD cents
+  quantity     Int @default(1)
+
+  deliveryType DeliveryType
+  // Top-up input fields the buyer provided (e.g. { "player-id": "123" }).
+  inputs       Json?
+  // Delivered code/secret for CODE products, or fulfillment note for others.
+  deliveredCode String?
+  deliveredAt   DateTime?
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([productSlug])
+}
+
+// ---------------------------------------------------------------------------
+// Favorites / Wishlist
+// ---------------------------------------------------------------------------
+
+model Favorite {
+  id          String @id @default(cuid())
+  userId      String
+  productSlug String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productSlug])
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Notifications (in-app)
+// ---------------------------------------------------------------------------
+
+enum NotificationType {
+  ORDER
+  WALLET
+  PROMO
+  SYSTEM
+}
+
+model Notification {
+  id     String           @id @default(cuid())
+  userId String
+  type   NotificationType @default(SYSTEM)
+  title  String
+  body   String?
+  // Optional deep link, e.g. "/dashboard/orders".
+  href   String?
+  read   Boolean          @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([userId, read])
+}

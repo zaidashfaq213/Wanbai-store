@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import type { Currency } from "@/lib/data/catalog";
@@ -10,36 +11,61 @@ import type {
   Package,
   VariantGroup,
 } from "@/lib/data/product-detail";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn, formatPrice, formatCents } from "@/lib/utils";
+import { createOrder } from "@/lib/actions/checkout";
+import { toggleFavorite } from "@/lib/actions/account";
 import { BoltIcon, HeartIcon, ShareIcon } from "@/components/ui/icons";
 
 function defaultPackage(group: VariantGroup): Package {
   return group.packages.find((p) => p.popular) ?? group.packages[0];
 }
 
+const DELIVERY_MAP: Record<Fulfillment, "TOPUP" | "CODE" | "SERVICE"> = {
+  topup: "TOPUP",
+  code: "CODE",
+  service: "SERVICE",
+};
+
+type SuccessResult = { code: string; orderRef: string };
+
 export function PurchasePanel({
+  product,
   variantGroups,
   inputs,
   fulfillment,
   currency,
   locale,
   dict,
+  isAuthed,
+  walletBalanceCents,
 }: {
+  product: { slug: string; name: string; categorySlug: string };
   variantGroups: VariantGroup[];
   inputs: InputField[];
   fulfillment: Fulfillment;
   currency: Currency;
   locale: Locale;
   dict: Dictionary;
+  isAuthed: boolean;
+  walletBalanceCents: number;
 }) {
+  const router = useRouter();
   const [groupIdx, setGroupIdx] = useState(0);
   const [pkgId, setPkgId] = useState(() => defaultPackage(variantGroups[0]).id);
   const [values, setValues] = useState<Record<string, string>>({});
+  const [email, setEmail] = useState("");
+  const [method, setMethod] = useState<"WALLET" | "GATEWAY">("GATEWAY");
   const [toast, setToast] = useState<string | null>(null);
+  const [success, setSuccess] = useState<SuccessResult | null>(null);
+  const [pending, startTransition] = useTransition();
 
   const group = variantGroups[groupIdx];
   const pkg = group.packages.find((p) => p.id === pkgId) ?? group.packages[0];
   const p = dict.product;
+  const c = dict.checkout;
+
+  const totalCents = pkg ? Math.round(pkg.price * 100) : 0;
+  const canWallet = isAuthed && walletBalanceCents >= totalCents;
 
   function selectGroup(i: number) {
     setGroupIdx(i);
@@ -48,14 +74,91 @@ export function PurchasePanel({
 
   function flash(message: string) {
     setToast(message);
-    setTimeout(() => setToast(null), 3200);
+    setTimeout(() => setToast(null), 3600);
+  }
+
+  function errorFor(code?: string) {
+    const map: Record<string, string> = {
+      insufficient_funds: c.errors.insufficientFunds,
+      email_required: c.errors.emailRequired,
+      requires_auth: c.errors.requiresAuth,
+      invalid_input: c.errors.invalidInput,
+    };
+    return (code && map[code]) || c.errors.generic;
   }
 
   function buyNow() {
     if (!pkg) return flash(p.needPackage);
     const missing = inputs.some((f) => f.required && !values[f.id]?.trim());
     if (missing) return flash(p.needFields);
-    flash(p.orderPlaced);
+    if (!isAuthed && !email.trim()) return flash(c.errors.emailRequired);
+
+    startTransition(async () => {
+      const res = await createOrder({
+        locale,
+        currency: currency.code,
+        email: isAuthed ? undefined : email.trim(),
+        paymentMethod: method,
+        item: {
+          productSlug: product.slug,
+          productName: product.name,
+          categorySlug: product.categorySlug,
+          variantLabel: variantGroups.length > 1 ? group.name[locale] : undefined,
+          packageLabel: pkg.label[locale],
+          unitPriceUsd: pkg.price,
+          deliveryType: DELIVERY_MAP[fulfillment],
+          inputs: Object.keys(values).length ? values : undefined,
+        },
+      });
+
+      if (!res.ok) return flash(errorFor(res.code));
+      setSuccess({ code: res.code ?? "order_pending", orderRef: res.orderRef ?? "" });
+      router.refresh(); // refresh wallet balance / notifications in the shell
+    });
+  }
+
+  if (success) {
+    const delivered = success.code === "order_delivered";
+    return (
+      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 text-center">
+        <div className="mx-auto grid size-12 place-items-center rounded-full bg-emerald-500/10 text-2xl">
+          {delivered ? "✅" : "🧾"}
+        </div>
+        <div>
+          <p className="text-lg font-black">
+            {delivered ? c.success.deliveredTitle : c.success.pendingTitle}
+          </p>
+          <p className="mt-1 text-sm text-muted">
+            {c.success.orderRef}: <span className="font-bold">{success.orderRef}</span>
+          </p>
+          <p className="mt-1 text-sm text-muted">
+            {delivered ? c.success.deliveredBody : c.success.pendingBody}
+          </p>
+        </div>
+        {isAuthed ? (
+          <a
+            href={`/${locale}/dashboard/orders`}
+            className="rounded-xl brand-gradient py-3 text-sm font-bold text-white"
+          >
+            {c.success.viewOrders}
+          </a>
+        ) : (
+          <a
+            href={`/${locale}/signup`}
+            className="rounded-xl brand-gradient py-3 text-sm font-bold text-white"
+          >
+            {c.success.createAccount}
+          </a>
+        )}
+        <button
+          type="button"
+          onClick={() => setSuccess(null)}
+          className="text-sm font-semibold text-muted hover:text-primary"
+        >
+          {c.success.buyMore}
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -151,6 +254,59 @@ export function PurchasePanel({
         </p>
       )}
 
+      {/* Guest email */}
+      {!isAuthed && (
+        <label className="flex flex-col gap-1.5">
+          <span className="text-xs font-semibold text-muted">{c.guestEmail}</span>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder={c.guestEmailPlaceholder}
+            className="h-11 rounded-xl border border-border bg-surface-2 px-3 text-sm outline-none transition-colors placeholder:text-muted focus:border-primary/50 focus:bg-surface"
+          />
+        </label>
+      )}
+
+      {/* Payment method */}
+      <div>
+        <p className="mb-2 text-sm font-bold">{c.paymentMethod}</p>
+        <div className="grid gap-2">
+          {isAuthed && (
+            <button
+              type="button"
+              onClick={() => canWallet && setMethod("WALLET")}
+              disabled={!canWallet}
+              className={cn(
+                "flex items-center justify-between rounded-xl border px-3.5 py-3 text-start transition-colors disabled:opacity-50",
+                method === "WALLET"
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:bg-surface-2",
+              )}
+            >
+              <span className="text-sm font-bold">{c.payWallet}</span>
+              <span className="text-xs text-muted">
+                {formatCents(walletBalanceCents, currency.symbol, currency.rate, locale)}
+                {!canWallet && ` · ${c.errors.insufficientFunds}`}
+              </span>
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setMethod("GATEWAY")}
+            className={cn(
+              "flex items-center justify-between rounded-xl border px-3.5 py-3 text-start transition-colors",
+              method === "GATEWAY"
+                ? "border-primary bg-primary/5"
+                : "border-border hover:bg-surface-2",
+            )}
+          >
+            <span className="text-sm font-bold">{c.payGateway}</span>
+            <span className="text-xs text-muted">{c.payGatewayNote}</span>
+          </button>
+        </div>
+      </div>
+
       {/* Total + buy */}
       <div className="rounded-2xl border border-border bg-surface p-4">
         <div className="mb-3 flex items-center justify-between">
@@ -162,10 +318,11 @@ export function PurchasePanel({
         <button
           type="button"
           onClick={buyNow}
-          className="flex w-full items-center justify-center gap-2 rounded-xl brand-gradient py-3.5 text-base font-bold text-white shadow-sm transition-transform hover:scale-[1.01]"
+          disabled={pending}
+          className="flex w-full items-center justify-center gap-2 rounded-xl brand-gradient py-3.5 text-base font-bold text-white shadow-sm transition-transform hover:scale-[1.01] disabled:opacity-60 disabled:hover:scale-100"
         >
           <BoltIcon className="size-5" />
-          {p.buyNow}
+          {pending ? c.placingOrder : p.buyNow}
         </button>
         <p className="mt-2 text-center text-xs text-muted">{p.buyNote}</p>
       </div>
@@ -180,8 +337,24 @@ export function PurchasePanel({
   );
 }
 
-export function ShareSaveButtons({ dict, name }: { dict: Dictionary; name: string }) {
-  const [saved, setSaved] = useState(false);
+export function ShareSaveButtons({
+  dict,
+  locale,
+  name,
+  productSlug,
+  isAuthed,
+  initialSaved,
+}: {
+  dict: Dictionary;
+  locale: Locale;
+  name: string;
+  productSlug: string;
+  isAuthed: boolean;
+  initialSaved: boolean;
+}) {
+  const router = useRouter();
+  const [saved, setSaved] = useState(initialSaved);
+  const [pending, startTransition] = useTransition();
 
   function share() {
     if (typeof navigator !== "undefined" && navigator.share) {
@@ -191,15 +364,29 @@ export function ShareSaveButtons({ dict, name }: { dict: Dictionary; name: strin
     }
   }
 
+  function save() {
+    if (!isAuthed) {
+      router.push(`/${locale}/login`);
+      return;
+    }
+    setSaved((v) => !v); // optimistic
+    startTransition(async () => {
+      const res = await toggleFavorite(productSlug);
+      if (!res.ok) setSaved((v) => !v); // revert on failure
+      else if (typeof res.favorited === "boolean") setSaved(res.favorited);
+    });
+  }
+
   return (
     <div className="flex items-center gap-2">
       <button
         type="button"
-        onClick={() => setSaved((v) => !v)}
+        onClick={save}
+        disabled={pending}
         aria-pressed={saved}
         aria-label={saved ? dict.product.saved : dict.product.save}
         className={cn(
-          "grid size-10 place-items-center rounded-xl border transition-colors",
+          "grid size-10 place-items-center rounded-xl border transition-colors disabled:opacity-60",
           saved
             ? "border-primary/40 bg-primary/10 text-primary"
             : "border-border bg-surface text-muted hover:text-primary",

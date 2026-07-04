@@ -150,5 +150,173 @@
     "follow": "Follow us",
     "payments": "Accepted payment methods",
     "rights": "All rights reserved"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your WANBAI-STORE account",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "noAccount": "Don't have an account?",
+      "createAccount": "Create one",
+      "forgot": "Forgot password?",
+      "or": "or",
+      "continueGoogle": "Continue with Google",
+      "continueFacebook": "Continue with Facebook"
+    },
+    "signup": {
+      "title": "Create your account",
+      "subtitle": "Join WANBAI-STORE in seconds",
+      "name": "Full name",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Create account",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in"
+    },
+    "forgot": {
+      "title": "Reset your password",
+      "subtitle": "We'll email you a reset link",
+      "email": "Email",
+      "submit": "Send reset link",
+      "backToLogin": "Back to sign in",
+      "sentBody": "If an account exists for that email, a reset link is on its way. Check your inbox."
+    },
+    "reset": {
+      "title": "Set a new password",
+      "subtitle": "Choose a strong new password",
+      "password": "New password",
+      "submit": "Update password",
+      "invalidBody": "This reset link is invalid or has expired. Please request a new one.",
+      "successBody": "Your password has been updated. You can now sign in.",
+      "backToLogin": "Go to sign in"
+    },
+    "errors": {
+      "invalid_credentials": "Incorrect email or password.",
+      "email_taken": "An account with this email already exists.",
+      "weak_password": "Password must be at least 8 characters.",
+      "invalid_email": "Please enter a valid email address.",
+      "invalid_input": "Please check the form and try again.",
+      "server_error": "Something went wrong. Please try again.",
+      "reset_invalid": "This reset link is invalid or has expired.",
+      "requires_auth": "Please sign in to continue.",
+      "code_invalid": "Incorrect code. Please try again.",
+      "code_expired": "This code has expired. Request a new one.",
+      "code_too_many": "Too many attempts. Request a new code."
+    },
+    "passwordHint": "At least 8 characters.",
+    "verify": {
+      "title": "Verify your email",
+      "subtitle": "Enter the 6-digit code we sent you",
+      "sentTo": "We sent a verification code to",
+      "unverifiedNotice": "Your email isn't verified yet. We sent a new code to",
+      "codeLabel": "Verification code",
+      "submit": "Verify & continue",
+      "resend": "Didn't get it? Resend code",
+      "resent": "A new code has been sent.",
+      "verifiedBanner": "Email verified! Please sign in to continue."
+    }
+  },
+  "dashboard": {
+    "title": "My Account",
+    "welcome": "Welcome back, {name}",
+    "nav": {
+      "overview": "Overview",
+      "orders": "My Orders",
+      "favorites": "Favorites",
+      "notifications": "Notifications",
+      "wallet": "Wallet",
+      "profile": "Profile",
+      "logout": "Log out"
+    },
+    "overview": {
+      "balance": "Wallet balance",
+      "topUp": "Top up wallet",
+      "unread": "Unread",
+      "browse": "Browse products"
+    },
+    "orders": {
+      "title": "My Orders",
+      "empty": "You haven't placed any orders yet.",
+      "code": "Code",
+      "statuses": {
+        "PENDING": "Pending",
+        "PAID": "Paid",
+        "DELIVERED": "Delivered",
+        "FAILED": "Failed",
+        "REFUNDED": "Refunded",
+        "CANCELLED": "Cancelled"
+      }
+    },
+    "favorites": {
+      "title": "Favorites",
+      "empty": "You haven't saved any products yet.",
+      "remove": "Remove"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "empty": "No notifications yet.",
+      "markAllRead": "Mark all as read"
+    },
+    "wallet": {
+      "balance": "Wallet balance",
+      "topUp": "Add funds",
+      "amount": "Amount (USD)",
+      "add": "Add funds",
+      "history": "Transaction history",
+      "empty": "No transactions yet.",
+      "types": {
+        "TOPUP": "Top-up",
+        "PURCHASE": "Purchase",
+        "REFUND": "Refund",
+        "ADJUSTMENT": "Adjustment"
+      },
+      "topUpSuccess": "Funds added to your wallet.",
+      "topUpError": "Couldn't add funds. Please try again.",
+      "mockNote": "Demo top-up — real payment gateway arrives in a later milestone."
+    },
+    "profile": {
+      "title": "Profile settings",
+      "name": "Full name",
+      "email": "Email",
+      "language": "Preferred language",
+      "currency": "Preferred currency",
+      "save": "Save changes",
+      "saved": "Profile updated.",
+      "error": "Couldn't save. Please try again."
+    },
+    "portal": "Store Account",
+    "backToStore": "Back to store",
+    "roles": {
+      "USER": "Member",
+      "ADMIN": "Administrator"
+    }
+  },
+  "checkout": {
+    "paymentMethod": "Payment method",
+    "payWallet": "Pay with wallet",
+    "payGateway": "Card / online payment",
+    "payGatewayNote": "Secure checkout",
+    "guestEmail": "Delivery email",
+    "guestEmailPlaceholder": "you@example.com",
+    "placingOrder": "Placing order…",
+    "errors": {
+      "insufficientFunds": "Insufficient balance",
+      "emailRequired": "Please enter your email for delivery.",
+      "requiresAuth": "Please sign in to continue.",
+      "invalidInput": "Please check your details and try again.",
+      "generic": "Couldn't complete your order. Please try again."
+    },
+    "success": {
+      "deliveredTitle": "Order delivered!",
+      "deliveredBody": "Your purchase has been delivered. Check your orders for the details.",
+      "pendingTitle": "Order created",
+      "pendingBody": "Your order is awaiting payment. Complete payment to receive your product.",
+      "orderRef": "Order",
+      "viewOrders": "View my orders",
+      "createAccount": "Create an account to track it",
+      "buyMore": "Make another purchase"
+    }
   }
 }

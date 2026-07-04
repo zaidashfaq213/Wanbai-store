@@ -24,10 +24,12 @@ export function Header({
   dict,
   locale,
   currencyCode,
+  accountName,
 }: {
   dict: Dictionary;
   locale: Locale;
   currencyCode: string;
+  accountName?: string | null;
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
@@ -134,11 +136,13 @@ export function Header({
           <LanguageSwitcher locale={locale} />
           <ThemeToggle label={dict.header.theme} />
           <Link
-            href={`/${locale}/login`}
+            href={`/${locale}/${accountName ? "dashboard" : "login"}`}
             className="inline-flex h-9 items-center gap-1.5 rounded-xl brand-gradient px-3 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90"
           >
             <UserIcon className="size-[18px]" />
-            <span className="hidden sm:inline">{dict.header.login}</span>
+            <span className="hidden sm:inline">
+              {accountName ? dict.header.account : dict.header.login}
+            </span>
           </Link>
         </div>
       </Container>

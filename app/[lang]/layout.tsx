@@ -10,10 +10,6 @@ import {
   defaultLocale,
   type Locale,
 } from "@/lib/i18n/config";
-import { getCurrency } from "@/lib/data/currency";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -48,6 +44,9 @@ export async function generateMetadata({
   };
 }
 
+// Root layout only owns <html>/<body>, fonts, theme and direction. Page chrome
+// (storefront header/footer vs. dashboard sidebar vs. bare auth screens) is
+// decided by the nested layouts below it.
 export default async function LangLayout({
   children,
   params,
@@ -58,8 +57,6 @@ export default async function LangLayout({
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
   const dir = localeDirection[locale];
-  const dict = await getDictionary(locale);
-  const currency = await getCurrency();
   const isDark = (await cookies()).get("theme")?.value === "dark";
 
   return (
@@ -70,12 +67,7 @@ export default async function LangLayout({
       style={{ colorScheme: isDark ? "dark" : "light" }}
       suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-background text-foreground">
-        <Header dict={dict} locale={locale} currencyCode={currency.code} />
-        <main className="flex-1 pb-20 md:pb-0">{children}</main>
-        <Footer dict={dict} locale={locale} />
-        <MobileBottomNav dict={dict} locale={locale} />
-      </body>
+      <body className="min-h-full bg-background text-foreground">{children}</body>
     </html>
   );
 }

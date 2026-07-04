@@ -1,0 +1,40 @@
+import { getDictionary } from "@/lib/i18n/dictionaries";
+import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
+import { requireUser } from "@/lib/auth/session";
+import { getUnreadNotificationCount } from "@/lib/data/account";
+import { DashboardChrome } from "@/components/dashboard/dashboard-chrome";
+
+export default async function DashboardLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ lang: string }>;
+}) {
+  const { lang } = await params;
+  const locale: Locale = isLocale(lang) ? lang : defaultLocale;
+  const user = await requireUser(locale, `/${locale}/dashboard`);
+  const dict = await getDictionary(locale);
+  const unread = await getUnreadNotificationCount(user.id);
+
+  const name = user.name ?? user.email ?? "";
+  const roleKey = user.role === "ADMIN" ? "ADMIN" : "USER";
+
+  return (
+    <DashboardChrome
+      locale={locale}
+      brandName={dict.brand.name}
+      dict={dict.dashboard}
+      themeLabel={dict.header.theme}
+      user={{
+        name,
+        email: user.email ?? "",
+        initial: (name.trim()[0] ?? "U").toUpperCase(),
+        roleLabel: dict.dashboard.roles[roleKey],
+      }}
+      unread={unread}
+    >
+      {children}
+    </DashboardChrome>
+  );
+}
