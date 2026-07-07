@@ -203,7 +203,8 @@
       "requires_auth": "Please sign in to continue.",
       "code_invalid": "Incorrect code. Please try again.",
       "code_expired": "This code has expired. Request a new one.",
-      "code_too_many": "Too many attempts. Request a new code."
+      "code_too_many": "Too many attempts. Request a new code.",
+      "oauth_unavailable": "That sign-in option isn't available yet. Please use email."
     },
     "passwordHint": "At least 8 characters.",
     "verify": {
@@ -216,6 +217,13 @@
       "resend": "Didn't get it? Resend code",
       "resent": "A new code has been sent.",
       "verifiedBanner": "Email verified! Please sign in to continue."
+    },
+    "panel": {
+      "headline": "Everything digital, delivered instantly",
+      "subtext": "Game top-ups, gift cards, subscriptions and more — securely, in seconds.",
+      "instant": "Instant delivery by email",
+      "secure": "Secure payments & data",
+      "support": "24/7 customer support"
     }
   },
   "dashboard": {
@@ -234,7 +242,13 @@
       "balance": "Wallet balance",
       "topUp": "Top up wallet",
       "unread": "Unread",
-      "browse": "Browse products"
+      "browse": "Browse products",
+      "subtitle": "A quick snapshot of your account",
+      "recentOrders": "Recent orders",
+      "viewAll": "View all",
+      "quickActions": "Quick actions",
+      "addFunds": "Add funds",
+      "emptyRecent": "No orders yet — your recent purchases will show here."
     },
     "orders": {
       "title": "My Orders",
@@ -247,17 +261,20 @@
         "FAILED": "Failed",
         "REFUNDED": "Refunded",
         "CANCELLED": "Cancelled"
-      }
+      },
+      "subtitle": "Track your purchases and delivered codes"
     },
     "favorites": {
       "title": "Favorites",
       "empty": "You haven't saved any products yet.",
-      "remove": "Remove"
+      "remove": "Remove",
+      "subtitle": "Products you've saved for later"
     },
     "notifications": {
       "title": "Notifications",
       "empty": "No notifications yet.",
-      "markAllRead": "Mark all as read"
+      "markAllRead": "Mark all as read",
+      "subtitle": "Updates about your orders and wallet"
     },
     "wallet": {
       "balance": "Wallet balance",
@@ -274,7 +291,8 @@
       },
       "topUpSuccess": "Funds added to your wallet.",
       "topUpError": "Couldn't add funds. Please try again.",
-      "mockNote": "Demo top-up — real payment gateway arrives in a later milestone."
+      "mockNote": "Demo top-up — real payment gateway arrives in a later milestone.",
+      "subtitle": "Manage your balance and view transactions"
     },
     "profile": {
       "title": "Profile settings",
@@ -284,7 +302,8 @@
       "currency": "Preferred currency",
       "save": "Save changes",
       "saved": "Profile updated.",
-      "error": "Couldn't save. Please try again."
+      "error": "Couldn't save. Please try again.",
+      "subtitle": "Manage your personal details and preferences"
     },
     "portal": "Store Account",
     "backToStore": "Back to store",

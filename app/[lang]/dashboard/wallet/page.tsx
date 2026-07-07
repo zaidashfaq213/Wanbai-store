@@ -6,6 +6,7 @@ import { getWalletSummary } from "@/lib/data/account";
 import { formatCents, cn } from "@/lib/utils";
 import { WalletTopUp } from "@/components/dashboard/wallet-topup";
 import { CurrencySelector } from "@/components/ui/currency-selector";
+import { PageHeader } from "@/components/dashboard/page-header";
 
 export default async function WalletPage({
   params,
@@ -21,27 +22,38 @@ export default async function WalletPage({
   const { balance, transactions } = await getWalletSummary(user.id);
 
   return (
-    <div className="flex flex-col gap-5">
-      <div className="rounded-2xl brand-gradient p-5 text-white shadow-[var(--shadow-card)]">
-        <div className="flex items-start justify-between gap-3">
+    <div>
+      <PageHeader title={d.balance} subtitle={d.subtitle} />
+
+      <div className="relative overflow-hidden rounded-3xl brand-gradient p-6 text-white shadow-[var(--shadow-card)]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-40"
+          style={{
+            background:
+              "radial-gradient(24rem 24rem at 90% -20%, rgba(255,255,255,.35), transparent 60%)",
+          }}
+        />
+        <div className="relative flex items-start justify-between gap-3">
           <p className="text-sm font-semibold opacity-90">{d.balance}</p>
           <CurrencySelector current={currency.code} />
         </div>
-        <p className="mt-1 text-3xl font-black">
+        <p className="relative mt-2 text-4xl font-black">
           {formatCents(balance, currency.symbol, currency.rate, locale)}
         </p>
       </div>
 
-      <WalletTopUp locale={locale} dict={d} />
+      <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,20rem)_1fr]">
+        <WalletTopUp locale={locale} dict={d} />
 
-      <div>
-        <h2 className="mb-2 text-lg font-extrabold">{d.history}</h2>
-        {transactions.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted">
-            {d.empty}
-          </div>
-        ) : (
-          <ul className="flex flex-col gap-2">
+        <div>
+          <h3 className="mb-2 font-extrabold">{d.history}</h3>
+          {transactions.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center text-sm text-muted">
+              {d.empty}
+            </div>
+          ) : (
+            <ul className="flex flex-col gap-2">
             {transactions.map((t) => {
               const credit = t.amount >= 0;
               return (
@@ -77,8 +89,9 @@ export default async function WalletPage({
                 </li>
               );
             })}
-          </ul>
-        )}
+            </ul>
+          )}
+        </div>
       </div>
     </div>
   );

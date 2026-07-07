@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { AuthError } from "next-auth";
 import { prisma } from "@/lib/db";
-import { signIn, signOut } from "@/auth";
+import { signIn, signOut, enabledOAuth } from "@/auth";
 import { sendMail } from "@/lib/mail";
 import { isLocale, defaultLocale } from "@/lib/i18n/config";
 
@@ -203,6 +203,11 @@ export async function oauthLoginAction(formData: FormData) {
   const locale = localeFrom(formData);
   const provider = String(formData.get("provider") ?? "");
   if (provider !== "google" && provider !== "facebook") return;
+  // If the provider isn't configured yet (no env credentials), don't crash —
+  // send the user back with a friendly notice.
+  if (!enabledOAuth[provider]) {
+    redirect(`/${locale}/login?error=oauth_unavailable`);
+  }
   await signIn(provider, { redirectTo: `/${locale}/dashboard` });
 }
 

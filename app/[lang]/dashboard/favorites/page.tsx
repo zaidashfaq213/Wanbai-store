@@ -7,7 +7,8 @@ import { getFavorites } from "@/lib/data/account";
 import { productBySlug } from "@/lib/data/catalog";
 import { removeFavorite } from "@/lib/actions/account";
 import { ProductCard } from "@/components/ui/product-card";
-import { CloseIcon } from "@/components/ui/icons";
+import { CloseIcon, HeartIcon } from "@/components/ui/icons";
+import { PageHeader } from "@/components/dashboard/page-header";
 
 export default async function FavoritesPage({
   params,
@@ -28,23 +29,28 @@ export default async function FavoritesPage({
 
   if (items.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-surface p-10 text-center">
-        <h2 className="text-lg font-extrabold">{d.title}</h2>
-        <p className="text-sm text-muted">{d.empty}</p>
-        <Link
-          href={`/${locale}/cards`}
-          className="rounded-xl brand-gradient px-4 py-2.5 text-sm font-bold text-white"
-        >
-          {dict.dashboard.overview.browse}
-        </Link>
+      <div>
+        <PageHeader title={d.title} subtitle={d.subtitle} />
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border bg-surface p-12 text-center">
+          <span className="grid size-14 place-items-center rounded-2xl bg-surface-2 text-muted">
+            <HeartIcon className="size-7" />
+          </span>
+          <p className="text-sm text-muted">{d.empty}</p>
+          <Link
+            href={`/${locale}/cards`}
+            className="rounded-xl brand-gradient px-4 py-2.5 text-sm font-bold text-white"
+          >
+            {dict.dashboard.overview.browse}
+          </Link>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <h2 className="text-lg font-extrabold">{d.title}</h2>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+    <div>
+      <PageHeader title={d.title} subtitle={d.subtitle} />
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {items.map((product) => (
           <div key={product.slug} className="relative">
             <form

@@ -5,6 +5,8 @@ import { requireUser } from "@/lib/auth/session";
 import { getCurrency } from "@/lib/data/currency";
 import { getOrders } from "@/lib/data/account";
 import { formatCents, cn } from "@/lib/utils";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { BagIcon } from "@/components/ui/icons";
 
 const STATUS_STYLES: Record<string, string> = {
   PENDING: "bg-amber-500/10 text-amber-500",
@@ -30,18 +32,21 @@ export default async function OrdersPage({
 
   if (orders.length === 0) {
     return (
-      <EmptyState
-        title={d.title}
-        message={d.empty}
-        cta={dict.dashboard.overview.browse}
-        href={`/${locale}/cards`}
-      />
+      <div>
+        <PageHeader title={d.title} subtitle={d.subtitle} />
+        <EmptyState
+          message={d.empty}
+          cta={dict.dashboard.overview.browse}
+          href={`/${locale}/cards`}
+        />
+      </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <h2 className="text-lg font-extrabold">{d.title}</h2>
+    <div>
+      <PageHeader title={d.title} subtitle={d.subtitle} />
+      <div className="grid gap-3 lg:grid-cols-2">
       {orders.map((order) => (
         <div key={order.id} className="rounded-2xl border border-border bg-surface p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
@@ -83,24 +88,25 @@ export default async function OrdersPage({
           </div>
         </div>
       ))}
+      </div>
     </div>
   );
 }
 
 function EmptyState({
-  title,
   message,
   cta,
   href,
 }: {
-  title: string;
   message: string;
   cta: string;
   href: string;
 }) {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-surface p-10 text-center">
-      <h2 className="text-lg font-extrabold">{title}</h2>
+    <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border bg-surface p-12 text-center">
+      <span className="grid size-14 place-items-center rounded-2xl bg-surface-2 text-muted">
+        <BagIcon className="size-7" />
+      </span>
       <p className="text-sm text-muted">{message}</p>
       <Link
         href={href}

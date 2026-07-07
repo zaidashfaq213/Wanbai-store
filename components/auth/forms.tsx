@@ -32,42 +32,62 @@ function ErrorNote({ dict, code }: { dict: AuthDict; code?: string }) {
   );
 }
 
-export function OAuthButtons({
-  dict,
-  locale,
-  enabled,
-}: {
-  dict: AuthDict;
-  locale: Locale;
-  enabled: { google: boolean; facebook: boolean };
-}) {
-  if (!enabled.google && !enabled.facebook) return null;
+const OAUTH_BTN =
+  "flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-surface py-3 text-sm font-bold text-foreground shadow-sm transition-all hover:bg-surface-2 hover:shadow active:scale-[0.99]";
+
+function GoogleGlyph({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden>
+      <path
+        fill="#4285F4"
+        d="M23.06 12.25c0-.85-.08-1.67-.22-2.45H12v4.63h6.2c-.27 1.44-1.08 2.66-2.3 3.48v2.9h3.72c2.18-2 3.44-4.96 3.44-8.56z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 24c3.1 0 5.7-1.03 7.6-2.79l-3.72-2.9c-1.03.69-2.35 1.1-3.88 1.1-2.98 0-5.5-2.01-6.4-4.72H1.75v2.99C3.64 21.44 7.53 24 12 24z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.6 14.69A7.2 7.2 0 0 1 5.22 12c0-.93.16-1.84.38-2.69V6.32H1.75A11.98 11.98 0 0 0 .48 12c0 1.94.46 3.77 1.27 5.68l3.85-2.99z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 4.75c1.68 0 3.19.58 4.38 1.72l3.29-3.29C17.7 1.19 15.1 0 12 0 7.53 0 3.64 2.56 1.75 6.32l3.85 2.99C6.5 6.76 9.02 4.75 12 4.75z"
+      />
+    </svg>
+  );
+}
+
+function FacebookGlyph({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden>
+      <path
+        fill="#1877F2"
+        d="M24 12A12 12 0 1 0 10.13 23.85v-8.38H7.08V12h3.05V9.36c0-3.02 1.8-4.69 4.54-4.69 1.31 0 2.68.24 2.68.24v2.95h-1.51c-1.49 0-1.96.93-1.96 1.87V12h3.33l-.53 3.47h-2.8v8.38A12 12 0 0 0 24 12z"
+      />
+    </svg>
+  );
+}
+
+export function OAuthButtons({ dict, locale }: { dict: AuthDict; locale: Locale }) {
   return (
     <div className="flex flex-col gap-2.5">
-      {enabled.google && (
-        <form action={oauthLoginAction}>
-          <input type="hidden" name="provider" value="google" />
-          <input type="hidden" name="locale" value={locale} />
-          <button
-            type="submit"
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface py-3 text-sm font-bold transition-colors hover:bg-surface-2"
-          >
-            {dict.login.continueGoogle}
-          </button>
-        </form>
-      )}
-      {enabled.facebook && (
-        <form action={oauthLoginAction}>
-          <input type="hidden" name="provider" value="facebook" />
-          <input type="hidden" name="locale" value={locale} />
-          <button
-            type="submit"
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface py-3 text-sm font-bold transition-colors hover:bg-surface-2"
-          >
-            {dict.login.continueFacebook}
-          </button>
-        </form>
-      )}
+      <form action={oauthLoginAction}>
+        <input type="hidden" name="provider" value="google" />
+        <input type="hidden" name="locale" value={locale} />
+        <button type="submit" className={OAUTH_BTN}>
+          <GoogleGlyph className="size-5" />
+          {dict.login.continueGoogle}
+        </button>
+      </form>
+      <form action={oauthLoginAction}>
+        <input type="hidden" name="provider" value="facebook" />
+        <input type="hidden" name="locale" value={locale} />
+        <button type="submit" className={OAUTH_BTN}>
+          <FacebookGlyph className="size-5" />
+          {dict.login.continueFacebook}
+        </button>
+      </form>
       <div className="my-1 flex items-center gap-3 text-xs text-muted">
         <span className="h-px flex-1 bg-border" />
         {dict.login.or}
@@ -80,13 +100,13 @@ export function OAuthButtons({
 export function LoginForm({
   dict,
   locale,
-  enabled,
   verified,
+  oauthError,
 }: {
   dict: AuthDict;
   locale: Locale;
-  enabled: { google: boolean; facebook: boolean };
   verified?: boolean;
+  oauthError?: boolean;
 }) {
   const [state, action, pending] = useActionState<FormState, FormData>(
     loginAction,
@@ -99,7 +119,8 @@ export function LoginForm({
           {dict.verify.verifiedBanner}
         </p>
       )}
-      <OAuthButtons dict={dict} locale={locale} enabled={enabled} />
+      {oauthError && <ErrorNote dict={dict} code="oauth_unavailable" />}
+      <OAuthButtons dict={dict} locale={locale} />
       <form action={action} className="flex flex-col gap-3">
         <input type="hidden" name="locale" value={locale} />
         <ErrorNote dict={dict} code={state.ok ? undefined : state.code} />
@@ -133,11 +154,9 @@ export function LoginForm({
 export function SignupForm({
   dict,
   locale,
-  enabled,
 }: {
   dict: AuthDict;
   locale: Locale;
-  enabled: { google: boolean; facebook: boolean };
 }) {
   const [state, action, pending] = useActionState<FormState, FormData>(
     signupAction,
@@ -145,7 +164,7 @@ export function SignupForm({
   );
   return (
     <div className="flex flex-col gap-4">
-      <OAuthButtons dict={dict} locale={locale} enabled={enabled} />
+      <OAuthButtons dict={dict} locale={locale} />
       <form action={action} className="flex flex-col gap-3">
         <input type="hidden" name="locale" value={locale} />
         <ErrorNote dict={dict} code={state.ok ? undefined : state.code} />

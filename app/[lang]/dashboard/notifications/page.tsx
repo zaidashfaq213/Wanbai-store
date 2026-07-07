@@ -5,6 +5,8 @@ import { requireUser } from "@/lib/auth/session";
 import { getNotifications } from "@/lib/data/account";
 import { markAllNotificationsRead, markNotificationRead } from "@/lib/actions/account";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/dashboard/page-header";
+import { BellIcon } from "@/components/ui/icons";
 
 export default async function NotificationsPage({
   params,
@@ -20,25 +22,34 @@ export default async function NotificationsPage({
   const hasUnread = notifications.some((n) => !n.read);
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-extrabold">{d.title}</h2>
-        {hasUnread && (
-          <form action={markAllNotificationsRead}>
-            <input type="hidden" name="locale" value={locale} />
-            <button type="submit" className="text-sm font-bold text-primary hover:underline">
-              {d.markAllRead}
-            </button>
-          </form>
-        )}
-      </div>
+    <div>
+      <PageHeader
+        title={d.title}
+        subtitle={d.subtitle}
+        action={
+          hasUnread ? (
+            <form action={markAllNotificationsRead}>
+              <input type="hidden" name="locale" value={locale} />
+              <button
+                type="submit"
+                className="rounded-xl border border-border bg-surface px-3 py-2 text-sm font-bold text-primary transition-colors hover:bg-surface-2"
+              >
+                {d.markAllRead}
+              </button>
+            </form>
+          ) : undefined
+        }
+      />
 
       {notifications.length === 0 ? (
-        <div className="rounded-2xl border border-border bg-surface p-10 text-center text-sm text-muted">
-          {d.empty}
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border bg-surface p-12 text-center">
+          <span className="grid size-14 place-items-center rounded-2xl bg-surface-2 text-muted">
+            <BellIcon className="size-7" />
+          </span>
+          <p className="text-sm text-muted">{d.empty}</p>
         </div>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="mx-auto flex max-w-3xl flex-col gap-2">
           {notifications.map((n) => {
             const body = (
               <div

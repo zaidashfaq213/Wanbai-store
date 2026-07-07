@@ -16,6 +16,7 @@ export default async function ForgotPasswordPage({
     <AuthShell
       locale={locale}
       brandName={dict.brand.name}
+      panel={dict.auth.panel}
       title={dict.auth.forgot.title}
       subtitle={dict.auth.forgot.subtitle}
     >

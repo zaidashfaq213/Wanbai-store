@@ -23,6 +23,7 @@ export default async function VerifyEmailPage({
     <AuthShell
       locale={locale}
       brandName={dict.brand.name}
+      panel={dict.auth.panel}
       title={dict.auth.verify.title}
       subtitle={dict.auth.verify.subtitle}
     >

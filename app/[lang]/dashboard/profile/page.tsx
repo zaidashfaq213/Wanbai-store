@@ -11,6 +11,7 @@ import { prisma } from "@/lib/db";
 import { currencies } from "@/lib/data/catalog";
 import { getCurrency } from "@/lib/data/currency";
 import { ProfileForm } from "@/components/dashboard/profile-form";
+import { PageHeader } from "@/components/dashboard/page-header";
 
 export default async function ProfilePage({
   params,
@@ -34,8 +35,11 @@ export default async function ProfilePage({
   });
 
   return (
-    <div className="flex flex-col gap-3">
-      <h2 className="text-lg font-extrabold">{dict.dashboard.profile.title}</h2>
+    <div className="mx-auto max-w-2xl">
+      <PageHeader
+        title={dict.dashboard.profile.title}
+        subtitle={dict.dashboard.profile.subtitle}
+      />
       <ProfileForm
         locale={locale}
         dict={dict.dashboard.profile}

@@ -19,6 +19,7 @@ export default async function ResetPasswordPage({
     <AuthShell
       locale={locale}
       brandName={dict.brand.name}
+      panel={dict.auth.panel}
       title={dict.auth.reset.title}
       subtitle={dict.auth.reset.subtitle}
     >
