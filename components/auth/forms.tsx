@@ -102,11 +102,15 @@ export function LoginForm({
   locale,
   verified,
   oauthError,
+  next,
+  hideOAuth,
 }: {
   dict: AuthDict;
   locale: Locale;
   verified?: boolean;
   oauthError?: boolean;
+  next?: string;
+  hideOAuth?: boolean;
 }) {
   const [state, action, pending] = useActionState<FormState, FormData>(
     loginAction,
@@ -120,9 +124,10 @@ export function LoginForm({
         </p>
       )}
       {oauthError && <ErrorNote dict={dict} code="oauth_unavailable" />}
-      <OAuthButtons dict={dict} locale={locale} />
+      {!hideOAuth && <OAuthButtons dict={dict} locale={locale} />}
       <form action={action} className="flex flex-col gap-3">
         <input type="hidden" name="locale" value={locale} />
+        {next && <input type="hidden" name="next" value={next} />}
         <ErrorNote dict={dict} code={state.ok ? undefined : state.code} />
         <label className="flex flex-col gap-1.5">
           <span className="text-xs font-semibold text-muted">{dict.login.email}</span>
@@ -171,6 +176,21 @@ export function SignupForm({
         <label className="flex flex-col gap-1.5">
           <span className="text-xs font-semibold text-muted">{dict.signup.name}</span>
           <input name="name" type="text" autoComplete="name" required className={FIELD} />
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-xs font-semibold text-muted">{dict.signup.username}</span>
+          <input
+            name="username"
+            type="text"
+            autoComplete="username"
+            required
+            minLength={3}
+            maxLength={30}
+            pattern="[A-Za-z0-9_]+"
+            placeholder={dict.signup.usernamePlaceholder}
+            className={FIELD}
+          />
+          <span className="text-[11px] text-muted">{dict.signup.usernameHint}</span>
         </label>
         <label className="flex flex-col gap-1.5">
           <span className="text-xs font-semibold text-muted">{dict.signup.email}</span>

@@ -1,15 +1,17 @@
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
-import { categories } from "@/lib/data/catalog";
+import type { Category } from "@/lib/data/catalog";
 import { cn } from "@/lib/utils";
 
 export function CategoryStrip({
   dict,
   locale,
+  categories,
 }: {
   dict: Dictionary;
   locale: Locale;
+  categories: Category[];
 }) {
   return (
     <section>

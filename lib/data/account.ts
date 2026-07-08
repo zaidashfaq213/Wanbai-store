@@ -20,7 +20,14 @@ export async function getOrders(userId: string) {
   return prisma.order.findMany({
     where: { userId },
     orderBy: { createdAt: "desc" },
-    include: { items: true },
+    include: {
+      items: true,
+      paymentSubmissions: {
+        select: { status: true },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+      },
+    },
   });
 }
 

@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
-import { categories, products } from "@/lib/data/catalog";
+import { getCategories, getAllProducts } from "@/lib/data/catalog-db";
 import { cn, fmt } from "@/lib/utils";
 import { Container } from "@/components/ui/container";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
@@ -31,6 +31,10 @@ export default async function CardsPage({
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
   const dict = await getDictionary(locale);
+  const [categories, products] = await Promise.all([
+    getCategories(),
+    getAllProducts(),
+  ]);
 
   const countFor = (slug: string) =>
     products.filter((p) => p.category === slug).length;

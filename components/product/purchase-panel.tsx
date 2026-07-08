@@ -54,7 +54,7 @@ export function PurchasePanel({
   const [pkgId, setPkgId] = useState(() => defaultPackage(variantGroups[0]).id);
   const [values, setValues] = useState<Record<string, string>>({});
   const [email, setEmail] = useState("");
-  const [method, setMethod] = useState<"WALLET" | "GATEWAY">("GATEWAY");
+  const [method, setMethod] = useState<"WALLET" | "BANK">("BANK");
   const [toast, setToast] = useState<string | null>(null);
   const [success, setSuccess] = useState<SuccessResult | null>(null);
   const [pending, startTransition] = useTransition();
@@ -293,10 +293,10 @@ export function PurchasePanel({
           )}
           <button
             type="button"
-            onClick={() => setMethod("GATEWAY")}
+            onClick={() => setMethod("BANK")}
             className={cn(
               "flex items-center justify-between rounded-xl border px-3.5 py-3 text-start transition-colors",
-              method === "GATEWAY"
+              method === "BANK"
                 ? "border-primary bg-primary/5"
                 : "border-border hover:bg-surface-2",
             )}

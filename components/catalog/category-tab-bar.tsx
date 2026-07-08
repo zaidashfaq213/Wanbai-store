@@ -1,14 +1,16 @@
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n/config";
-import { categories } from "@/lib/data/catalog";
+import type { Category } from "@/lib/data/catalog";
 import { cn } from "@/lib/utils";
 
 export function CategoryTabBar({
   locale,
   activeSlug,
+  categories,
 }: {
   locale: Locale;
   activeSlug?: string;
+  categories: Category[];
 }) {
   return (
     <div className="-mx-4 mb-6 flex gap-2 overflow-x-auto px-4 pb-1 no-scrollbar sm:mx-0 sm:px-0">

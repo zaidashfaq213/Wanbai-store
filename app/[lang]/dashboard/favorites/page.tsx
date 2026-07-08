@@ -4,7 +4,7 @@ import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { requireUser } from "@/lib/auth/session";
 import { getCurrency } from "@/lib/data/currency";
 import { getFavorites } from "@/lib/data/account";
-import { productBySlug } from "@/lib/data/catalog";
+import { getAllProducts } from "@/lib/data/catalog-db";
 import { removeFavorite } from "@/lib/actions/account";
 import { ProductCard } from "@/components/ui/product-card";
 import { CloseIcon, HeartIcon } from "@/components/ui/icons";
@@ -22,9 +22,13 @@ export default async function FavoritesPage({
   const d = dict.dashboard.favorites;
   const currency = await getCurrency();
 
-  const favorites = await getFavorites(user.id);
+  const [favorites, allProducts] = await Promise.all([
+    getFavorites(user.id),
+    getAllProducts(),
+  ]);
+  const bySlug = new Map(allProducts.map((p) => [p.slug, p]));
   const items = favorites
-    .map((f) => productBySlug(f.productSlug))
+    .map((f) => bySlug.get(f.productSlug))
     .filter((p): p is NonNullable<typeof p> => Boolean(p));
 
   if (items.length === 0) {

@@ -173,7 +173,10 @@
       "password": "Password",
       "submit": "Create account",
       "haveAccount": "Already have an account?",
-      "signIn": "Sign in"
+      "signIn": "Sign in",
+      "username": "Username",
+      "usernamePlaceholder": "e.g. john_doe",
+      "usernameHint": "3–30 characters: letters, numbers, underscore."
     },
     "forgot": {
       "title": "Reset your password",
@@ -204,7 +207,9 @@
       "code_invalid": "Incorrect code. Please try again.",
       "code_expired": "This code has expired. Request a new one.",
       "code_too_many": "Too many attempts. Request a new code.",
-      "oauth_unavailable": "That sign-in option isn't available yet. Please use email."
+      "oauth_unavailable": "That sign-in option isn't available yet. Please use email.",
+      "username_taken": "That username is already taken.",
+      "invalid_username": "Username must be 3–30 characters (letters, numbers, underscore)."
     },
     "passwordHint": "At least 8 characters.",
     "verify": {
@@ -315,8 +320,8 @@
   "checkout": {
     "paymentMethod": "Payment method",
     "payWallet": "Pay with wallet",
-    "payGateway": "Card / online payment",
-    "payGatewayNote": "Secure checkout",
+    "payGateway": "Bank transfer",
+    "payGatewayNote": "Upload transfer screenshot",
     "guestEmail": "Delivery email",
     "guestEmailPlaceholder": "you@example.com",
     "placingOrder": "Placing order…",
@@ -331,11 +336,211 @@
       "deliveredTitle": "Order delivered!",
       "deliveredBody": "Your purchase has been delivered. Check your orders for the details.",
       "pendingTitle": "Order created",
-      "pendingBody": "Your order is awaiting payment. Complete payment to receive your product.",
+      "pendingBody": "Your order is created. Submit your bank-transfer screenshot from My Orders to complete it.",
       "orderRef": "Order",
       "viewOrders": "View my orders",
       "createAccount": "Create an account to track it",
       "buyMore": "Make another purchase"
+    }
+  },
+  "payments": {
+    "topUpTitle": "Add funds by bank transfer",
+    "chooseBank": "Choose a bank",
+    "amount": "Amount (USD)",
+    "transferTo": "Transfer to",
+    "accountName": "Account name",
+    "accountNumber": "Account number",
+    "copy": "Copy",
+    "copied": "Copied",
+    "senderName": "Sender name / number",
+    "senderNamePlaceholder": "Who did you send from?",
+    "reference": "Reference (optional)",
+    "referencePlaceholder": "Transfer reference",
+    "uploadProof": "Upload payment screenshot",
+    "uploadHint": "PNG, JPG or WebP — up to 3 MB",
+    "changeImage": "Change screenshot",
+    "submit": "Submit for review",
+    "submitting": "Submitting…",
+    "pendingTitle": "Payment submitted",
+    "pendingBody": "We'll review your transfer and credit your wallet shortly.",
+    "yourSubmissions": "Your submissions",
+    "noSubmissions": "No submissions yet.",
+    "statuses": {
+      "PENDING": "Under review",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected"
+    },
+    "errors": {
+      "requires_auth": "Please sign in.",
+      "invalid_input": "Please check the form.",
+      "invalid_bank": "Please choose a valid bank.",
+      "invalid_order": "Order not found.",
+      "proof_empty": "Please attach a screenshot.",
+      "proof_bad_type": "Only PNG, JPG or WebP images.",
+      "proof_too_large": "Image is too large (max 3 MB).",
+      "generic": "Something went wrong. Try again."
+    }
+  },
+  "admin": {
+    "title": "Admin",
+    "portal": "Back-office",
+    "nav": {
+      "overview": "Overview",
+      "payments": "Payments",
+      "orders": "Orders",
+      "banks": "Bank Accounts",
+      "users": "Users",
+      "backToStore": "Back to store",
+      "logout": "Log out",
+      "categories": "Categories",
+      "products": "Products"
+    },
+    "overview": {
+      "subtitle": "Store operations at a glance",
+      "pendingPayments": "Pending payments",
+      "activeOrders": "Active orders",
+      "users": "Users",
+      "totalOrders": "Total orders",
+      "reviewPayments": "Review payments",
+      "revenue": "Revenue",
+      "topProducts": "Top products",
+      "sold": "sold"
+    },
+    "payments": {
+      "title": "Payment submissions",
+      "subtitle": "Review bank-transfer screenshots and approve or reject",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "all": "All",
+      "none": "No submissions.",
+      "amount": "Amount",
+      "bank": "Bank",
+      "user": "Customer",
+      "order": "Order",
+      "topup": "Wallet top-up",
+      "sender": "Sender",
+      "reference": "Reference",
+      "viewProof": "View screenshot",
+      "approve": "Approve",
+      "reject": "Reject",
+      "rejectReason": "Reason (optional)",
+      "confirmReject": "Confirm reject",
+      "submittedAt": "Submitted"
+    },
+    "orders": {
+      "title": "Orders",
+      "subtitle": "Fulfil orders manually and update status",
+      "none": "No orders.",
+      "customer": "Customer",
+      "total": "Total",
+      "status": "Status",
+      "fulfil": "Fulfilment",
+      "code": "Delivered code / note",
+      "codePlaceholder": "Enter code or fulfilment note",
+      "deliver": "Mark delivered",
+      "update": "Update",
+      "statuses": {
+        "PENDING": "Pending",
+        "PAID": "Paid",
+        "DELIVERED": "Delivered",
+        "FAILED": "Failed",
+        "REFUNDED": "Refunded",
+        "CANCELLED": "Cancelled"
+      },
+      "refund": "Refund"
+    },
+    "banks": {
+      "title": "Bank accounts",
+      "subtitle": "Your payout bank details shown to customers",
+      "accountName": "Account name",
+      "accountNumber": "Account number",
+      "instructionsEn": "Instructions (English)",
+      "instructionsAr": "Instructions (Arabic)",
+      "active": "Active",
+      "save": "Save",
+      "saved": "Saved"
+    },
+    "users": {
+      "title": "Users",
+      "subtitle": "Registered customers and admins",
+      "name": "Name",
+      "contact": "Contact",
+      "role": "Role",
+      "wallet": "Wallet",
+      "joined": "Joined",
+      "none": "No users."
+    },
+    "roles": {
+      "USER": "Member",
+      "ADMIN": "Admin"
+    },
+    "catalog": {
+      "categories": {
+        "title": "Categories",
+        "subtitle": "Manage storefront categories",
+        "add": "Add category",
+        "none": "No categories.",
+        "slug": "Slug",
+        "nameEn": "Name (English)",
+        "nameAr": "Name (Arabic)",
+        "icon": "Icon (emoji)",
+        "gradient": "Gradient classes",
+        "order": "Order",
+        "active": "Active",
+        "save": "Save",
+        "saved": "Saved",
+        "delete": "Delete",
+        "productsCount": "products"
+      },
+      "products": {
+        "title": "Products",
+        "subtitle": "Create products and manage pricing",
+        "add": "Add product",
+        "none": "No products yet.",
+        "edit": "Edit",
+        "back": "← Products",
+        "name": "Name",
+        "category": "Category",
+        "priceFrom": "From price (USD)",
+        "status": "Status",
+        "active": "Active",
+        "inactive": "Hidden",
+        "save": "Save changes",
+        "saved": "Saved",
+        "delete": "Delete product",
+        "core": "Product details",
+        "pricing": "Packages & pricing",
+        "overviewEn": "Overview (English)",
+        "overviewAr": "Overview (Arabic)",
+        "howToUseEn": "How to use (English)",
+        "howToUseAr": "How to use (Arabic)",
+        "badgeEn": "Badge (English)",
+        "badgeAr": "Badge (Arabic)",
+        "fulfillment": "Fulfilment",
+        "image": "Image path (optional)",
+        "initial": "Initial",
+        "slug": "Slug",
+        "addPackage": "Add package",
+        "popular": "Popular",
+        "labelEn": "Label (English)",
+        "labelAr": "Label (Arabic)",
+        "pkgPrice": "Price (USD)",
+        "newProduct": "New product",
+        "createHint": "Default packages are generated automatically — edit their prices after creating.",
+        "createSubmit": "Create product"
+      },
+      "errors": {
+        "slug_taken": "That slug is already used.",
+        "invalid_input": "Please check the form.",
+        "requires_auth": "Not authorized.",
+        "saved": "Saved"
+      },
+      "fulfillments": {
+        "TOPUP": "Top-up",
+        "CODE": "Code / gift card",
+        "SERVICE": "Service"
+      }
     }
   }
 }

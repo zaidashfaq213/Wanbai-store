@@ -1,26 +1,24 @@
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
-import type { Category, Currency } from "@/lib/data/catalog";
-import { productsByCategory } from "@/lib/data/catalog";
+import type { Category, Currency, Product } from "@/lib/data/catalog";
 import { cn } from "@/lib/utils";
 import { ProductCard } from "@/components/ui/product-card";
 import { ArrowIcon, SwipeIcon } from "@/components/ui/icons";
 
 export function CategoryShowcase({
   category,
+  items,
   locale,
   currency,
   dict,
-  limit = 6,
 }: {
   category: Category;
+  items: Product[];
   locale: Locale;
   currency: Currency;
   dict: Dictionary;
-  limit?: number;
 }) {
-  const items = productsByCategory(category.slug, limit);
   if (items.length === 0) return null;
 
   return (

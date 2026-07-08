@@ -33,6 +33,7 @@ export default async function DashboardLayout({
         roleLabel: dict.dashboard.roles[roleKey],
       }}
       unread={unread}
+      adminLabel={user.role === "ADMIN" ? dict.admin.title : undefined}
     >
       {children}
     </DashboardChrome>

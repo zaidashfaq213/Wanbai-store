@@ -2,7 +2,10 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
-import { categories, products } from "@/lib/data/catalog";
+import {
+  getCategories,
+  getProductsByCategory,
+} from "@/lib/data/catalog-db";
 import { getCurrency } from "@/lib/data/currency";
 import { fmt } from "@/lib/utils";
 import { Container } from "@/components/ui/container";
@@ -23,7 +26,7 @@ export async function generateMetadata({
   const { lang, category: slug } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
   const dict = await getDictionary(locale);
-  const category = categories.find((c) => c.slug === slug);
+  const category = (await getCategories()).find((c) => c.slug === slug);
   if (!category) return {};
   const name = category.name[locale];
   return {
@@ -44,13 +47,14 @@ export default async function CategoryPage({
   const { lang, category: slug } = await params;
   const { view: viewParam, page: pageParam } = await searchParams;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
+  const categories = await getCategories();
   const category = categories.find((c) => c.slug === slug);
   if (!category) notFound();
 
   const dict = await getDictionary(locale);
   const currency = await getCurrency();
 
-  const all = products.filter((p) => p.category === slug);
+  const all = await getProductsByCategory(slug);
   const view: "grid" | "list" = viewParam === "list" ? "list" : "grid";
   const totalPages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
   const page = Math.min(Math.max(1, Number(pageParam) || 1), totalPages);
@@ -67,7 +71,7 @@ export default async function CategoryPage({
         ]}
       />
 
-      <CategoryTabBar locale={locale} activeSlug={slug} />
+      <CategoryTabBar locale={locale} activeSlug={slug} categories={categories} />
 
       <div className="mb-6 flex items-center justify-between gap-4">
         <div>

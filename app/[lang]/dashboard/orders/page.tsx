@@ -4,9 +4,12 @@ import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { requireUser } from "@/lib/auth/session";
 import { getCurrency } from "@/lib/data/currency";
 import { getOrders } from "@/lib/data/account";
+import { getActiveBankAccounts } from "@/lib/data/payments";
 import { formatCents, cn } from "@/lib/utils";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { BagIcon } from "@/components/ui/icons";
+import { OrderPaymentForm } from "@/components/dashboard/order-payment-form";
+import { type BankOption } from "@/components/dashboard/bank-topup";
 
 const STATUS_STYLES: Record<string, string> = {
   PENDING: "bg-amber-500/10 text-amber-500",
@@ -27,8 +30,21 @@ export default async function OrdersPage({
   const user = await requireUser(locale);
   const dict = await getDictionary(locale);
   const d = dict.dashboard.orders;
+  const p = dict.payments;
   const currency = await getCurrency();
   const orders = await getOrders(user.id);
+  const banksRaw = await getActiveBankAccounts();
+  const banks: BankOption[] = banksRaw.map((b) => ({
+    id: b.id,
+    key: b.key,
+    nameEn: b.nameEn,
+    nameAr: b.nameAr,
+    accountName: b.accountName,
+    accountNumber: b.accountNumber,
+    instructionsEn: b.instructionsEn,
+    instructionsAr: b.instructionsAr,
+    color: b.color,
+  }));
 
   if (orders.length === 0) {
     return (
@@ -86,6 +102,21 @@ export default async function OrdersPage({
               </div>
             ))}
           </div>
+
+          {/* Bank payment: submit proof, or show it's under review */}
+          {order.status === "PENDING" &&
+            (order.paymentSubmissions[0]?.status === "PENDING" ? (
+              <p className="mt-3 rounded-xl bg-amber-500/10 px-3 py-2 text-sm font-semibold text-amber-500">
+                {p.statuses.PENDING}
+              </p>
+            ) : (
+              <OrderPaymentForm
+                locale={locale}
+                dict={p}
+                banks={banks}
+                orderRef={order.ref}
+              />
+            ))}
         </div>
       ))}
       </div>

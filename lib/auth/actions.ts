@@ -52,6 +52,13 @@ async function issueVerificationCode(email: string) {
 
 const signupSchema = z.object({
   name: z.string().trim().min(2).max(80),
+  username: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(3)
+    .max(30)
+    .regex(/^[a-z0-9_]+$/),
   email: z.string().trim().toLowerCase().email(),
   password: z.string().min(8).max(100),
 });
@@ -63,6 +70,7 @@ export async function signupAction(
   const locale = localeFrom(formData);
   const parsed = signupSchema.safeParse({
     name: formData.get("name"),
+    username: formData.get("username"),
     email: formData.get("email"),
     password: formData.get("password"),
   });
@@ -70,18 +78,22 @@ export async function signupAction(
     const issue = parsed.error.issues[0]?.path[0];
     if (issue === "password") return { ok: false, code: "weak_password" };
     if (issue === "email") return { ok: false, code: "invalid_email" };
+    if (issue === "username") return { ok: false, code: "invalid_username" };
     return { ok: false, code: "invalid_input" };
   }
-  const { name, email, password } = parsed.data;
+  const { name, username, email, password } = parsed.data;
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return { ok: false, code: "email_taken" };
+
+  const usernameTaken = await prisma.user.findUnique({ where: { username } });
+  if (usernameTaken) return { ok: false, code: "username_taken" };
 
   const passwordHash = await bcrypt.hash(password, 12);
   // Create the account as unverified; access is gated until the emailed code
   // is confirmed on the verify-email page.
   await prisma.user.create({
-    data: { name, email, passwordHash, preferredLocale: locale },
+    data: { name, username, email, passwordHash, preferredLocale: locale },
   });
   await issueVerificationCode(email);
 
@@ -183,11 +195,16 @@ export async function loginAction(
     }
   }
 
+  // Only allow a small allow-list of post-login destinations (no open redirect).
+  const next = String(formData.get("next") ?? "");
+  const redirectTo =
+    next === "admin" ? `/${locale}/admin` : `/${locale}/dashboard`;
+
   try {
     await signIn("credentials", {
       email: parsed.data.email,
       password: parsed.data.password,
-      redirectTo: `/${locale}/dashboard`,
+      redirectTo,
     });
   } catch (error) {
     if (error instanceof AuthError) {

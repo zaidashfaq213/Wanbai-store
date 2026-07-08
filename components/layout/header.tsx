@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
-import { categories } from "@/lib/data/catalog";
+import type { Category } from "@/lib/data/catalog";
 import { cn } from "@/lib/utils";
 import { Container } from "@/components/ui/container";
 import { Logo } from "@/components/ui/logo";
@@ -25,11 +25,13 @@ export function Header({
   locale,
   currencyCode,
   accountName,
+  categories,
 }: {
   dict: Dictionary;
   locale: Locale;
   currencyCode: string;
   accountName?: string | null;
+  categories: Category[];
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);

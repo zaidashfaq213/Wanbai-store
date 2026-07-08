@@ -17,6 +17,7 @@ import {
   UserIcon,
   HomeIcon,
   MenuIcon,
+  ShieldIcon,
 } from "@/components/ui/icons";
 
 type NavKey = keyof Dictionary["dashboard"]["nav"];
@@ -37,6 +38,7 @@ export function DashboardChrome({
   themeLabel,
   user,
   unread,
+  adminLabel,
   children,
 }: {
   locale: Locale;
@@ -45,6 +47,7 @@ export function DashboardChrome({
   themeLabel: string;
   user: { name: string; email: string; initial: string; roleLabel: string };
   unread: number;
+  adminLabel?: string;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -111,6 +114,17 @@ export function DashboardChrome({
           );
         })}
       </nav>
+
+      {/* Admin link (admins only) */}
+      {adminLabel && (
+        <Link
+          href={`/${locale}/admin`}
+          className="flex items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2.5 text-sm font-bold text-primary transition-colors hover:bg-primary/10"
+        >
+          <ShieldIcon className="size-[18px] shrink-0" />
+          {adminLabel}
+        </Link>
+      )}
 
       {/* Logout */}
       <form action={logoutAction}>

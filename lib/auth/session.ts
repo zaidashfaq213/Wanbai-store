@@ -21,3 +21,11 @@ export async function requireUser(locale: Locale, callbackPath?: string) {
   }
   return user;
 }
+
+/** Require an ADMIN user. Guests → admin login; non-admins → dashboard. */
+export async function requireAdmin(locale: Locale) {
+  const user = await getSessionUser();
+  if (!user) redirect(`/${locale}/admin/login`);
+  if (user.role !== "ADMIN") redirect(`/${locale}/dashboard`);
+  return user;
+}

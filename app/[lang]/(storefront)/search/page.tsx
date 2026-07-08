@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
-import { products } from "@/lib/data/catalog";
+import { searchProducts } from "@/lib/data/catalog-db";
 import { getCurrency } from "@/lib/data/currency";
 import { fmt } from "@/lib/utils";
 import { Container } from "@/components/ui/container";
@@ -33,14 +33,8 @@ export default async function SearchPage({
   const dict = await getDictionary(locale);
   const currency = await getCurrency();
 
-  const query = q.trim().toLowerCase();
-  const results = query
-    ? products.filter(
-        (p) =>
-          p.name.ar.toLowerCase().includes(query) ||
-          p.name.en.toLowerCase().includes(query),
-      )
-    : [];
+  const query = q.trim();
+  const results = query ? await searchProducts(query) : [];
 
   return (
     <Container className="py-6 sm:py-8">

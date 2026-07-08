@@ -173,7 +173,10 @@
       "password": "كلمة المرور",
       "submit": "إنشاء الحساب",
       "haveAccount": "لديك حساب بالفعل؟",
-      "signIn": "تسجيل الدخول"
+      "signIn": "تسجيل الدخول",
+      "username": "اسم المستخدم",
+      "usernamePlaceholder": "مثال: john_doe",
+      "usernameHint": "3–30 حرفاً: أحرف وأرقام وشرطة سفلية."
     },
     "forgot": {
       "title": "إعادة تعيين كلمة المرور",
@@ -204,7 +207,9 @@
       "code_invalid": "الرمز غير صحيح. حاول مرة أخرى.",
       "code_expired": "انتهت صلاحية الرمز. اطلب رمزاً جديداً.",
       "code_too_many": "محاولات كثيرة. اطلب رمزاً جديداً.",
-      "oauth_unavailable": "طريقة الدخول هذه غير متاحة بعد. الرجاء استخدام البريد الإلكتروني."
+      "oauth_unavailable": "طريقة الدخول هذه غير متاحة بعد. الرجاء استخدام البريد الإلكتروني.",
+      "username_taken": "اسم المستخدم مستخدم بالفعل.",
+      "invalid_username": "يجب أن يكون اسم المستخدم 3–30 حرفاً (أحرف وأرقام وشرطة سفلية)."
     },
     "passwordHint": "8 أحرف على الأقل.",
     "verify": {
@@ -315,8 +320,8 @@
   "checkout": {
     "paymentMethod": "طريقة الدفع",
     "payWallet": "الدفع من المحفظة",
-    "payGateway": "بطاقة / دفع إلكتروني",
-    "payGatewayNote": "دفع آمن",
+    "payGateway": "تحويل بنكي",
+    "payGatewayNote": "ارفع صورة التحويل",
     "guestEmail": "بريد التسليم",
     "guestEmailPlaceholder": "you@example.com",
     "placingOrder": "جارٍ تنفيذ الطلب…",
@@ -331,11 +336,211 @@
       "deliveredTitle": "تم تسليم الطلب!",
       "deliveredBody": "تم تسليم مشترياتك. راجع طلباتك لعرض التفاصيل.",
       "pendingTitle": "تم إنشاء الطلب",
-      "pendingBody": "طلبك بانتظار الدفع. أكمل الدفع لاستلام منتجك.",
+      "pendingBody": "تم إنشاء طلبك. أرسل صورة التحويل من (طلباتي) لإتمامه.",
       "orderRef": "الطلب",
       "viewOrders": "عرض طلباتي",
       "createAccount": "أنشئ حساباً لتتبّعه",
       "buyMore": "قم بعملية شراء أخرى"
+    }
+  },
+  "payments": {
+    "topUpTitle": "إضافة رصيد عبر التحويل البنكي",
+    "chooseBank": "اختر بنكاً",
+    "amount": "المبلغ (دولار)",
+    "transferTo": "حوّل إلى",
+    "accountName": "اسم الحساب",
+    "accountNumber": "رقم الحساب",
+    "copy": "نسخ",
+    "copied": "تم النسخ",
+    "senderName": "اسم / رقم المُرسِل",
+    "senderNamePlaceholder": "من أي حساب أرسلت؟",
+    "reference": "المرجع (اختياري)",
+    "referencePlaceholder": "مرجع التحويل",
+    "uploadProof": "ارفع صورة إثبات الدفع",
+    "uploadHint": "PNG أو JPG أو WebP — حتى 3 ميجابايت",
+    "changeImage": "تغيير الصورة",
+    "submit": "إرسال للمراجعة",
+    "submitting": "جارٍ الإرسال…",
+    "pendingTitle": "تم إرسال الدفع",
+    "pendingBody": "سنراجع تحويلك ونضيف الرصيد إلى محفظتك قريباً.",
+    "yourSubmissions": "طلباتك",
+    "noSubmissions": "لا توجد طلبات بعد.",
+    "statuses": {
+      "PENDING": "قيد المراجعة",
+      "APPROVED": "مقبول",
+      "REJECTED": "مرفوض"
+    },
+    "errors": {
+      "requires_auth": "الرجاء تسجيل الدخول.",
+      "invalid_input": "الرجاء التحقق من البيانات.",
+      "invalid_bank": "اختر بنكاً صحيحاً.",
+      "invalid_order": "الطلب غير موجود.",
+      "proof_empty": "الرجاء إرفاق صورة.",
+      "proof_bad_type": "صور PNG أو JPG أو WebP فقط.",
+      "proof_too_large": "الصورة كبيرة جداً (الحد 3 ميجابايت).",
+      "generic": "حدث خطأ ما. حاول مجدداً."
+    }
+  },
+  "admin": {
+    "title": "الإدارة",
+    "portal": "لوحة التحكم",
+    "nav": {
+      "overview": "نظرة عامة",
+      "payments": "المدفوعات",
+      "orders": "الطلبات",
+      "banks": "الحسابات البنكية",
+      "users": "المستخدمون",
+      "backToStore": "العودة للمتجر",
+      "logout": "تسجيل الخروج",
+      "categories": "الفئات",
+      "products": "المنتجات"
+    },
+    "overview": {
+      "subtitle": "نظرة سريعة على عمليات المتجر",
+      "pendingPayments": "مدفوعات معلّقة",
+      "activeOrders": "طلبات نشطة",
+      "users": "المستخدمون",
+      "totalOrders": "إجمالي الطلبات",
+      "reviewPayments": "مراجعة المدفوعات",
+      "revenue": "الإيرادات",
+      "topProducts": "الأكثر مبيعاً",
+      "sold": "مبيع"
+    },
+    "payments": {
+      "title": "طلبات الدفع",
+      "subtitle": "راجع صور التحويلات واقبلها أو ارفضها",
+      "pending": "معلّقة",
+      "approved": "مقبولة",
+      "rejected": "مرفوضة",
+      "all": "الكل",
+      "none": "لا توجد طلبات.",
+      "amount": "المبلغ",
+      "bank": "البنك",
+      "user": "العميل",
+      "order": "الطلب",
+      "topup": "شحن المحفظة",
+      "sender": "المُرسِل",
+      "reference": "المرجع",
+      "viewProof": "عرض الصورة",
+      "approve": "قبول",
+      "reject": "رفض",
+      "rejectReason": "السبب (اختياري)",
+      "confirmReject": "تأكيد الرفض",
+      "submittedAt": "أُرسل في"
+    },
+    "orders": {
+      "title": "الطلبات",
+      "subtitle": "نفّذ الطلبات يدوياً وحدّث الحالة",
+      "none": "لا توجد طلبات.",
+      "customer": "العميل",
+      "total": "الإجمالي",
+      "status": "الحالة",
+      "fulfil": "التنفيذ",
+      "code": "الكود / ملاحظة التسليم",
+      "codePlaceholder": "أدخل الكود أو ملاحظة التسليم",
+      "deliver": "تعليم كمُسلّم",
+      "update": "تحديث",
+      "statuses": {
+        "PENDING": "قيد الانتظار",
+        "PAID": "مدفوع",
+        "DELIVERED": "تم التسليم",
+        "FAILED": "فشل",
+        "REFUNDED": "مسترد",
+        "CANCELLED": "ملغى"
+      },
+      "refund": "استرداد"
+    },
+    "banks": {
+      "title": "الحسابات البنكية",
+      "subtitle": "تفاصيل حساباتك التي تظهر للعملاء",
+      "accountName": "اسم الحساب",
+      "accountNumber": "رقم الحساب",
+      "instructionsEn": "التعليمات (إنجليزي)",
+      "instructionsAr": "التعليمات (عربي)",
+      "active": "مفعّل",
+      "save": "حفظ",
+      "saved": "تم الحفظ"
+    },
+    "users": {
+      "title": "المستخدمون",
+      "subtitle": "العملاء والمشرفون المسجّلون",
+      "name": "الاسم",
+      "contact": "التواصل",
+      "role": "الدور",
+      "wallet": "المحفظة",
+      "joined": "انضم",
+      "none": "لا يوجد مستخدمون."
+    },
+    "roles": {
+      "USER": "عضو",
+      "ADMIN": "مشرف"
+    },
+    "catalog": {
+      "categories": {
+        "title": "الفئات",
+        "subtitle": "إدارة فئات المتجر",
+        "add": "إضافة فئة",
+        "none": "لا توجد فئات.",
+        "slug": "المعرّف",
+        "nameEn": "الاسم (إنجليزي)",
+        "nameAr": "الاسم (عربي)",
+        "icon": "الأيقونة (إيموجي)",
+        "gradient": "أصناف التدرج",
+        "order": "الترتيب",
+        "active": "مفعّل",
+        "save": "حفظ",
+        "saved": "تم الحفظ",
+        "delete": "حذف",
+        "productsCount": "منتج"
+      },
+      "products": {
+        "title": "المنتجات",
+        "subtitle": "أنشئ المنتجات وأدر الأسعار",
+        "add": "إضافة منتج",
+        "none": "لا توجد منتجات بعد.",
+        "edit": "تعديل",
+        "back": "← المنتجات",
+        "name": "الاسم",
+        "category": "الفئة",
+        "priceFrom": "السعر يبدأ من (دولار)",
+        "status": "الحالة",
+        "active": "مفعّل",
+        "inactive": "مخفي",
+        "save": "حفظ التغييرات",
+        "saved": "تم الحفظ",
+        "delete": "حذف المنتج",
+        "core": "تفاصيل المنتج",
+        "pricing": "الباقات والأسعار",
+        "overviewEn": "نظرة عامة (إنجليزي)",
+        "overviewAr": "نظرة عامة (عربي)",
+        "howToUseEn": "طريقة الاستخدام (إنجليزي)",
+        "howToUseAr": "طريقة الاستخدام (عربي)",
+        "badgeEn": "الشارة (إنجليزي)",
+        "badgeAr": "الشارة (عربي)",
+        "fulfillment": "طريقة التنفيذ",
+        "image": "مسار الصورة (اختياري)",
+        "initial": "الحرف",
+        "slug": "المعرّف",
+        "addPackage": "إضافة باقة",
+        "popular": "شائع",
+        "labelEn": "التسمية (إنجليزي)",
+        "labelAr": "التسمية (عربي)",
+        "pkgPrice": "السعر (دولار)",
+        "newProduct": "منتج جديد",
+        "createHint": "يتم إنشاء باقات افتراضية تلقائياً — عدّل أسعارها بعد الإنشاء.",
+        "createSubmit": "إنشاء المنتج"
+      },
+      "errors": {
+        "slug_taken": "هذا المعرّف مستخدم بالفعل.",
+        "invalid_input": "الرجاء التحقق من البيانات.",
+        "requires_auth": "غير مصرح.",
+        "saved": "تم الحفظ"
+      },
+      "fulfillments": {
+        "TOPUP": "شحن",
+        "CODE": "كود / بطاقة",
+        "SERVICE": "خدمة"
+      }
     }
   }
 }

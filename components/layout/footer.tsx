@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
-import { categories } from "@/lib/data/catalog";
+import type { Category } from "@/lib/data/catalog";
 import { Container } from "@/components/ui/container";
 import { Logo } from "@/components/ui/logo";
 import {
@@ -22,7 +22,15 @@ const socials = [
   { Icon: WhatsappIcon, href: "#", label: "WhatsApp" },
 ];
 
-export function Footer({ dict, locale }: { dict: Dictionary; locale: Locale }) {
+export function Footer({
+  dict,
+  locale,
+  categories,
+}: {
+  dict: Dictionary;
+  locale: Locale;
+  categories: Category[];
+}) {
   const supportLinks = [
     { label: dict.footer.helpCenter, href: `/${locale}/help` },
     { label: dict.footer.contact, href: `/${locale}/contact` },

@@ -31,6 +31,9 @@ enum Role {
 model User {
   id            String    @id @default(cuid())
   name          String?
+  // Unique handle chosen at signup. Optional so OAuth (Google/Facebook)
+  // accounts can be created without one and set it later.
+  username      String?   @unique
   email         String    @unique
   emailVerified DateTime?
   image         String?
@@ -52,6 +55,8 @@ model User {
   notifications       Notification[]
   walletTransactions  WalletTransaction[]
   passwordResetTokens PasswordResetToken[]
+  paymentSubmissions  PaymentSubmission[] @relation("UserSubmissions")
+  reviewedSubmissions PaymentSubmission[] @relation("ReviewedSubmissions")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -169,8 +174,9 @@ enum OrderStatus {
 }
 
 enum PaymentMethod {
-  WALLET
-  GATEWAY // external gateway (integrated in M4)
+  WALLET // paid from the in-app wallet balance
+  BANK // manual bank transfer + uploaded screenshot, approved by an admin
+  GATEWAY // reserved for a future automated gateway
 }
 
 model Order {
@@ -194,6 +200,7 @@ model Order {
 
   items              OrderItem[]
   walletTransactions WalletTransaction[]
+  paymentSubmissions PaymentSubmission[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -281,4 +288,198 @@ model Notification {
 
   @@index([userId])
   @@index([userId, read])
+}
+
+// ---------------------------------------------------------------------------
+// Manual payments — bank transfer + uploaded screenshot, reviewed by an admin
+// ---------------------------------------------------------------------------
+
+// The store's payout banks (O-Cash, MyCashi, BOK). Admin-editable.
+model BankAccount {
+  id             String   @id @default(cuid())
+  key            String   @unique // "o-cash" | "mycashi" | "bok"
+  nameEn         String
+  nameAr         String
+  accountName    String // account holder to transfer to
+  accountNumber  String
+  instructionsEn String?
+  instructionsAr String?
+  color          String? // brand color used on the payment card
+  active         Boolean  @default(true)
+  sortOrder      Int      @default(0)
+
+  submissions PaymentSubmission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum PaymentPurpose {
+  WALLET_TOPUP // add funds to the wallet
+  ORDER // pay for a specific order
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// A customer's proof-of-payment: how much, which bank, and the screenshot.
+// Approving it credits the wallet (WALLET_TOPUP) or pays the order (ORDER).
+model PaymentSubmission {
+  id            String         @id @default(cuid())
+  userId        String
+  purpose       PaymentPurpose
+  amount        Int // USD cents
+  bankAccountId String
+  senderName    String? // name/number the customer sent from
+  reference     String? // optional transfer reference
+  proofUrl      String         @db.Text // screenshot stored as a data URL
+  status        PaymentStatus  @default(PENDING)
+  orderId       String? // set for ORDER submissions
+  adminNote     String?
+  reviewedById  String?
+  reviewedAt    DateTime?
+
+  user        User        @relation("UserSubmissions", fields: [userId], references: [id], onDelete: Cascade)
+  reviewedBy  User?       @relation("ReviewedSubmissions", fields: [reviewedById], references: [id], onDelete: SetNull)
+  bankAccount BankAccount @relation(fields: [bankAccountId], references: [id])
+  order       Order?      @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([orderId])
+}
+
+// ---------------------------------------------------------------------------
+// Catalog — admin-managed. Prices/products live here (no longer hardcoded).
+// ---------------------------------------------------------------------------
+
+enum ProductFulfillment {
+  TOPUP
+  CODE
+  SERVICE
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  slug      String    @unique
+  nameEn    String
+  nameAr    String
+  icon      String // emoji placeholder
+  gradient  String // tailwind gradient classes
+  sortOrder Int       @default(0)
+  active    Boolean   @default(true)
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id              String             @id @default(cuid())
+  slug            String             @unique
+  categoryId      String
+  nameEn          String
+  nameAr          String
+  badgeEn         String
+  badgeAr         String
+  initial         String
+  hue             Int                @default(280)
+  priceFrom       Int // "from" price in USD cents
+  rating          Float              @default(5)
+  reviewCount     Int                @default(0)
+  image           String?
+  fulfillment     ProductFulfillment @default(CODE)
+  overviewEn      String             @db.Text
+  overviewAr      String             @db.Text
+  howToUseEn      String             @db.Text
+  howToUseAr      String             @db.Text
+  ratingBreakdown Int[] // [5*,4*,3*,2*,1*]
+  active          Boolean            @default(true)
+  sortOrder       Int                @default(0)
+
+  category      Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  variantGroups VariantGroup[]
+  inputs        ProductInput[]
+  faqs          ProductFaq[]
+  reviews       ProductReview[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+}
+
+model VariantGroup {
+  id        String    @id @default(cuid())
+  productId String
+  nameEn    String
+  nameAr    String
+  sortOrder Int       @default(0)
+  product   Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  packages  Package[]
+
+  @@index([productId])
+}
+
+model Package {
+  id             String       @id @default(cuid())
+  variantGroupId String
+  labelEn        String
+  labelAr        String
+  sublabelEn     String?
+  sublabelAr     String?
+  price          Int // USD cents
+  popular        Boolean      @default(false)
+  sortOrder      Int          @default(0)
+  variantGroup   VariantGroup @relation(fields: [variantGroupId], references: [id], onDelete: Cascade)
+
+  @@index([variantGroupId])
+}
+
+model ProductInput {
+  id            String  @id @default(cuid())
+  productId     String
+  key           String
+  labelEn       String
+  labelAr       String
+  placeholderEn String
+  placeholderAr String
+  kind          String  @default("text")
+  required      Boolean @default(false)
+  sortOrder     Int     @default(0)
+  product       Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model ProductFaq {
+  id        String  @id @default(cuid())
+  productId String
+  qEn       String
+  qAr       String
+  aEn       String  @db.Text
+  aAr       String  @db.Text
+  sortOrder Int     @default(0)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+}
+
+model ProductReview {
+  id        String  @id @default(cuid())
+  productId String
+  name      String
+  rating    Int
+  commentEn String
+  commentAr String
+  date      String
+  sortOrder Int     @default(0)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
 }

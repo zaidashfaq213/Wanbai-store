@@ -11,7 +11,7 @@ const checkoutSchema = z.object({
   locale: z.string(),
   currency: z.string().default("USD"),
   email: z.string().trim().toLowerCase().email().optional(),
-  paymentMethod: z.enum(["WALLET", "GATEWAY"]),
+  paymentMethod: z.enum(["WALLET", "BANK"]),
   item: z.object({
     productSlug: z.string().min(1),
     productName: z.string().min(1),
@@ -131,14 +131,15 @@ export async function createOrder(input: CheckoutInput): Promise<CheckoutResult>
     return { ok: true, code: "order_delivered", orderRef: order.ref };
   }
 
-  // --- Gateway checkout: create a pending order (payment captured in M4) ---
+  // --- Bank transfer: create a pending order; the customer then uploads a
+  // payment screenshot which an admin reviews and approves. ---
   const order = await prisma.order.create({
     data: {
       ref,
       userId: user?.id ?? null,
       email,
       status: "PENDING",
-      paymentMethod: "GATEWAY",
+      paymentMethod: "BANK",
       subtotal: total,
       total,
       currency,

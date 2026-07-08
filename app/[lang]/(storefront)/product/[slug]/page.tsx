@@ -2,15 +2,15 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
-import { categories } from "@/lib/data/catalog";
 import { getCurrency } from "@/lib/data/currency";
 import { getSessionUser } from "@/lib/auth/session";
 import { isFavorited, getWalletSummary } from "@/lib/data/account";
 import {
+  getCategories,
   getProductBySlug,
   getProductDetail,
-  relatedProducts,
-} from "@/lib/data/product-detail";
+  getRelatedProducts,
+} from "@/lib/data/catalog-db";
 import { Container } from "@/components/ui/container";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { ProductArt, ProductCard } from "@/components/ui/product-card";
@@ -27,13 +27,14 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang, slug } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
   if (!product) return {};
   const dict = await getDictionary(locale);
+  const detail = await getProductDetail(slug);
   const name = product.name[locale];
   return {
     title: `${name} | ${dict.brand.name}`,
-    description: getProductDetail(product).overview[locale],
+    description: detail?.overview[locale],
     alternates: { canonical: `/${locale}/product/${slug}` },
     openGraph: { title: `${name} | ${dict.brand.name}`, type: "website" },
   };
@@ -46,13 +47,14 @@ export default async function ProductPage({
 }) {
   const { lang, slug } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlug(slug);
   if (!product) notFound();
 
   const dict = await getDictionary(locale);
   const currency = await getCurrency();
-  const detail = getProductDetail(product);
-  const category = categories.find((c) => c.slug === product.category);
+  const detail = await getProductDetail(slug);
+  if (!detail) notFound();
+  const category = (await getCategories()).find((c) => c.slug === product.category);
 
   const user = await getSessionUser();
   const isAuthed = Boolean(user);
@@ -62,7 +64,7 @@ export default async function ProductPage({
     initialSaved = await isFavorited(user.id, product.slug);
     walletBalanceCents = (await getWalletSummary(user.id)).balance;
   }
-  const related = relatedProducts(product);
+  const related = await getRelatedProducts(product);
   const totalReviews = detail.ratingBreakdown.reduce((a, b) => a + b, 0);
   const p = dict.product;
 
