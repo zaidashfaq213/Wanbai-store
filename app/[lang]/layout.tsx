@@ -32,7 +32,7 @@ export async function generateMetadata({
   return {
     title: dict.meta.title,
     description: dict.meta.description,
-    metadataBase: new URL("https://wanbai.store"),
+    metadataBase: new URL("https://wanbai-store.tech"),
     alternates: {
       languages: { ar: "/ar", en: "/en" },
     },

@@ -18,6 +18,7 @@ import {
   HomeIcon,
   MenuIcon,
   ShieldIcon,
+  SupportIcon,
 } from "@/components/ui/icons";
 
 type NavKey = keyof Dictionary["dashboard"]["nav"];
@@ -28,6 +29,7 @@ const ICONS: Record<string, typeof GridIcon> = {
   favorites: HeartIcon,
   notifications: BellIcon,
   wallet: WalletIcon,
+  tickets: SupportIcon,
   profile: UserIcon,
 };
 
@@ -60,6 +62,7 @@ export function DashboardChrome({
     { key: "favorites", href: `${base}/favorites` },
     { key: "notifications", href: `${base}/notifications`, badge: unread },
     { key: "wallet", href: `${base}/wallet` },
+    { key: "tickets", href: `${base}/tickets` },
     { key: "profile", href: `${base}/profile` },
   ];
 

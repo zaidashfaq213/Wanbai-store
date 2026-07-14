@@ -241,7 +241,8 @@
       "notifications": "Notifications",
       "wallet": "Wallet",
       "profile": "Profile",
-      "logout": "Log out"
+      "logout": "Log out",
+      "tickets": "Support"
     },
     "overview": {
       "balance": "Wallet balance",
@@ -267,7 +268,34 @@
         "REFUNDED": "Refunded",
         "CANCELLED": "Cancelled"
       },
-      "subtitle": "Track your purchases and delivered codes"
+      "subtitle": "Track your purchases and delivered codes",
+      "view": "View details",
+      "back": "All orders",
+      "details": "Order details",
+      "placedOn": "Placed on",
+      "paymentMethod": "Payment method",
+      "methods": {
+        "WALLET": "Wallet",
+        "BANK": "Bank transfer",
+        "GATEWAY": "Card"
+      },
+      "items": "Items",
+      "inputs": "Your details",
+      "total": "Total",
+      "proof": "Payment proof",
+      "noProof": "No payment proof submitted yet.",
+      "viewProof": "Open screenshot",
+      "newReply": "New reply",
+      "chat": {
+        "title": "Chat about this order",
+        "subtitle": "Ask us anything — our team replies right here",
+        "you": "You",
+        "support": "Support",
+        "empty": "No messages yet. Ask us anything about this order.",
+        "placeholder": "Write a message…",
+        "send": "Send message",
+        "error": "Message could not be sent. Please try again."
+      }
     },
     "favorites": {
       "title": "Favorites",
@@ -315,6 +343,26 @@
     "roles": {
       "USER": "Member",
       "ADMIN": "Administrator"
+    },
+    "tickets": {
+      "title": "Support tickets",
+      "subtitle": "Ask us anything about your orders",
+      "new": "New ticket",
+      "subject": "Subject",
+      "message": "Message",
+      "send": "Create ticket",
+      "none": "No tickets yet.",
+      "reply": "Send reply",
+      "replyPlaceholder": "Write your reply…",
+      "closed": "This ticket is closed.",
+      "you": "You",
+      "support": "Support",
+      "error": "Please check the form and try again.",
+      "statuses": {
+        "OPEN": "Open",
+        "ANSWERED": "Answered",
+        "CLOSED": "Closed"
+      }
     }
   },
   "checkout": {
@@ -340,8 +388,12 @@
       "orderRef": "Order",
       "viewOrders": "View my orders",
       "createAccount": "Create an account to track it",
-      "buyMore": "Make another purchase"
-    }
+      "buyMore": "Make another purchase",
+      "paidTitle": "Order placed & paid",
+      "paidBody": "Payment received from your wallet. We're preparing your order and you'll be notified."
+    },
+    "signInToBuy": "Sign in to buy",
+    "signInHint": "Choose wallet or bank transfer after signing in."
   },
   "payments": {
     "topUpTitle": "Add funds by bank transfer",
@@ -357,7 +409,7 @@
     "reference": "Reference (optional)",
     "referencePlaceholder": "Transfer reference",
     "uploadProof": "Upload payment screenshot",
-    "uploadHint": "PNG, JPG or WebP — up to 3 MB",
+    "uploadHint": "PNG, JPG or WebP — up to 5 MB",
     "changeImage": "Change screenshot",
     "submit": "Submit for review",
     "submitting": "Submitting…",
@@ -377,7 +429,7 @@
       "invalid_order": "Order not found.",
       "proof_empty": "Please attach a screenshot.",
       "proof_bad_type": "Only PNG, JPG or WebP images.",
-      "proof_too_large": "Image is too large (max 3 MB).",
+      "proof_too_large": "Image is too large (max 5 MB).",
       "generic": "Something went wrong. Try again."
     }
   },
@@ -393,7 +445,13 @@
       "backToStore": "Back to store",
       "logout": "Log out",
       "categories": "Categories",
-      "products": "Products"
+      "products": "Products",
+      "tickets": "Tickets",
+      "pages": "Pages",
+      "blog": "Blog",
+      "faqs": "Help FAQs",
+      "settings": "Settings",
+      "reviews": "Reviews"
     },
     "overview": {
       "subtitle": "Store operations at a glance",
@@ -448,7 +506,36 @@
         "REFUNDED": "Refunded",
         "CANCELLED": "Cancelled"
       },
-      "refund": "Refund"
+      "refund": "Refund",
+      "all": "All",
+      "view": "View & chat",
+      "back": "All orders",
+      "details": "Order details",
+      "customerInfo": "Customer",
+      "walletBalance": "Wallet balance",
+      "items": "Items",
+      "inputs": "Customer inputs",
+      "placedOn": "Placed on",
+      "paymentMethod": "Payment method",
+      "methods": {
+        "WALLET": "Wallet",
+        "BANK": "Bank transfer",
+        "GATEWAY": "Card"
+      },
+      "proofs": "Payment proofs",
+      "noProofs": "No payment proof submitted.",
+      "viewProof": "Open screenshot",
+      "unread": "New message",
+      "chat": {
+        "title": "Chat with the customer",
+        "subtitle": "Replies also appear in the customer's notifications",
+        "you": "Customer",
+        "support": "You (support)",
+        "empty": "No messages yet.",
+        "placeholder": "Write a reply…",
+        "send": "Send reply",
+        "error": "Message could not be sent. Please try again."
+      }
     },
     "banks": {
       "title": "Bank accounts",
@@ -459,7 +546,14 @@
       "instructionsAr": "Instructions (Arabic)",
       "active": "Active",
       "save": "Save",
-      "saved": "Saved"
+      "saved": "Saved",
+      "add": "Add bank",
+      "delete": "Delete",
+      "key": "Key",
+      "color": "Color",
+      "nameEn": "Name (English)",
+      "nameAr": "Name (Arabic)",
+      "invalid": "Please check the form."
     },
     "users": {
       "title": "Users",
@@ -469,7 +563,31 @@
       "role": "Role",
       "wallet": "Wallet",
       "joined": "Joined",
-      "none": "No users."
+      "none": "No users.",
+      "actions": "Actions",
+      "makeAdmin": "Make admin",
+      "revokeAdmin": "Revoke admin",
+      "adjust": "Wallet",
+      "amount": "Amount (±USD)",
+      "reason": "Reason",
+      "apply": "Apply",
+      "delete": "Delete",
+      "detail": {
+        "view": "View",
+        "loading": "Loading…",
+        "verified": "Verified",
+        "unverified": "Unverified",
+        "joined": "Joined",
+        "favorites": "Favorites",
+        "wallet": "Wallet",
+        "amount": "± USD",
+        "orders": "Orders",
+        "noOrders": "No orders.",
+        "submissions": "Payments",
+        "noSubmissions": "No payments.",
+        "transactions": "Wallet history",
+        "noTransactions": "No transactions."
+      }
     },
     "roles": {
       "USER": "Member",
@@ -541,6 +659,153 @@
         "CODE": "Code / gift card",
         "SERVICE": "Service"
       }
+    },
+    "content": {
+      "pages": {
+        "title": "CMS pages",
+        "subtitle": "About, terms, privacy and other legal pages",
+        "add": "Add page",
+        "slug": "Slug",
+        "titleEn": "Title (English)",
+        "titleAr": "Title (Arabic)",
+        "bodyEn": "Body (English)",
+        "bodyAr": "Body (Arabic)",
+        "published": "Published",
+        "save": "Save",
+        "saved": "Saved",
+        "delete": "Delete",
+        "none": "No pages."
+      },
+      "blog": {
+        "title": "Blog posts",
+        "subtitle": "Write and manage articles",
+        "add": "Add post",
+        "slug": "Slug",
+        "titleEn": "Title (English)",
+        "titleAr": "Title (Arabic)",
+        "excerptEn": "Excerpt (English)",
+        "excerptAr": "Excerpt (Arabic)",
+        "bodyEn": "Body (English)",
+        "bodyAr": "Body (Arabic)",
+        "published": "Published",
+        "save": "Save",
+        "saved": "Saved",
+        "delete": "Delete",
+        "none": "No posts."
+      },
+      "faqs": {
+        "title": "Help FAQs",
+        "subtitle": "Questions shown on the help center",
+        "add": "Add FAQ",
+        "category": "Category",
+        "qEn": "Question (English)",
+        "qAr": "Question (Arabic)",
+        "aEn": "Answer (English)",
+        "aAr": "Answer (Arabic)",
+        "order": "Order",
+        "save": "Save",
+        "saved": "Saved",
+        "delete": "Delete",
+        "none": "No FAQs."
+      },
+      "settings": {
+        "title": "Store settings",
+        "subtitle": "Contact channels shown across the site",
+        "whatsapp": "WhatsApp number",
+        "telegram": "Telegram username",
+        "supportEmail": "Support email",
+        "facebook": "Facebook URL",
+        "instagram": "Instagram URL",
+        "youtube": "YouTube URL",
+        "tiktok": "TikTok URL",
+        "save": "Save",
+        "saved": "Saved"
+      },
+      "reviews": {
+        "title": "Reviews",
+        "subtitle": "Moderate customer reviews",
+        "none": "No customer reviews yet.",
+        "product": "Product",
+        "rating": "Rating",
+        "comment": "Comment",
+        "approve": "Approve",
+        "unapprove": "Hide",
+        "delete": "Delete",
+        "approved": "Visible",
+        "hidden": "Hidden"
+      },
+      "tickets": {
+        "title": "Support tickets",
+        "subtitle": "Reply to customers and close tickets",
+        "none": "No tickets.",
+        "all": "All",
+        "subject": "Subject",
+        "customer": "Customer",
+        "status": "Status",
+        "open": "Open",
+        "view": "View",
+        "reply": "Send reply",
+        "replyPlaceholder": "Write your reply…",
+        "close": "Close ticket",
+        "reopen": "Reopen",
+        "you": "Support",
+        "statuses": {
+          "OPEN": "Open",
+          "ANSWERED": "Answered",
+          "CLOSED": "Closed"
+        }
+      },
+      "errors": {
+        "invalid_input": "Please check the form.",
+        "slug_taken": "That slug is already used.",
+        "requires_auth": "Not authorized."
+      }
     }
+  },
+  "help": {
+    "title": "Help Center",
+    "subtitle": "Answers to the most common questions",
+    "searchPlaceholder": "Search for an answer…",
+    "empty": "No results. Try a different search or open a ticket.",
+    "categories": {
+      "getting-started": "Getting started",
+      "account": "Account & wallet",
+      "orders": "Orders & payments"
+    },
+    "ticketCard": {
+      "title": "Open a support ticket",
+      "body": "Get a tracked reply from our team"
+    },
+    "whatsappCard": {
+      "title": "Chat on WhatsApp",
+      "body": "Quick help during working hours"
+    }
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "We're here to help — pick a channel",
+    "whatsapp": "WhatsApp",
+    "telegram": "Telegram",
+    "email": "Email",
+    "ticket": "Open a support ticket",
+    "ticketBody": "Best for order issues — we track every reply"
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Guides, tips and updates",
+    "readMore": "Read more",
+    "empty": "No posts yet.",
+    "back": "← Back to blog"
+  },
+  "reviews": {
+    "write": "Write a review",
+    "rating": "Your rating",
+    "comment": "Your review",
+    "placeholder": "Share your experience…",
+    "submit": "Submit review",
+    "submitted": "Thanks! Your review has been posted.",
+    "mustPurchase": "Only customers who bought this product can review it.",
+    "alreadyReviewed": "You've already reviewed this product.",
+    "error": "Couldn't submit. Please try again."
   }
 }

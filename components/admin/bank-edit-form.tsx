@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { updateBankAccount, type PaymentState } from "@/lib/actions/payments";
+import { deleteBankAccount } from "@/lib/actions/admin";
 
 const FIELD =
   "h-10 w-full rounded-xl border border-border bg-surface-2 px-3 text-sm outline-none focus:border-primary/50";
@@ -82,13 +83,22 @@ export function BankEditForm({
           <input type="checkbox" name="active" defaultChecked={bank.active} className="size-4 accent-[var(--color-primary)]" />
           {dict.active}
         </label>
-        <button
-          type="submit"
-          disabled={pending}
-          className="rounded-xl brand-gradient px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
-        >
-          {dict.save}
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="submit"
+            disabled={pending}
+            className="rounded-xl brand-gradient px-5 py-2 text-sm font-bold text-white disabled:opacity-60"
+          >
+            {dict.save}
+          </button>
+          <button
+            type="submit"
+            formAction={deleteBankAccount}
+            className="rounded-xl border border-border px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-500/10"
+          >
+            {dict.delete}
+          </button>
+        </div>
       </div>
     </form>
   );

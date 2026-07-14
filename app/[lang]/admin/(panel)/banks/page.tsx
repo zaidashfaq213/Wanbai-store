@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/auth/session";
 import { getAllBankAccounts } from "@/lib/data/payments";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { BankEditForm, type BankRow } from "@/components/admin/bank-edit-form";
+import { BankCreateForm } from "@/components/admin/bank-create-form";
 
 export default async function AdminBanksPage({
   params,
@@ -24,6 +25,7 @@ export default async function AdminBanksPage({
         {banks.map((bank) => (
           <BankEditForm key={bank.id} locale={locale} dict={b} bank={bank as BankRow} />
         ))}
+        <BankCreateForm locale={locale} dict={b} />
       </div>
     </div>
   );

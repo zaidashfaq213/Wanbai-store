@@ -207,6 +207,176 @@ async function main() {
   console.log(`Seeded ${banks.length} bank accounts`);
 
   await seedCatalog();
+  await seedContent();
+}
+
+async function seedContent() {
+  // --- CMS / legal pages (slugs match the footer links) ---
+  const pages = [
+    {
+      slug: "about-us",
+      titleEn: "About Us",
+      titleAr: "من نحن",
+      bodyEn:
+        "WANBAI-STORE is a digital goods marketplace for game top-ups, gift cards, e-payment services, activation keys, telecom recharge and app subscriptions.\n\nEvery order is handled by our team and delivered to your email and your account. We focus on fair prices, genuine products and fast, human support.",
+      bodyAr:
+        "وانباي ستور هو متجر للمنتجات الرقمية: شحن الألعاب، البطاقات الرقمية، الدفع الإلكتروني، مفاتيح التفعيل، بطاقات الاتصالات واشتراكات التطبيقات.\n\nيتم تنفيذ كل طلب من قِبل فريقنا وتسليمه إلى بريدك الإلكتروني وحسابك. نركّز على الأسعار العادلة والمنتجات الأصلية والدعم السريع.",
+      sortOrder: 1,
+    },
+    {
+      slug: "terms-and-conditions",
+      titleEn: "Terms of Service",
+      titleAr: "شروط الخدمة",
+      bodyEn:
+        "By using WANBAI-STORE you agree to these terms.\n\n1. Accounts — you are responsible for the accuracy of the details you provide (such as a Player ID). Orders fulfilled with incorrect details cannot be reversed.\n2. Pricing — prices are shown in your selected currency and are converted from USD.\n3. Payments — payments are made by bank transfer and confirmed manually after review, or from your in-app wallet balance.\n4. Delivery — digital products are delivered by email and inside your account after payment is confirmed.\n5. Abuse — fraudulent payment proofs or chargebacks will result in account suspension.",
+      bodyAr:
+        "باستخدامك وانباي ستور فإنك توافق على هذه الشروط.\n\n١. الحسابات — أنت مسؤول عن صحة البيانات التي تدخلها (مثل معرّف اللاعب). الطلبات التي تُنفّذ ببيانات خاطئة لا يمكن التراجع عنها.\n٢. الأسعار — تُعرض بالعملة التي تختارها وتُحوّل من الدولار.\n٣. المدفوعات — تتم عبر التحويل البنكي وتُعتمد يدوياً بعد المراجعة، أو من رصيد محفظتك.\n٤. التسليم — تُسلَّم المنتجات الرقمية عبر البريد وداخل حسابك بعد تأكيد الدفع.\n٥. إساءة الاستخدام — تقديم إثباتات دفع مزوّرة يؤدي إلى إيقاف الحساب.",
+      sortOrder: 2,
+    },
+    {
+      slug: "privacy-policy",
+      titleEn: "Privacy Policy",
+      titleAr: "سياسة الخصوصية",
+      bodyEn:
+        "We collect only what we need to fulfil your orders: your name, email, the details required by the product (such as a Player ID), and your payment screenshots.\n\nWe never sell your data. Payment screenshots are stored securely and used solely to verify your transfer. You may request deletion of your account and data at any time by contacting support.",
+      bodyAr:
+        "نجمع فقط ما نحتاجه لتنفيذ طلباتك: الاسم، البريد الإلكتروني، البيانات المطلوبة للمنتج (مثل معرّف اللاعب)، وصور إثبات الدفع.\n\nلا نبيع بياناتك أبداً. تُخزَّن صور الدفع بشكل آمن وتُستخدم فقط للتحقق من تحويلك. يمكنك طلب حذف حسابك وبياناتك في أي وقت عبر التواصل مع الدعم.",
+      sortOrder: 3,
+    },
+    {
+      slug: "return-policy",
+      titleEn: "Return Policy",
+      titleAr: "سياسة الإرجاع",
+      bodyEn:
+        "Digital products cannot be returned once they have been delivered.\n\nIf an order was not delivered, was delivered incorrectly, or a code does not work, contact support within 48 hours and we will fix it or refund the amount to your wallet.\n\nOrders that are still pending (not yet fulfilled) can be cancelled and refunded to your wallet.",
+      bodyAr:
+        "لا يمكن إرجاع المنتجات الرقمية بعد تسليمها.\n\nإذا لم يصلك الطلب أو وصل بشكل خاطئ أو لم يعمل الكود، تواصل مع الدعم خلال 48 ساعة وسنصلح المشكلة أو نعيد المبلغ إلى محفظتك.\n\nالطلبات التي لا تزال قيد الانتظار (لم تُنفّذ بعد) يمكن إلغاؤها واسترداد قيمتها إلى المحفظة.",
+      sortOrder: 4,
+    },
+    {
+      slug: "cookie-policy",
+      titleEn: "Cookie Policy",
+      titleAr: "سياسة ملفات الارتباط",
+      bodyEn:
+        "We use a small number of cookies that are necessary for the store to work:\n\n• session — keeps you signed in.\n• theme — remembers light/dark mode.\n• currency — remembers your selected currency.\n• NEXT_LOCALE — remembers your language.\n\nWe do not use advertising or tracking cookies.",
+      bodyAr:
+        "نستخدم عدداً محدوداً من ملفات الارتباط الضرورية لعمل المتجر:\n\n• الجلسة — لإبقائك مسجّل الدخول.\n• المظهر — لتذكّر الوضع الفاتح/الداكن.\n• العملة — لتذكّر العملة المختارة.\n• NEXT_LOCALE — لتذكّر لغتك.\n\nلا نستخدم ملفات ارتباط إعلانية أو تتبّعية.",
+      sortOrder: 5,
+    },
+    {
+      slug: "gdpr",
+      titleEn: "GDPR / Data Protection",
+      titleAr: "حماية البيانات (GDPR)",
+      bodyEn:
+        "You have the right to access, correct, export and delete the personal data we hold about you.\n\nTo exercise any of these rights, open a support ticket or email us. We will respond within 30 days. We retain order records for accounting purposes even after account deletion, with personal identifiers removed.",
+      bodyAr:
+        "لك الحق في الوصول إلى بياناتك الشخصية وتصحيحها وتصديرها وحذفها.\n\nلممارسة أي من هذه الحقوق، افتح تذكرة دعم أو راسلنا عبر البريد. سنرد خلال 30 يوماً. نحتفظ بسجلات الطلبات لأغراض محاسبية حتى بعد حذف الحساب، مع إزالة البيانات الشخصية.",
+      sortOrder: 6,
+    },
+  ];
+  for (const p of pages) {
+    await prisma.page.upsert({ where: { slug: p.slug }, update: {}, create: p });
+  }
+
+  // --- Help-centre FAQs ---
+  const faqs = [
+    {
+      categoryKey: "getting-started",
+      qEn: "How do I place an order?",
+      qAr: "كيف أقوم بالطلب؟",
+      aEn: "Open a product, choose a package, sign in, then pay from your wallet or by bank transfer. After payment is confirmed we deliver to your email and account.",
+      aAr: "افتح المنتج، اختر الباقة، سجّل الدخول، ثم ادفع من محفظتك أو عبر التحويل البنكي. بعد تأكيد الدفع نسلّم الطلب إلى بريدك وحسابك.",
+      sortOrder: 1,
+    },
+    {
+      categoryKey: "getting-started",
+      qEn: "How long does delivery take?",
+      qAr: "كم يستغرق التسليم؟",
+      aEn: "Wallet payments are processed right away. Bank transfers are reviewed by our team, usually within a few minutes during working hours.",
+      aAr: "المدفوعات من المحفظة تُعالج فوراً. التحويلات البنكية يراجعها فريقنا، عادةً خلال دقائق في ساعات العمل.",
+      sortOrder: 2,
+    },
+    {
+      categoryKey: "account",
+      qEn: "How do I top up my wallet?",
+      qAr: "كيف أشحن محفظتي؟",
+      aEn: "Go to Dashboard → Wallet, choose an amount and a bank, transfer the money, then upload the payment screenshot. Once approved, your balance is credited.",
+      aAr: "اذهب إلى لوحة التحكم ← المحفظة، اختر المبلغ والبنك، حوّل المبلغ، ثم ارفع صورة إثبات الدفع. بعد الموافقة يُضاف الرصيد.",
+      sortOrder: 1,
+    },
+    {
+      categoryKey: "account",
+      qEn: "I didn't get my verification code",
+      qAr: "لم يصلني رمز التحقق",
+      aEn: "Check your spam folder. You can request a new 6-digit code from the verification page at any time.",
+      aAr: "تحقق من مجلد الرسائل غير المرغوبة. يمكنك طلب رمز جديد من 6 أرقام من صفحة التحقق في أي وقت.",
+      sortOrder: 2,
+    },
+    {
+      categoryKey: "orders",
+      qEn: "My payment is still under review",
+      qAr: "دفعتي لا تزال قيد المراجعة",
+      aEn: "Bank transfers are verified manually. If it has been longer than a few hours, open a support ticket with your order reference.",
+      aAr: "تُراجَع التحويلات البنكية يدوياً. إذا مضت عدة ساعات، افتح تذكرة دعم مع رقم طلبك.",
+      sortOrder: 1,
+    },
+    {
+      categoryKey: "orders",
+      qEn: "The code I received doesn't work",
+      qAr: "الكود الذي استلمته لا يعمل",
+      aEn: "Open a support ticket within 48 hours with your order reference and a screenshot of the error. We'll replace it or refund your wallet.",
+      aAr: "افتح تذكرة دعم خلال 48 ساعة مع رقم الطلب وصورة للخطأ. سنستبدله أو نعيد المبلغ إلى محفظتك.",
+      sortOrder: 2,
+    },
+  ];
+  if ((await prisma.helpFaq.count()) === 0) {
+    await prisma.helpFaq.createMany({ data: faqs });
+  }
+
+  // --- Blog ---
+  const posts = [
+    {
+      slug: "how-to-top-up-free-fire",
+      titleEn: "How to top up Free Fire safely",
+      titleAr: "كيف تشحن فري فاير بأمان",
+      excerptEn: "A step-by-step guide to topping up Free Fire diamonds without getting scammed.",
+      excerptAr: "دليل خطوة بخطوة لشحن جواهر فري فاير دون التعرّض للاحتيال.",
+      bodyEn:
+        "Topping up Free Fire is simple when you use a trusted store.\n\n1. Find your Player ID inside the game profile.\n2. Choose the gems package you want.\n3. Pay from your wallet or by bank transfer.\n4. We process the top-up and confirm by email.\n\nNever share your account password with anyone — a legitimate top-up only needs your Player ID.",
+      bodyAr:
+        "شحن فري فاير سهل عندما تستخدم متجراً موثوقاً.\n\n١. اعثر على معرّف اللاعب داخل ملفك في اللعبة.\n٢. اختر باقة الجواهر المناسبة.\n٣. ادفع من محفظتك أو عبر التحويل البنكي.\n٤. ننفّذ الشحن ونؤكّد عبر البريد.\n\nلا تشارك كلمة مرور حسابك مع أحد — الشحن الصحيح يحتاج معرّف اللاعب فقط.",
+    },
+    {
+      slug: "wallet-vs-bank-transfer",
+      titleEn: "Wallet or bank transfer — which should you use?",
+      titleAr: "المحفظة أم التحويل البنكي — أيهما تختار؟",
+      excerptEn: "Both work. Here's when each one makes sense.",
+      excerptAr: "كلاهما يعمل. إليك متى يناسبك كل خيار.",
+      bodyEn:
+        "If you buy often, top up your wallet once and then every purchase is instant — no screenshot needed each time.\n\nIf you buy occasionally, paying by bank transfer per order is perfectly fine. You'll upload a screenshot and we'll confirm it.",
+      bodyAr:
+        "إذا كنت تشتري كثيراً، اشحن محفظتك مرة واحدة وستصبح كل عملية شراء فورية — دون الحاجة لرفع صورة في كل مرة.\n\nإذا كنت تشتري أحياناً، فالدفع بالتحويل البنكي لكل طلب مناسب تماماً. سترفع صورة الإثبات وسنؤكّدها.",
+    },
+  ];
+  for (const p of posts) {
+    await prisma.post.upsert({ where: { slug: p.slug }, update: {}, create: p });
+  }
+
+  // --- Store settings ---
+  await prisma.storeSettings.upsert({
+    where: { id: "store" },
+    update: {},
+    create: {
+      id: "store",
+      whatsapp: "",
+      telegram: "",
+      supportEmail: "support@wanbai.store",
+    },
+  });
+
+  console.log(
+    `Seeded ${pages.length} pages, ${faqs.length} FAQs, ${posts.length} blog posts, settings`,
+  );
 }
 
 main()

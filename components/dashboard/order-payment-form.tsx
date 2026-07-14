@@ -12,13 +12,15 @@ export function OrderPaymentForm({
   dict,
   banks,
   orderRef,
+  defaultOpen = false,
 }: {
   locale: Locale;
   dict: Dictionary["payments"];
   banks: BankOption[];
   orderRef: string;
+  defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [bankId, setBankId] = useState(banks[0]?.id ?? "");
   const [preview, setPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);

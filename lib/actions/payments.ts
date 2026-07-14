@@ -114,7 +114,7 @@ export async function submitOrderPayment(
     },
   });
 
-  revalidatePath(`/${locale}/dashboard/orders`);
+  revalidatePath(`/${locale}/dashboard/orders`, "layout");
   return { ok: true, code: "submitted" };
 }
 
@@ -269,7 +269,7 @@ export async function fulfillOrder(formData: FormData) {
     html: `<p>Your order <strong>${order.ref}</strong>${item ? ` — ${item.productName} · ${item.packageLabel}` : ""} has been delivered.</p>${codeLine}<p>Thank you for shopping with WANBAI-STORE.</p>`,
   });
 
-  revalidatePath(`/${locale}/admin/orders`);
+  revalidatePath(`/${locale}/admin/orders`, "layout");
 }
 
 // Refund a paid/delivered order: credit the customer's wallet and mark REFUNDED.
@@ -310,7 +310,7 @@ export async function refundOrder(formData: FormData) {
     }
   });
 
-  revalidatePath(`/${locale}/admin/orders`);
+  revalidatePath(`/${locale}/admin/orders`, "layout");
 }
 
 const orderStatusSchema = z.enum([
@@ -334,7 +334,7 @@ export async function updateOrderStatus(formData: FormData) {
     where: { id: orderId },
     data: { status: parsed.data },
   });
-  revalidatePath(`/${locale}/admin/orders`);
+  revalidatePath(`/${locale}/admin/orders`, "layout");
 }
 
 // Admin: update a payout bank's details.

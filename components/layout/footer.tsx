@@ -13,24 +13,46 @@ import {
   YoutubeIcon,
 } from "@/components/ui/icons";
 
-const socials = [
-  { Icon: FacebookIcon, href: "#", label: "Facebook" },
-  { Icon: InstagramIcon, href: "#", label: "Instagram" },
-  { Icon: YoutubeIcon, href: "#", label: "YouTube" },
-  { Icon: TiktokIcon, href: "#", label: "TikTok" },
-  { Icon: TelegramIcon, href: "#", label: "Telegram" },
-  { Icon: WhatsappIcon, href: "#", label: "WhatsApp" },
-];
+export type FooterSocials = {
+  whatsapp: string | null;
+  telegram: string | null;
+  facebook: string | null;
+  instagram: string | null;
+  youtube: string | null;
+  tiktok: string | null;
+};
 
 export function Footer({
   dict,
   locale,
   categories,
+  socials: s,
 }: {
   dict: Dictionary;
   locale: Locale;
   categories: Category[];
+  socials: FooterSocials;
 }) {
+  // Only render channels the admin has actually configured (Admin → Settings).
+  const wa = s.whatsapp?.trim();
+  const tg = s.telegram?.trim();
+  const socials = [
+    s.facebook && { Icon: FacebookIcon, href: s.facebook, label: "Facebook" },
+    s.instagram && { Icon: InstagramIcon, href: s.instagram, label: "Instagram" },
+    s.youtube && { Icon: YoutubeIcon, href: s.youtube, label: "YouTube" },
+    s.tiktok && { Icon: TiktokIcon, href: s.tiktok, label: "TikTok" },
+    tg && { Icon: TelegramIcon, href: `https://t.me/${tg.replace(/^@/, "")}`, label: "Telegram" },
+    wa && {
+      Icon: WhatsappIcon,
+      href: `https://wa.me/${wa.replace(/[^0-9]/g, "")}`,
+      label: "WhatsApp",
+    },
+  ].filter(Boolean) as Array<{
+    Icon: typeof FacebookIcon;
+    href: string;
+    label: string;
+  }>;
+
   const supportLinks = [
     { label: dict.footer.helpCenter, href: `/${locale}/help` },
     { label: dict.footer.contact, href: `/${locale}/contact` },

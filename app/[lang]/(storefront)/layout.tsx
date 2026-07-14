@@ -2,6 +2,7 @@ import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { getCurrency } from "@/lib/data/currency";
 import { getCategories } from "@/lib/data/catalog-db";
+import { getSettings } from "@/lib/data/content";
 import { getSessionUser } from "@/lib/auth/session";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
@@ -21,6 +22,7 @@ export default async function StorefrontLayout({
   const dict = await getDictionary(locale);
   const currency = await getCurrency();
   const categories = await getCategories();
+  const settings = await getSettings();
   const sessionUser = await getSessionUser();
   const accountName = sessionUser
     ? sessionUser.name ?? sessionUser.email ?? null
@@ -36,7 +38,19 @@ export default async function StorefrontLayout({
         categories={categories}
       />
       <main className="flex-1 pb-20 md:pb-0">{children}</main>
-      <Footer dict={dict} locale={locale} categories={categories} />
+      <Footer
+        dict={dict}
+        locale={locale}
+        categories={categories}
+        socials={{
+          whatsapp: settings.whatsapp,
+          telegram: settings.telegram,
+          facebook: settings.facebook,
+          instagram: settings.instagram,
+          youtube: settings.youtube,
+          tiktok: settings.tiktok,
+        }}
+      />
       <MobileBottomNav dict={dict} locale={locale} />
     </div>
   );

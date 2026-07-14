@@ -1,0 +1,62 @@
+import type { MetadataRoute } from "next";
+import { locales } from "@/lib/i18n/config";
+import { getCategories, getAllProducts } from "@/lib/data/catalog-db";
+import { getPages, getPosts } from "@/lib/data/content";
+
+const BASE = (process.env.AUTH_URL ?? "https://wanbai-store.tech").replace(/\/$/, "");
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const [categories, products, pages, posts] = await Promise.all([
+    getCategories(),
+    getAllProducts(),
+    getPages(),
+    getPosts(),
+  ]);
+
+  const entries: MetadataRoute.Sitemap = [];
+
+  for (const locale of locales) {
+    const root = `${BASE}/${locale}`;
+
+    entries.push(
+      { url: root, changeFrequency: "daily", priority: 1 },
+      { url: `${root}/cards`, changeFrequency: "weekly", priority: 0.9 },
+      { url: `${root}/help`, changeFrequency: "monthly", priority: 0.5 },
+      { url: `${root}/contact`, changeFrequency: "monthly", priority: 0.5 },
+      { url: `${root}/blog`, changeFrequency: "weekly", priority: 0.6 },
+    );
+
+    for (const c of categories) {
+      entries.push({
+        url: `${root}/cards/${c.slug}`,
+        changeFrequency: "weekly",
+        priority: 0.8,
+      });
+    }
+    for (const p of products) {
+      entries.push({
+        url: `${root}/product/${p.slug}`,
+        changeFrequency: "weekly",
+        priority: 0.7,
+      });
+    }
+    for (const p of pages) {
+      entries.push({
+        url: `${root}/pages/${p.slug}`,
+        lastModified: p.updatedAt,
+        changeFrequency: "yearly",
+        priority: 0.3,
+      });
+    }
+    for (const p of posts) {
+      entries.push({
+        url: `${root}/blog/${p.slug}`,
+        lastModified: p.updatedAt,
+        changeFrequency: "monthly",
+        priority: 0.5,
+      });
+    }
+  }
+
+  return entries;
+}

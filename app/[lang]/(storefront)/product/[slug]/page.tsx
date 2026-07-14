@@ -5,10 +5,15 @@ import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { getCurrency } from "@/lib/data/currency";
 import { getSessionUser } from "@/lib/auth/session";
 import { isFavorited, getWalletSummary } from "@/lib/data/account";
+import { getActiveBankAccounts } from "@/lib/data/payments";
+import { type BankOption } from "@/components/dashboard/bank-topup";
+import { hasPurchased, hasReviewed } from "@/lib/data/content";
+import { ReviewForm } from "@/components/product/review-form";
 import {
   getCategories,
   getProductBySlug,
   getProductDetail,
+  getProductId,
   getRelatedProducts,
 } from "@/lib/data/catalog-db";
 import { Container } from "@/components/ui/container";
@@ -58,13 +63,31 @@ export default async function ProductPage({
 
   const user = await getSessionUser();
   const isAuthed = Boolean(user);
+  const productId = await getProductId(slug);
   let initialSaved = false;
   let walletBalanceCents = 0;
+  let canReview = false;
   if (user) {
     initialSaved = await isFavorited(user.id, product.slug);
     walletBalanceCents = (await getWalletSummary(user.id)).balance;
+    canReview =
+      Boolean(productId) &&
+      (await hasPurchased(user.id, product.slug)) &&
+      !(await hasReviewed(user.id, productId!));
   }
   const related = await getRelatedProducts(product);
+  const banksRaw = await getActiveBankAccounts();
+  const banks: BankOption[] = banksRaw.map((b) => ({
+    id: b.id,
+    key: b.key,
+    nameEn: b.nameEn,
+    nameAr: b.nameAr,
+    accountName: b.accountName,
+    accountNumber: b.accountNumber,
+    instructionsEn: b.instructionsEn,
+    instructionsAr: b.instructionsAr,
+    color: b.color,
+  }));
   const totalReviews = detail.ratingBreakdown.reduce((a, b) => a + b, 0);
   const p = dict.product;
 
@@ -158,6 +181,7 @@ export default async function ProductPage({
               dict={dict}
               isAuthed={isAuthed}
               walletBalanceCents={walletBalanceCents}
+              banks={banks}
             />
           </div>
         </div>
@@ -179,6 +203,17 @@ export default async function ProductPage({
           locale={locale}
           dict={dict}
         />
+        {/* Only verified purchasers who haven't reviewed yet see the form */}
+        {canReview && productId && (
+          <div className="mt-6">
+            <ReviewForm
+              locale={locale}
+              dict={dict.reviews}
+              productId={productId}
+              productSlug={product.slug}
+            />
+          </div>
+        )}
       </div>
 
       {/* Related */}

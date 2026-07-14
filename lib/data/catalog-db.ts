@@ -131,6 +131,15 @@ export async function getRelatedProducts(
   return rows.map(toProductWithCat);
 }
 
+/** The product's DB id — needed to attach a customer review. */
+export async function getProductId(slug: string): Promise<string | null> {
+  const p = await prisma.product.findUnique({
+    where: { slug },
+    select: { id: true },
+  });
+  return p?.id ?? null;
+}
+
 // --- admin: full rows including inactive ---
 
 export function getAdminCategories() {

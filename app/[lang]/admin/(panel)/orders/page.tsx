@@ -1,8 +1,9 @@
+import Link from "next/link";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { requireAdmin } from "@/lib/auth/session";
 import { getCurrency } from "@/lib/data/currency";
-import { getAllOrders } from "@/lib/data/payments";
+import { getAllOrders, getUnreadOrderMessages } from "@/lib/data/payments";
 import { fulfillOrder, updateOrderStatus, refundOrder } from "@/lib/actions/payments";
 import { formatCents, cn } from "@/lib/utils";
 import { PageHeader } from "@/components/dashboard/page-header";
@@ -20,21 +21,54 @@ const STATUSES = ["PENDING", "PAID", "DELIVERED", "FAILED", "REFUNDED", "CANCELL
 
 export default async function AdminOrdersPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ lang: string }>;
+  searchParams: Promise<{ status?: string }>;
 }) {
   const { lang } = await params;
+  const { status } = await searchParams;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
   await requireAdmin(locale);
   const dict = await getDictionary(locale);
   const o = dict.admin.orders;
   const statuses = o.statuses as Record<string, string>;
   const currency = await getCurrency();
-  const orders = await getAllOrders();
+  const filter = (STATUSES as readonly string[]).includes(status ?? "")
+    ? (status as (typeof STATUSES)[number])
+    : undefined;
+  const [orders, unread] = await Promise.all([
+    getAllOrders(filter),
+    getUnreadOrderMessages(),
+  ]);
 
   return (
     <div>
       <PageHeader title={o.title} subtitle={o.subtitle} />
+
+      <div className="mb-4 flex flex-wrap gap-2">
+        <Link
+          href={`/${locale}/admin/orders`}
+          className={cn(
+            "rounded-full px-3 py-1.5 text-xs font-bold transition-colors",
+            !filter ? "bg-primary/10 text-primary" : "border border-border hover:bg-surface-2",
+          )}
+        >
+          {o.all}
+        </Link>
+        {STATUSES.map((st) => (
+          <Link
+            key={st}
+            href={`/${locale}/admin/orders?status=${st}`}
+            className={cn(
+              "rounded-full px-3 py-1.5 text-xs font-bold transition-colors",
+              filter === st ? "bg-primary/10 text-primary" : "border border-border hover:bg-surface-2",
+            )}
+          >
+            {statuses[st]}
+          </Link>
+        ))}
+      </div>
 
       {orders.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-border bg-surface p-12 text-center text-sm text-muted">
@@ -44,11 +78,19 @@ export default async function AdminOrdersPage({
         <div className="flex flex-col gap-3">
           {orders.map((order) => {
             const item = order.items[0];
+            const unreadCount = unread.get(order.id) ?? 0;
             return (
               <div key={order.id} className="rounded-2xl border border-border bg-surface p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
-                    <p className="font-bold">{order.ref}</p>
+                    <p className="flex items-center gap-2 font-bold">
+                      {order.ref}
+                      {unreadCount > 0 && (
+                        <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-white">
+                          {o.unread}
+                        </span>
+                      )}
+                    </p>
                     <p className="text-xs text-muted">
                       {order.user?.name ?? order.email} ·{" "}
                       {new Date(order.createdAt).toLocaleDateString(
@@ -68,6 +110,12 @@ export default async function AdminOrdersPage({
                     <span className="font-black text-primary">
                       {formatCents(order.total, currency.symbol, currency.rate, locale)}
                     </span>
+                    <Link
+                      href={`/${locale}/admin/orders/${order.ref}`}
+                      className="rounded-xl brand-gradient px-3 py-1.5 text-xs font-bold text-white"
+                    >
+                      {o.view}
+                    </Link>
                   </div>
                 </div>
 

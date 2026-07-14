@@ -31,9 +31,15 @@ export function getAllBankAccounts() {
   return prisma.bankAccount.findMany({ orderBy: { sortOrder: "asc" } });
 }
 
-export function getSubmissions(status?: "PENDING" | "APPROVED" | "REJECTED") {
+export function getSubmissions(
+  status?: "PENDING" | "APPROVED" | "REJECTED",
+  purpose?: "WALLET_TOPUP" | "ORDER",
+) {
   return prisma.paymentSubmission.findMany({
-    where: status ? { status } : undefined,
+    where: {
+      ...(status ? { status } : {}),
+      ...(purpose ? { purpose } : {}),
+    },
     orderBy: { createdAt: "desc" },
     take: 100,
     include: {
@@ -48,8 +54,17 @@ export function getPendingSubmissionCount() {
   return prisma.paymentSubmission.count({ where: { status: "PENDING" } });
 }
 
-export function getAllOrders() {
+type OrderStatusFilter =
+  | "PENDING"
+  | "PAID"
+  | "DELIVERED"
+  | "FAILED"
+  | "REFUNDED"
+  | "CANCELLED";
+
+export function getAllOrders(status?: OrderStatusFilter) {
   return prisma.order.findMany({
+    where: status ? { status } : undefined,
     orderBy: { createdAt: "desc" },
     take: 100,
     include: {
@@ -57,6 +72,53 @@ export function getAllOrders() {
       user: { select: { name: true, email: true } },
     },
   });
+}
+
+// Orders with an unread customer message, so the list can flag them.
+export async function getUnreadOrderMessages() {
+  const rows = await prisma.orderMessage.groupBy({
+    by: ["orderId"],
+    where: { isStaff: false, readByStaff: false },
+    _count: { _all: true },
+  });
+  return new Map(rows.map((r) => [r.orderId, r._count?._all ?? 0]));
+}
+
+// Everything an admin needs on one screen: customer, items, proofs and chat.
+// Opening the thread marks the customer's messages as seen.
+export async function getAdminOrderDetail(ref: string) {
+  const order = await prisma.order.findUnique({
+    where: { ref },
+    include: {
+      items: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          email: true,
+          walletBalance: true,
+        },
+      },
+      paymentSubmissions: {
+        orderBy: { createdAt: "desc" },
+        include: { bankAccount: true },
+      },
+      walletTransactions: true,
+      messages: {
+        orderBy: { createdAt: "asc" },
+        include: { author: { select: { name: true } } },
+      },
+    },
+  });
+  if (!order) return null;
+
+  await prisma.orderMessage.updateMany({
+    where: { orderId: order.id, isStaff: false, readByStaff: false },
+    data: { readByStaff: true },
+  });
+
+  return order;
 }
 
 export function getAllUsers() {

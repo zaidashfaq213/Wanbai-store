@@ -37,15 +37,6 @@ function orderRef() {
   return `WB-${randomBytes(4).toString("hex").toUpperCase()}`;
 }
 
-/** Mock fulfillment — the real delivery engine + supplier APIs land in M4. */
-function fulfill(deliveryType: "TOPUP" | "CODE" | "SERVICE") {
-  if (deliveryType === "CODE") {
-    const seg = () => randomBytes(2).toString("hex").toUpperCase();
-    return `${seg()}-${seg()}-${seg()}-${seg()}`;
-  }
-  return null; // top-ups / services are marked delivered without a code
-}
-
 export async function createOrder(input: CheckoutInput): Promise<CheckoutResult> {
   const parsed = checkoutSchema.safeParse(input);
   if (!parsed.success) return { ok: false, code: "invalid_input" };
@@ -60,7 +51,8 @@ export async function createOrder(input: CheckoutInput): Promise<CheckoutResult>
 
   const ref = orderRef();
 
-  // --- Wallet checkout: pay + deliver immediately ---
+  // --- Wallet checkout: debit balance + mark PAID. Admin fulfils manually
+  // (enters the real code), matching the no-API model. ---
   if (paymentMethod === "WALLET") {
     if (!user) return { ok: false, code: "requires_auth" };
 
@@ -72,14 +64,13 @@ export async function createOrder(input: CheckoutInput): Promise<CheckoutResult>
       return { ok: false, code: "insufficient_funds" };
     }
 
-    const deliveredCode = fulfill(item.deliveryType);
     const order = await prisma.$transaction(async (tx) => {
       const created = await tx.order.create({
         data: {
           ref,
           userId: user.id,
           email,
-          status: "DELIVERED",
+          status: "PAID",
           paymentMethod: "WALLET",
           subtotal: total,
           total,
@@ -96,8 +87,6 @@ export async function createOrder(input: CheckoutInput): Promise<CheckoutResult>
               quantity: 1,
               deliveryType: item.deliveryType,
               inputs: item.inputs ?? undefined,
-              deliveredCode,
-              deliveredAt: new Date(),
             },
           },
         },
@@ -120,15 +109,15 @@ export async function createOrder(input: CheckoutInput): Promise<CheckoutResult>
         data: {
           userId: user.id,
           type: "ORDER",
-          title: `Order ${ref} delivered`,
-          body: `${item.productName} — ${item.packageLabel}`,
+          title: `Order ${ref} paid`,
+          body: `${item.productName} — ${item.packageLabel}. We're preparing it now.`,
           href: "/dashboard/orders",
         },
       });
       return created;
     });
 
-    return { ok: true, code: "order_delivered", orderRef: order.ref };
+    return { ok: true, code: "order_paid", orderRef: order.ref };
   }
 
   // --- Bank transfer: create a pending order; the customer then uploads a

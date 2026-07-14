@@ -1,6 +1,6 @@
 import "server-only";
 
-const MAX_BYTES = 3 * 1024 * 1024; // 3 MB
+const MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 const ALLOWED = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
 
 export type UploadResult =

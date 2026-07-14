@@ -1,87 +1,174 @@
-WANBAI-STORE — an Arabic-first (RTL), multi-currency digital-goods & game top-up
-store built with Next.js 16 (App Router), Tailwind v4, Prisma + PostgreSQL, and
-Auth.js v5.
+# WANBAI-STORE
 
-## Getting Started
+An Arabic-first (RTL), multi-currency **digital-goods & game top-up store** —
+game top-ups, gift cards, e-payment, activation keys, telecom recharge and app
+subscriptions — with **manual (no-API) fulfilment**.
 
-Use **Node 20/22/24 LTS** (see `.nvmrc`):
+Built with **Next.js 16** (App Router), **Tailwind v4**, **Prisma + PostgreSQL**,
+**Auth.js v5**.
+
+---
+
+## 1. Quick start
+
+Use **Node 20/22/24 LTS** (a `.nvmrc` is included):
 
 ```bash
-nvm use          # picks up .nvmrc
-npm install      # runs `prisma generate` automatically
+nvm use            # picks up .nvmrc
+npm install        # also runs `prisma generate`
+cp .env.example .env
+# → fill in DATABASE_URL (and AUTH_SECRET; a dev one is pre-generated)
+npx prisma db push # create all tables
+npm run db:seed    # demo data: users, banks, catalog, pages, FAQs, blog
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open <http://localhost:3000> (redirects to `/ar`, the default locale).
 
-## Milestone 3 — Accounts, Wallet & Checkout (backend setup)
+> **Important:** after **any** Prisma schema change you must **restart the dev
+> server** — the generated client lives in `node_modules` and Turbopack caches it.
 
-M3 adds authentication, a user dashboard, a wallet, favorites, notifications and
-order creation. It needs a PostgreSQL database.
+### Seeded logins
 
-1. **Configure env** — copy `.env.example` to `.env` and fill in:
-   - `DATABASE_URL` — your PostgreSQL connection string.
-   - `AUTH_SECRET` — generate with `npx auth secret` (a dev value is pre-filled).
-   - `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET`, `AUTH_FACEBOOK_ID` /
-     `AUTH_FACEBOOK_SECRET` — optional; the login buttons only appear when set.
-   - `SMTP_*` — optional; without them, password-reset links are logged to the
-     server console instead of emailed.
+| Role | Email | Password |
+| --- | --- | --- |
+| Admin | `admin@wanbai.store` | `admin123` |
+| Customer | `demo@wanbai.store` | `password123` |
 
-2. **Create the tables**:
+---
 
-   ```bash
-   npx prisma migrate dev --name init   # or: npm run db:push for a quick sync
-   ```
+## 2. Environment
 
-3. **(Optional) seed a demo account** — `demo@wanbai.store` / `password123`:
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `DATABASE_URL` | ✅ | PostgreSQL connection string |
+| `AUTH_SECRET` | ✅ | Auth.js session secret (`npx auth secret`) |
+| `AUTH_URL` | ✅ | Public base URL — used for OAuth callbacks, email links, sitemap |
+| `AUTH_GOOGLE_ID` / `AUTH_GOOGLE_SECRET` | – | Google sign-in (button hidden until set) |
+| `AUTH_FACEBOOK_ID` / `AUTH_FACEBOOK_SECRET` | – | Facebook sign-in |
+| `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASSWORD` / `SMTP_FROM` | – | Outgoing email |
 
-   ```bash
-   npm run db:seed
-   ```
+Without SMTP the app still works: verification codes, password-reset links and
+delivery emails are **printed to the server console** instead of being sent.
 
-4. `npm run dev`, then visit `/en/signup` or `/en/login`.
+---
 
-### Useful scripts
+## 3. How the store works (manual model)
+
+There are **no supplier APIs**. Every order is fulfilled by a human admin.
+
+**Money comes in one of two ways:**
+
+1. **Wallet top-up** — customer picks an amount + one of the banks
+   (O-Cash / MyCashi / BOK), transfers the money, uploads a **screenshot**.
+   Admin reviews it → **approves** → wallet is credited.
+2. **Direct bank payment for an order** — customer buys a product, chooses
+   "Bank transfer", uploads the screenshot for that order. Admin approves → order
+   becomes `PAID`.
+
+**Buying:** on the product page the customer picks a package (price), then pays
+either **from wallet** (instant debit → order `PAID`) or **by bank transfer**
+(order `PENDING` until the screenshot is approved). Guests are asked to sign in.
+
+**Fulfilment:** in **Admin → Orders**, the admin enters the real code / note and
+clicks *Mark delivered*. The customer gets an **email** plus an in-app
+notification, and the code appears under *My Orders*.
+
+**Refunds:** Admin → Orders → *Refund* credits the amount back to the wallet.
+
+Screenshots are stored in the database (base64) — no object storage needed.
+Upload limit: **5 MB** (PNG / JPG / WebP).
+
+---
+
+## 4. Admin panel — `/[lang]/admin`
+
+Sign in at **`/[lang]/admin/login`** with an `ADMIN` account.
+
+| Section | What you can do |
+| --- | --- |
+| **Overview** | Pending payments, active orders, users, **revenue + top products** |
+| **Payments** | Review payment **screenshots**; approve / reject (filter by status & type) |
+| **Orders** | **Manually fulfil** (enter code) · change status · **refund** · filter · **View & chat**: open an order to see the customer, their inputs, payment screenshots, and **chat with the buyer** about that order |
+| **Products** | Create / edit / delete products, **edit package prices**, variants |
+| **Categories** | Create / edit / delete storefront categories |
+| **Tickets** | Reply to support tickets, close / reopen |
+| **Reviews** | Moderate customer reviews (hide / delete) |
+| **Pages** | Edit the CMS/legal pages (About, Terms, Privacy, Return, Cookie, GDPR) |
+| **Blog** | Write and publish articles |
+| **Help FAQs** | Manage the help-center questions |
+| **Bank Accounts** | Your payout banks — **put the real account numbers here** |
+| **Users** | **View** a user (orders, payments, wallet history), adjust wallet, delete |
+| **Settings** | WhatsApp / Telegram / email + social links shown across the site |
+
+---
+
+## 5. Catalog
+
+The catalog is **fully database-driven and admin-managed** (nothing is
+hardcoded). `lib/data/catalog-static.ts` only exists to seed the DB the first
+time; at runtime everything is read through `lib/data/catalog-db.ts`.
+
+Prices are stored in **USD cents**; the storefront converts them for display via
+the currency selector (USD / EGP / SDG).
+
+---
+
+## 6. Scripts
 
 | Script | Purpose |
 | --- | --- |
-| `npm run db:migrate` | Create/apply migrations (`prisma migrate dev`) |
-| `npm run db:push` | Push schema without a migration |
-| `npm run db:studio` | Open Prisma Studio |
-| `npm run db:seed` | Seed the demo user |
+| `npm run dev` | Dev server |
+| `npm run build` | Production build |
+| `npm run db:push` | Sync schema to the DB (no migration file) |
+| `npm run db:migrate` | Create + apply a migration |
+| `npm run db:seed` | Seed demo data (safe to re-run — it upserts) |
+| `npm run db:studio` | Prisma Studio |
+| `npm run lint` | ESLint |
 
-### What's in M3
+---
 
-- **Auth**: email/password + Google/Facebook OAuth + password reset (Auth.js v5,
-  Prisma adapter, bcrypt).
-- **Dashboard** (`/[lang]/dashboard`): overview, orders, favorites,
-  notifications, wallet, profile — guarded; guests are redirected to login.
-- **Wallet**: USD-cents balance, top-up (demo), transaction history; usable at
-  checkout.
-- **Checkout**: guest + logged-in order creation from the product page. Wallet
-  payments complete + deliver instantly; card/gateway orders are created as
-  `PENDING` (real gateway lands in M4).
-- **Favorites & notifications** wired across the store (product Save button,
-  order/wallet events).
+## 7. Project structure
 
-Payment amounts are stored in **USD cents**; display conversion uses the existing
-currency selector.
+```
+app/[lang]/
+  (storefront)/        home, cards, product, search, help, contact, blog, pages
+  admin/(panel)/       admin back-office (guarded)
+  admin/login/         admin sign-in (outside the guard)
+  dashboard/           customer area (orders, wallet, favorites, tickets…)
+  login • signup • verify-email • forgot/reset-password
+components/            ui, layout, home, catalog, product, dashboard, admin, auth
+lib/
+  actions/             server actions (checkout, payments, catalog, content, …)
+  data/                DB read helpers
+  i18n/                dictionaries (ar.json / en.json) — both must stay in sync
+prisma/schema.prisma   database schema
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Everything is bilingual: **every user-facing string lives in
+`lib/i18n/dictionaries/{ar,en}.json`** and both files must have an identical
+shape.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## 8. SEO
 
-To learn more about Next.js, take a look at the following resources:
+- Per-page `<title>`, description, OpenGraph/Twitter tags and **canonical** URLs.
+- `app/sitemap.ts` → **`/sitemap.xml`** (all locales × categories, products,
+  pages, blog posts).
+- `app/robots.ts` → **`/robots.txt`** (blocks `/admin`, `/dashboard`, `/api`).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Set `AUTH_URL` to the live domain so these emit the correct absolute URLs.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 9. Deployment checklist
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Provision **PostgreSQL** and set `DATABASE_URL`.
+2. Set `AUTH_SECRET` and `AUTH_URL` (the real domain, `https://…`).
+3. Configure **SMTP** so customers receive codes and delivered orders.
+4. `npx prisma migrate deploy` (or `db push`), then `npm run db:seed` **once**.
+5. `npm run build && npm start`.
+6. In **Admin → Bank Accounts**, replace the placeholder account numbers.
+7. In **Admin → Settings**, add WhatsApp / Telegram / socials.
+8. Change the seeded admin password (or create a new admin and delete the demo).

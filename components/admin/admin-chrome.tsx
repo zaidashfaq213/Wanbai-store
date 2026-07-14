@@ -18,6 +18,9 @@ import {
   MenuIcon,
   ListIcon,
   StarIcon,
+  SupportIcon,
+  MailIcon,
+  GlobeIcon,
 } from "@/components/ui/icons";
 
 type NavKey = keyof Dictionary["admin"]["nav"];
@@ -30,6 +33,12 @@ const ICONS: Record<string, typeof GridIcon> = {
   categories: ListIcon,
   banks: ShieldIcon,
   users: UserIcon,
+  tickets: SupportIcon,
+  reviews: StarIcon,
+  pages: ListIcon,
+  blog: MailIcon,
+  faqs: SupportIcon,
+  settings: GlobeIcon,
 };
 
 export function AdminChrome({
@@ -39,6 +48,7 @@ export function AdminChrome({
   themeLabel,
   user,
   pending,
+  openTickets,
   children,
 }: {
   locale: Locale;
@@ -47,6 +57,7 @@ export function AdminChrome({
   themeLabel: string;
   user: { name: string; initial: string };
   pending: number;
+  openTickets: number;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -59,8 +70,14 @@ export function AdminChrome({
     { key: "orders", href: `${base}/orders` },
     { key: "products", href: `${base}/products` },
     { key: "categories", href: `${base}/categories` },
+    { key: "tickets", href: `${base}/tickets`, badge: openTickets },
+    { key: "reviews", href: `${base}/reviews` },
+    { key: "pages", href: `${base}/pages` },
+    { key: "blog", href: `${base}/blog` },
+    { key: "faqs", href: `${base}/faqs` },
     { key: "banks", href: `${base}/banks` },
     { key: "users", href: `${base}/users` },
+    { key: "settings", href: `${base}/settings` },
   ];
 
   const isActive = (href: string) =>

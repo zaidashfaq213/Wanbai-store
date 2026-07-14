@@ -14,7 +14,9 @@ import type {
 import { cn, formatPrice, formatCents } from "@/lib/utils";
 import { createOrder } from "@/lib/actions/checkout";
 import { toggleFavorite } from "@/lib/actions/account";
-import { BoltIcon, HeartIcon, ShareIcon } from "@/components/ui/icons";
+import { BoltIcon, HeartIcon, ShareIcon, UserIcon } from "@/components/ui/icons";
+import { OrderPaymentForm } from "@/components/dashboard/order-payment-form";
+import { type BankOption } from "@/components/dashboard/bank-topup";
 
 function defaultPackage(group: VariantGroup): Package {
   return group.packages.find((p) => p.popular) ?? group.packages[0];
@@ -38,6 +40,7 @@ export function PurchasePanel({
   dict,
   isAuthed,
   walletBalanceCents,
+  banks,
 }: {
   product: { slug: string; name: string; categorySlug: string };
   variantGroups: VariantGroup[];
@@ -48,12 +51,12 @@ export function PurchasePanel({
   dict: Dictionary;
   isAuthed: boolean;
   walletBalanceCents: number;
+  banks: BankOption[];
 }) {
   const router = useRouter();
   const [groupIdx, setGroupIdx] = useState(0);
   const [pkgId, setPkgId] = useState(() => defaultPackage(variantGroups[0]).id);
   const [values, setValues] = useState<Record<string, string>>({});
-  const [email, setEmail] = useState("");
   const [method, setMethod] = useState<"WALLET" | "BANK">("BANK");
   const [toast, setToast] = useState<string | null>(null);
   const [success, setSuccess] = useState<SuccessResult | null>(null);
@@ -87,17 +90,20 @@ export function PurchasePanel({
     return (code && map[code]) || c.errors.generic;
   }
 
+  function goLogin() {
+    router.push(`/${locale}/login?callbackUrl=/${locale}/product/${product.slug}`);
+  }
+
   function buyNow() {
+    if (!isAuthed) return goLogin();
     if (!pkg) return flash(p.needPackage);
     const missing = inputs.some((f) => f.required && !values[f.id]?.trim());
     if (missing) return flash(p.needFields);
-    if (!isAuthed && !email.trim()) return flash(c.errors.emailRequired);
 
     startTransition(async () => {
       const res = await createOrder({
         locale,
         currency: currency.code,
-        email: isAuthed ? undefined : email.trim(),
         paymentMethod: method,
         item: {
           productSlug: product.slug,
@@ -118,38 +124,45 @@ export function PurchasePanel({
   }
 
   if (success) {
-    const delivered = success.code === "order_delivered";
+    const isPending = success.code === "order_pending"; // bank transfer
     return (
-      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 text-center">
-        <div className="mx-auto grid size-12 place-items-center rounded-full bg-emerald-500/10 text-2xl">
-          {delivered ? "✅" : "🧾"}
-        </div>
-        <div>
-          <p className="text-lg font-black">
-            {delivered ? c.success.deliveredTitle : c.success.pendingTitle}
+      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5">
+        <div className="text-center">
+          <div className="mx-auto grid size-12 place-items-center rounded-full bg-emerald-500/10 text-2xl">
+            {isPending ? "🧾" : "✅"}
+          </div>
+          <p className="mt-2 text-lg font-black">
+            {isPending ? c.success.pendingTitle : c.success.paidTitle}
           </p>
           <p className="mt-1 text-sm text-muted">
             {c.success.orderRef}: <span className="font-bold">{success.orderRef}</span>
           </p>
-          <p className="mt-1 text-sm text-muted">
-            {delivered ? c.success.deliveredBody : c.success.pendingBody}
-          </p>
         </div>
-        {isAuthed ? (
-          <a
-            href={`/${locale}/dashboard/orders`}
-            className="rounded-xl brand-gradient py-3 text-sm font-bold text-white"
-          >
-            {c.success.viewOrders}
-          </a>
+
+        {/* Wallet-paid: preparing. Bank: show the transfer + screenshot form here. */}
+        {!isPending ? (
+          <>
+            <p className="text-center text-sm text-muted">{c.success.paidBody}</p>
+            <a
+              href={`/${locale}/dashboard/orders`}
+              className="rounded-xl brand-gradient py-3 text-center text-sm font-bold text-white"
+            >
+              {c.success.viewOrders}
+            </a>
+          </>
         ) : (
-          <a
-            href={`/${locale}/signup`}
-            className="rounded-xl brand-gradient py-3 text-sm font-bold text-white"
-          >
-            {c.success.createAccount}
-          </a>
+          <>
+            <p className="text-center text-sm text-muted">{dict.payments.pendingBody}</p>
+            <OrderPaymentForm
+              locale={locale}
+              dict={dict.payments}
+              banks={banks}
+              orderRef={success.orderRef}
+              defaultOpen
+            />
+          </>
         )}
+
         <button
           type="button"
           onClick={() => setSuccess(null)}
@@ -254,25 +267,11 @@ export function PurchasePanel({
         </p>
       )}
 
-      {/* Guest email */}
-      {!isAuthed && (
-        <label className="flex flex-col gap-1.5">
-          <span className="text-xs font-semibold text-muted">{c.guestEmail}</span>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder={c.guestEmailPlaceholder}
-            className="h-11 rounded-xl border border-border bg-surface-2 px-3 text-sm outline-none transition-colors placeholder:text-muted focus:border-primary/50 focus:bg-surface"
-          />
-        </label>
-      )}
-
-      {/* Payment method */}
-      <div>
-        <p className="mb-2 text-sm font-bold">{c.paymentMethod}</p>
-        <div className="grid gap-2">
-          {isAuthed && (
+      {/* Payment method (logged-in only) */}
+      {isAuthed && (
+        <div>
+          <p className="mb-2 text-sm font-bold">{c.paymentMethod}</p>
+          <div className="grid gap-2">
             <button
               type="button"
               onClick={() => canWallet && setMethod("WALLET")}
@@ -290,24 +289,24 @@ export function PurchasePanel({
                 {!canWallet && ` · ${c.errors.insufficientFunds}`}
               </span>
             </button>
-          )}
-          <button
-            type="button"
-            onClick={() => setMethod("BANK")}
-            className={cn(
-              "flex items-center justify-between rounded-xl border px-3.5 py-3 text-start transition-colors",
-              method === "BANK"
-                ? "border-primary bg-primary/5"
-                : "border-border hover:bg-surface-2",
-            )}
-          >
-            <span className="text-sm font-bold">{c.payGateway}</span>
-            <span className="text-xs text-muted">{c.payGatewayNote}</span>
-          </button>
+            <button
+              type="button"
+              onClick={() => setMethod("BANK")}
+              className={cn(
+                "flex items-center justify-between rounded-xl border px-3.5 py-3 text-start transition-colors",
+                method === "BANK"
+                  ? "border-primary bg-primary/5"
+                  : "border-border hover:bg-surface-2",
+              )}
+            >
+              <span className="text-sm font-bold">{c.payGateway}</span>
+              <span className="text-xs text-muted">{c.payGatewayNote}</span>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Total + buy */}
+      {/* Total + buy / sign-in */}
       <div className="rounded-2xl border border-border bg-surface p-4">
         <div className="mb-3 flex items-center justify-between">
           <span className="text-sm text-muted">{p.total}</span>
@@ -315,16 +314,32 @@ export function PurchasePanel({
             {pkg ? formatPrice(pkg.price, currency.symbol, currency.rate, locale) : "—"}
           </span>
         </div>
-        <button
-          type="button"
-          onClick={buyNow}
-          disabled={pending}
-          className="flex w-full items-center justify-center gap-2 rounded-xl brand-gradient py-3.5 text-base font-bold text-white shadow-sm transition-transform hover:scale-[1.01] disabled:opacity-60 disabled:hover:scale-100"
-        >
-          <BoltIcon className="size-5" />
-          {pending ? c.placingOrder : p.buyNow}
-        </button>
-        <p className="mt-2 text-center text-xs text-muted">{p.buyNote}</p>
+        {isAuthed ? (
+          <>
+            <button
+              type="button"
+              onClick={buyNow}
+              disabled={pending}
+              className="flex w-full items-center justify-center gap-2 rounded-xl brand-gradient py-3.5 text-base font-bold text-white shadow-sm transition-transform hover:scale-[1.01] disabled:opacity-60 disabled:hover:scale-100"
+            >
+              <BoltIcon className="size-5" />
+              {pending ? c.placingOrder : p.buyNow}
+            </button>
+            <p className="mt-2 text-center text-xs text-muted">{p.buyNote}</p>
+          </>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={goLogin}
+              className="flex w-full items-center justify-center gap-2 rounded-xl brand-gradient py-3.5 text-base font-bold text-white shadow-sm transition-transform hover:scale-[1.01]"
+            >
+              <UserIcon className="size-5" />
+              {c.signInToBuy}
+            </button>
+            <p className="mt-2 text-center text-xs text-muted">{c.signInHint}</p>
+          </>
+        )}
       </div>
 
       {/* Toast */}

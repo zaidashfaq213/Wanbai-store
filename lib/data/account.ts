@@ -31,6 +31,43 @@ export async function getOrders(userId: string) {
   });
 }
 
+// Full order view for the customer: items, payment proof history and the chat
+// thread with the admin. Opening the thread marks the staff replies as seen.
+export async function getOrderDetail(ref: string, userId: string) {
+  const order = await prisma.order.findFirst({
+    where: { ref, userId },
+    include: {
+      items: true,
+      paymentSubmissions: {
+        orderBy: { createdAt: "desc" },
+        include: { bankAccount: true },
+      },
+      messages: {
+        orderBy: { createdAt: "asc" },
+        include: { author: { select: { name: true } } },
+      },
+    },
+  });
+  if (!order) return null;
+
+  await prisma.orderMessage.updateMany({
+    where: { orderId: order.id, isStaff: true, readByUser: false },
+    data: { readByUser: true },
+  });
+
+  return order;
+}
+
+// Unread admin replies per order ref, so the orders list can badge a thread.
+export async function getUnreadOrderReplies(userId: string) {
+  const rows = await prisma.orderMessage.groupBy({
+    by: ["orderId"],
+    where: { isStaff: true, readByUser: false, order: { userId } },
+    _count: { _all: true },
+  });
+  return new Map(rows.map((r) => [r.orderId, r._count?._all ?? 0]));
+}
+
 export async function getFavorites(userId: string) {
   return prisma.favorite.findMany({
     where: { userId },

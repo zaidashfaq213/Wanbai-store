@@ -5,6 +5,7 @@ import { getCurrency } from "@/lib/data/currency";
 import { getAllUsers } from "@/lib/data/payments";
 import { formatCents, cn } from "@/lib/utils";
 import { PageHeader } from "@/components/dashboard/page-header";
+import { UserDetailModal } from "@/components/admin/user-detail-modal";
 
 export default async function AdminUsersPage({
   params,
@@ -13,12 +14,17 @@ export default async function AdminUsersPage({
 }) {
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  await requireAdmin(locale);
+  const admin = await requireAdmin(locale);
   const dict = await getDictionary(locale);
   const u = dict.admin.users;
   const roles = dict.admin.roles as Record<string, string>;
   const currency = await getCurrency();
   const users = await getAllUsers();
+  const labels = {
+    orderStatus: dict.admin.orders.statuses as Record<string, string>,
+    subStatus: dict.payments.statuses as Record<string, string>,
+    txType: dict.dashboard.wallet.types as Record<string, string>,
+  };
 
   return (
     <div>
@@ -38,6 +44,7 @@ export default async function AdminUsersPage({
                 <th className="p-3 text-start">{u.role}</th>
                 <th className="p-3 text-start">{u.wallet}</th>
                 <th className="p-3 text-start">{u.joined}</th>
+                <th className="p-3 text-end">{u.actions}</th>
               </tr>
             </thead>
             <tbody>
@@ -67,6 +74,15 @@ export default async function AdminUsersPage({
                     {new Date(user.createdAt).toLocaleDateString(
                       locale === "ar" ? "ar-EG" : "en-US",
                     )}
+                  </td>
+                  <td className="p-3 text-end">
+                    <UserDetailModal
+                      locale={locale}
+                      dict={u}
+                      currency={currency}
+                      labels={labels}
+                      user={{ id: user.id, isSelf: user.id === admin.id }}
+                    />
                   </td>
                 </tr>
               ))}
