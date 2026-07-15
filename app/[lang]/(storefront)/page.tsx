@@ -2,7 +2,9 @@ import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { getCurrency } from "@/lib/data/currency";
 import { getCategories, getProductsByCategory } from "@/lib/data/catalog-db";
+import { getSettings } from "@/lib/data/content";
 import { Container } from "@/components/ui/container";
+import { AppDownload } from "@/components/home/app-download";
 import { HeroSlider } from "@/components/home/hero-slider";
 import { TrustBar } from "@/components/home/trust-bar";
 import { CategoryStrip } from "@/components/home/category-strip";
@@ -21,6 +23,7 @@ export default async function HomePage({
   const dict = await getDictionary(locale);
   const currency = await getCurrency();
   const categories = await getCategories();
+  const settings = await getSettings();
   const showcases = await Promise.all(
     categories.map(async (category) => ({
       category,
@@ -50,6 +53,8 @@ export default async function HomePage({
           dict={dict}
         />
       ))}
+
+      <AppDownload dict={dict} logo={settings.logo} />
 
       <Testimonials dict={dict} locale={locale} />
       <Partners dict={dict} />

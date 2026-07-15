@@ -833,5 +833,27 @@
     "mustPurchase": "Only customers who bought this product can review it.",
     "alreadyReviewed": "You've already reviewed this product.",
     "error": "Couldn't submit. Please try again."
+  },
+  "appDownload": {
+    "badge": "Android App",
+    "heading": "Get the Wanbai Store app",
+    "subtitle": "Shop faster, track your orders and chat with support — right from your phone.",
+    "download": "Download for Android",
+    "meta": "APK file · Android 8.0 and up",
+    "featuresTitle": "Why the app?",
+    "features": [
+      "Instant order updates",
+      "Chat about every order",
+      "Wallet & top-ups on the go",
+      "One-tap faster checkout"
+    ],
+    "stepsTitle": "How to install",
+    "steps": [
+      "Tap “Download for Android” to save the APK file.",
+      "Open the downloaded file from your notifications or Files app.",
+      "If prompted, allow installs from “Unknown sources” for your browser.",
+      "Tap Install, then open Wanbai Store and sign in."
+    ],
+    "note": "Android only. The unknown-sources prompt is normal for any app installed outside Google Play."
   }
 }
