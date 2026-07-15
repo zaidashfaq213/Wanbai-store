@@ -4,7 +4,7 @@ import type { Dictionary } from "@/lib/i18n/dictionaries";
 import type { Category, Currency, Product } from "@/lib/data/catalog";
 import { cn } from "@/lib/utils";
 import { ProductCard } from "@/components/ui/product-card";
-import { ArrowIcon, SwipeIcon } from "@/components/ui/icons";
+import { ArrowIcon } from "@/components/ui/icons";
 
 export function CategoryShowcase({
   category,
@@ -36,10 +36,6 @@ export function CategoryShowcase({
           <h2 className="text-lg font-extrabold sm:text-xl">{category.name[locale]}</h2>
         </div>
         <div className="flex shrink-0 items-center gap-3">
-          <SwipeIcon
-            aria-hidden
-            className="size-5 animate-pulse text-muted sm:hidden"
-          />
           <Link
             href={`/${locale}/cards/${category.slug}`}
             className="inline-flex items-center gap-1 text-sm font-bold text-primary transition-colors hover:text-primary-strong"
@@ -49,20 +45,16 @@ export function CategoryShowcase({
           </Link>
         </div>
       </div>
-      {/* Mobile: one swipeable row. sm+: responsive grid. */}
-      <div className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 no-scrollbar sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-3 sm:overflow-visible sm:px-0 lg:grid-cols-6">
+      {/* Responsive grid: 2 columns on phones, scaling up to 6 on desktop. */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {items.map((product) => (
-          <div
+          <ProductCard
             key={product.slug}
-            className="w-[42vw] max-w-44 shrink-0 snap-start sm:w-auto sm:max-w-none"
-          >
-            <ProductCard
-              product={product}
-              locale={locale}
-              currency={currency}
-              dict={dict}
-            />
-          </div>
+            product={product}
+            locale={locale}
+            currency={currency}
+            dict={dict}
+          />
         ))}
       </div>
     </section>

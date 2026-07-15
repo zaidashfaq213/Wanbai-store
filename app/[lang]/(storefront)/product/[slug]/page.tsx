@@ -24,6 +24,8 @@ import { Accordion } from "@/components/ui/accordion";
 import { ReviewsSection } from "@/components/product/reviews-section";
 import { PurchasePanel, ShareSaveButtons } from "@/components/product/purchase-panel";
 import { BoltIcon, MailIcon, ShieldIcon } from "@/components/ui/icons";
+import { JsonLd } from "@/components/seo/json-ld";
+import { abs, breadcrumbLd, productLd } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -37,11 +39,19 @@ export async function generateMetadata({
   const dict = await getDictionary(locale);
   const detail = await getProductDetail(slug);
   const name = product.name[locale];
+  const description = detail?.overview[locale] ?? dict.meta.description;
+  const image = product.image ?? `/products/${product.slug}.svg`;
   return {
-    title: `${name} | ${dict.brand.name}`,
-    description: detail?.overview[locale],
-    alternates: { canonical: `/${locale}/product/${slug}` },
-    openGraph: { title: `${name} | ${dict.brand.name}`, type: "website" },
+    title: name,
+    description,
+    alternates: { canonical: abs(`/${locale}/product/${slug}`) },
+    openGraph: {
+      title: `${name} | ${dict.brand.name}`,
+      description,
+      type: "website",
+      url: abs(`/${locale}/product/${slug}`),
+      images: [{ url: image.startsWith("data:") ? abs("/og.png") : abs(image) }],
+    },
   };
 }
 
@@ -100,6 +110,29 @@ export default async function ProductPage({
 
   return (
     <Container className="py-6 sm:py-8">
+      <JsonLd
+        data={[
+          productLd({
+            name: product.name[locale],
+            description: detail.overview[locale],
+            slug: product.slug,
+            locale,
+            image: product.image ?? `/products/${product.slug}.svg`,
+            priceUsd: product.priceFrom,
+            brandName: dict.brand.name,
+            rating: product.rating,
+            reviews: totalReviews,
+          }),
+          breadcrumbLd([
+            { name: dict.header.home, url: abs(`/${locale}`) },
+            { name: dict.catalog.title, url: abs(`/${locale}/cards`) },
+            ...(category
+              ? [{ name: category.name[locale], url: abs(`/${locale}/cards/${category.slug}`) }]
+              : []),
+            { name: product.name[locale], url: abs(`/${locale}/product/${product.slug}`) },
+          ]),
+        ]}
+      />
       <Breadcrumbs
         items={[
           { label: dict.header.home, href: `/${locale}` },

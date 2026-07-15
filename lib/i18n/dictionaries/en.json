@@ -1,7 +1,20 @@
 {
   "meta": {
     "title": "Wanbai Store | Instant Game Top-Ups & Digital Cards",
-    "description": "Wanbai Store sells game top-ups, gift cards and digital subscriptions with instant, secure delivery by email."
+    "description": "Wanbai Store sells game top-ups, gift cards and digital subscriptions with instant, secure delivery by email.",
+    "keywords": [
+      "Wanbai Store",
+      "game top-up",
+      "gift cards",
+      "Free Fire diamonds",
+      "PUBG UC",
+      "digital cards",
+      "game recharge",
+      "PayPal",
+      "subscriptions",
+      "Sudan",
+      "Egypt"
+    ]
   },
   "brand": {
     "name": "Wanbai Store",
@@ -646,13 +659,19 @@
         "pkgPrice": "Price (USD)",
         "newProduct": "New product",
         "createHint": "Default packages are generated automatically — edit their prices after creating.",
-        "createSubmit": "Create product"
+        "createSubmit": "Create product",
+        "imageUpload": "Upload image",
+        "imageUploadHint": "PNG, JPG or WebP up to 5 MB. Overrides the image path below.",
+        "currentImage": "Current image"
       },
       "errors": {
         "slug_taken": "That slug is already used.",
         "invalid_input": "Please check the form.",
         "requires_auth": "Not authorized.",
-        "saved": "Saved"
+        "saved": "Saved",
+        "image_too_large": "Image is larger than 5 MB.",
+        "image_bad_type": "Image must be PNG, JPG or WebP.",
+        "image_empty": "Choose an image."
       },
       "fulfillments": {
         "TOPUP": "Top-up",
@@ -719,7 +738,11 @@
         "youtube": "YouTube URL",
         "tiktok": "TikTok URL",
         "save": "Save",
-        "saved": "Saved"
+        "saved": "Saved",
+        "logo": "Site logo",
+        "logoHint": "PNG, JPG or WebP up to 5 MB. Leave empty to keep the current one.",
+        "currentLogo": "Current logo",
+        "removeLogo": "Remove logo (use default)"
       },
       "reviews": {
         "title": "Reviews",
@@ -758,7 +781,10 @@
       "errors": {
         "invalid_input": "Please check the form.",
         "slug_taken": "That slug is already used.",
-        "requires_auth": "Not authorized."
+        "requires_auth": "Not authorized.",
+        "logo_too_large": "Logo is larger than 5 MB.",
+        "logo_bad_type": "Logo must be PNG, JPG or WebP.",
+        "logo_empty": "Choose a logo image."
       }
     }
   },

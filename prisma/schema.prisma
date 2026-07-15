@@ -606,6 +606,9 @@ model TicketMessage {
 // Singleton row (id = "store") holding contact channels shown across the site.
 model StoreSettings {
   id           String   @id @default("store")
+  // Uploaded site logo as a base64 data URL (same storage model as payment
+  // proofs). Falls back to /logo.svg when unset.
+  logo         String?  @db.Text
   whatsapp     String?
   telegram     String?
   supportEmail String?

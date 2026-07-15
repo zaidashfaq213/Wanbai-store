@@ -1,6 +1,5 @@
 import type { MetadataRoute } from "next";
-
-const BASE = (process.env.AUTH_URL ?? "https://wanbai-store.tech").replace(/\/$/, "");
+import { SITE_URL as BASE } from "@/lib/seo";
 
 export default function robots(): MetadataRoute.Robots {
   return {

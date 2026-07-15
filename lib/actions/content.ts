@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/session";
 import { hasPurchased, hasReviewed } from "@/lib/data/content";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
+import { imageToDataUrl } from "@/lib/upload";
 
 function loc(v: string): Locale {
   return isLocale(v) ? v : defaultLocale;
@@ -184,7 +185,6 @@ export async function saveSettings(
   formData: FormData,
 ): Promise<ContentState> {
   if (!(await requireAdminUser())) return { ok: false, code: "requires_auth" };
-  const locale = loc(String(formData.get("locale") ?? ""));
   const parsed = settingsSchema.safeParse({
     whatsapp: formData.get("whatsapp") || undefined,
     telegram: formData.get("telegram") || undefined,
@@ -196,12 +196,27 @@ export async function saveSettings(
   });
   if (!parsed.success) return { ok: false, code: "invalid_input" };
 
+  // Logo: upload a new file, keep the current one, or clear it.
+  let logo: string | null | undefined; // undefined = leave unchanged
+  if (formData.get("removeLogo") === "on") {
+    logo = null;
+  } else {
+    const file = formData.get("logo");
+    if (file instanceof File && file.size > 0) {
+      const upload = await imageToDataUrl(file);
+      if (!upload.ok) return { ok: false, code: `logo_${upload.error}` };
+      logo = upload.dataUrl;
+    }
+  }
+
+  const data = { ...parsed.data, ...(logo !== undefined ? { logo } : {}) };
   await prisma.storeSettings.upsert({
     where: { id: "store" },
-    update: parsed.data,
-    create: { id: "store", ...parsed.data },
+    update: data,
+    create: { id: "store", ...data },
   });
-  revalidatePath(`/${locale}/admin/settings`);
+  // The logo shows in every storefront/admin layout, so refresh broadly.
+  revalidatePath("/", "layout");
   return { ok: true, code: "saved" };
 }
 

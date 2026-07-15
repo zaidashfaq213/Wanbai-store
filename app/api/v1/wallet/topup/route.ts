@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db";
-import { imageToDataUrl } from "@/lib/upload";
+import { imageToDataUrl, PROOF_MAX_BYTES } from "@/lib/upload";
 import { ok, fail, getApiUser, unauthorized } from "@/lib/api/core";
 
 // POST multipart/form-data: amountUsd, bankAccountId, senderName?, reference?, screenshot
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   const bank = await prisma.bankAccount.findUnique({ where: { id: bankAccountId } });
   if (!bank || !bank.active) return fail("invalid_bank");
 
-  const upload = await imageToDataUrl(form.get("screenshot"));
+  const upload = await imageToDataUrl(form.get("screenshot"), PROOF_MAX_BYTES);
   if (!upload.ok) return fail(`proof_${upload.error}`, 413);
 
   const submission = await prisma.paymentSubmission.create({

@@ -5,10 +5,13 @@ import { cn } from "@/lib/utils";
 export function Logo({
   locale,
   name,
+  src,
   className,
 }: {
   locale: Locale;
   name: string;
+  /** Admin-uploaded logo (data URL) — falls back to the bundled /logo.svg. */
+  src?: string | null;
   className?: string;
 }) {
   return (
@@ -19,7 +22,7 @@ export function Logo({
     >
       <span
         aria-hidden
-        style={{ backgroundImage: "url(/logo.svg)" }}
+        style={{ backgroundImage: `url(${src || "/logo.svg"})` }}
         className="size-9 shrink-0 rounded-xl bg-contain bg-center bg-no-repeat shadow-sm transition-transform group-hover:scale-105"
       />
       <span className="flex flex-col leading-none">

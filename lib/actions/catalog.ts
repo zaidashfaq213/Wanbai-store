@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/session";
 import { buildDetail, FULFILLMENT } from "@/lib/data/catalog-generate";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
+import { imageToDataUrl } from "@/lib/upload";
 
 function loc(v: string): Locale {
   return isLocale(v) ? v : defaultLocale;
@@ -87,6 +88,20 @@ export async function deleteCategory(formData: FormData) {
 
 // --- Products --------------------------------------------------------------
 
+// Product images are uploaded as files and stored as base64 data URLs (same
+// model as payment proofs / the logo) — no path typing, no object storage.
+async function resolveUploadedImage(
+  formData: FormData,
+): Promise<{ ok: true; value?: string } | { ok: false; error: string }> {
+  const file = formData.get("imageFile");
+  if (file instanceof File && file.size > 0) {
+    const up = await imageToDataUrl(file);
+    if (!up.ok) return { ok: false, error: `image_${up.error}` };
+    return { ok: true, value: up.dataUrl };
+  }
+  return { ok: true, value: undefined };
+}
+
 const productSchema = z.object({
   slug: z.string().trim().min(2).max(60).regex(/^[a-z0-9-]+$/),
   categoryId: z.string().min(1),
@@ -122,6 +137,9 @@ export async function createProduct(
   });
   if (!parsed.success) return { ok: false, code: "invalid_input" };
 
+  const upload = await resolveUploadedImage(formData);
+  if (!upload.ok) return { ok: false, code: upload.error };
+
   const exists = await prisma.product.findUnique({ where: { slug: parsed.data.slug } });
   if (exists) return { ok: false, code: "slug_taken" };
 
@@ -151,7 +169,7 @@ export async function createProduct(
       badgeAr: d.badgeAr,
       initial: d.initial,
       priceFrom: cents(d.priceFromUsd),
-      image: d.image || null,
+      image: upload.value ?? d.image ?? null,
       active: d.active,
       fulfillment: (FULFILLMENT[category.slug] ?? "code").toUpperCase() as
         | "TOPUP"
@@ -249,12 +267,27 @@ export async function updateProduct(
   });
   if (!parsed.success) return { ok: false, code: "invalid_input" };
 
+  const upload = await resolveUploadedImage(formData);
+  if (!upload.ok) return { ok: false, code: upload.error };
+
   const { id, priceFromUsd, image, ...rest } = parsed.data;
+
+  // Image: new upload wins; "remove" clears it; otherwise leave it untouched.
+  let imageUpdate: { image: string | null } | Record<string, never> = {};
+  if (formData.get("removeImage") === "on") {
+    imageUpdate = { image: null };
+  } else if (upload.value) {
+    imageUpdate = { image: upload.value };
+  } else if (image) {
+    imageUpdate = { image };
+  }
+
   await prisma.product.update({
     where: { id },
-    data: { ...rest, priceFrom: cents(priceFromUsd), image: image || null },
+    data: { ...rest, priceFrom: cents(priceFromUsd), ...imageUpdate },
   });
   revalidatePath(`/${locale}/admin/products/${id}`);
+  revalidatePath(`/${locale}/product`, "layout");
   return { ok: true, code: "saved" };
 }
 

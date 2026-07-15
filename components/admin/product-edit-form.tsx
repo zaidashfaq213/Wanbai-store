@@ -107,10 +107,32 @@ export function ProductEditForm({
           <span className="text-xs font-semibold text-muted">{dict.badgeAr}</span>
           <input name="badgeAr" defaultValue={product.badgeAr} dir="rtl" className={FIELD} />
         </label>
-        <label className="flex flex-col gap-1 sm:col-span-2">
-          <span className="text-xs font-semibold text-muted">{dict.image}</span>
-          <input name="image" defaultValue={product.image ?? ""} className={FIELD} />
-        </label>
+        <div className="flex flex-col gap-2 rounded-2xl border border-border bg-surface-2 p-4 sm:col-span-2">
+          <span className="text-xs font-semibold text-muted">{dict.imageUpload}</span>
+          <div className="flex items-center gap-4">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={product.image || `/products/${product.slug}.svg`}
+              alt={dict.currentImage}
+              className="size-16 shrink-0 rounded-xl border border-border bg-background object-contain p-1"
+            />
+            <div className="flex flex-1 flex-col gap-2">
+              <input
+                type="file"
+                name="imageFile"
+                accept="image/png,image/jpeg,image/webp"
+                className="text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary/10 file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-primary"
+              />
+              <span className="text-[11px] text-muted">{dict.imageUploadHint}</span>
+              {product.image && (
+                <label className="flex items-center gap-2 text-xs font-semibold text-muted">
+                  <input type="checkbox" name="removeImage" />
+                  {dict.delete}
+                </label>
+              )}
+            </div>
+          </div>
+        </div>
         <label className="flex flex-col gap-1">
           <span className="text-xs font-semibold text-muted">{dict.overviewEn}</span>
           <textarea name="overviewEn" rows={3} defaultValue={product.overviewEn} className={AREA} />

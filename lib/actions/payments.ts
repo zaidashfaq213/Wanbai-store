@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/session";
-import { imageToDataUrl } from "@/lib/upload";
+import { imageToDataUrl, PROOF_MAX_BYTES } from "@/lib/upload";
 import { sendMail } from "@/lib/mail";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 
@@ -46,7 +46,7 @@ export async function submitWalletTopUp(
   });
   if (!bank || !bank.active) return { ok: false, code: "invalid_bank" };
 
-  const upload = await imageToDataUrl(formData.get("screenshot"));
+  const upload = await imageToDataUrl(formData.get("screenshot"), PROOF_MAX_BYTES);
   if (!upload.ok) return { ok: false, code: `proof_${upload.error}` };
 
   await prisma.paymentSubmission.create({
@@ -98,7 +98,7 @@ export async function submitOrderPayment(
   });
   if (!bank || !bank.active) return { ok: false, code: "invalid_bank" };
 
-  const upload = await imageToDataUrl(formData.get("screenshot"));
+  const upload = await imageToDataUrl(formData.get("screenshot"), PROOF_MAX_BYTES);
   if (!upload.ok) return { ok: false, code: `proof_${upload.error}` };
 
   await prisma.paymentSubmission.create({

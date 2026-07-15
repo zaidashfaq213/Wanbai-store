@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
     "192.168.0.*",
     "10.0.0.*",
   ],
+  experimental: {
+    // Logo/product images are uploaded through Server Actions, which cap the
+    // request body at 1 MB by default — raise it so large images go through.
+    serverActions: { bodySizeLimit: "25mb" },
+  },
 };
 
 export default nextConfig;

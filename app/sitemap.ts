@@ -2,8 +2,7 @@ import type { MetadataRoute } from "next";
 import { locales } from "@/lib/i18n/config";
 import { getCategories, getAllProducts } from "@/lib/data/catalog-db";
 import { getPages, getPosts } from "@/lib/data/content";
-
-const BASE = (process.env.AUTH_URL ?? "https://wanbai-store.tech").replace(/\/$/, "");
+import { SITE_URL as BASE } from "@/lib/seo";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [categories, products, pages, posts] = await Promise.all([

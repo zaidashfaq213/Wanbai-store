@@ -7,6 +7,8 @@ import { getSessionUser } from "@/lib/auth/session";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
+import { JsonLd } from "@/components/seo/json-ld";
+import { organizationLd, websiteLd } from "@/lib/seo";
 
 // Chrome for the public storefront: header, footer and mobile bottom nav.
 // The dashboard and auth screens deliberately do NOT use this layout.
@@ -28,20 +30,35 @@ export default async function StorefrontLayout({
     ? sessionUser.name ?? sessionUser.email ?? null
     : null;
 
+  const socialLinks = [
+    settings.facebook,
+    settings.instagram,
+    settings.youtube,
+    settings.tiktok,
+  ].filter((v): v is string => Boolean(v));
+
   return (
     <div className="flex min-h-screen flex-col">
+      <JsonLd
+        data={[
+          organizationLd(dict.brand, socialLinks),
+          websiteLd(dict.brand, locale),
+        ]}
+      />
       <Header
         dict={dict}
         locale={locale}
         currencyCode={currency.code}
         accountName={accountName}
         categories={categories}
+        logo={settings.logo}
       />
       <main className="flex-1 pb-20 md:pb-0">{children}</main>
       <Footer
         dict={dict}
         locale={locale}
         categories={categories}
+        logo={settings.logo}
         socials={{
           whatsapp: settings.whatsapp,
           telegram: settings.telegram,

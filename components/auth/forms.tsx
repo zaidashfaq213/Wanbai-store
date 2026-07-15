@@ -58,17 +58,6 @@ function GoogleGlyph({ className }: { className?: string }) {
   );
 }
 
-function FacebookGlyph({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden>
-      <path
-        fill="#1877F2"
-        d="M24 12A12 12 0 1 0 10.13 23.85v-8.38H7.08V12h3.05V9.36c0-3.02 1.8-4.69 4.54-4.69 1.31 0 2.68.24 2.68.24v2.95h-1.51c-1.49 0-1.96.93-1.96 1.87V12h3.33l-.53 3.47h-2.8v8.38A12 12 0 0 0 24 12z"
-      />
-    </svg>
-  );
-}
-
 export function OAuthButtons({ dict, locale }: { dict: AuthDict; locale: Locale }) {
   return (
     <div className="flex flex-col gap-2.5">
@@ -78,14 +67,6 @@ export function OAuthButtons({ dict, locale }: { dict: AuthDict; locale: Locale 
         <button type="submit" className={OAUTH_BTN}>
           <GoogleGlyph className="size-5" />
           {dict.login.continueGoogle}
-        </button>
-      </form>
-      <form action={oauthLoginAction}>
-        <input type="hidden" name="provider" value="facebook" />
-        <input type="hidden" name="locale" value={locale} />
-        <button type="submit" className={OAUTH_BTN}>
-          <FacebookGlyph className="size-5" />
-          {dict.login.continueFacebook}
         </button>
       </form>
       <div className="my-1 flex items-center gap-3 text-xs text-muted">

@@ -44,6 +44,7 @@ const ICONS: Record<string, typeof GridIcon> = {
 export function AdminChrome({
   locale,
   brandName,
+  logo,
   dict,
   themeLabel,
   user,
@@ -53,6 +54,7 @@ export function AdminChrome({
 }: {
   locale: Locale;
   brandName: string;
+  logo?: string | null;
   dict: Dictionary["admin"];
   themeLabel: string;
   user: { name: string; initial: string };
@@ -90,7 +92,7 @@ export function AdminChrome({
       <Link href={`/${locale}`} className="mb-3 flex items-center gap-2.5 rounded-xl px-2 py-2">
         <span
           aria-hidden
-          style={{ backgroundImage: "url(/logo.svg)" }}
+          style={{ backgroundImage: `url(${logo || "/logo.svg"})` }}
           className="size-9 shrink-0 rounded-xl bg-contain bg-center bg-no-repeat"
         />
         <span className="flex flex-col leading-tight">

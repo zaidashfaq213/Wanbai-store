@@ -15,6 +15,8 @@ import { ViewToggle } from "@/components/catalog/view-toggle";
 import { Pagination } from "@/components/catalog/pagination";
 import { ProductCard } from "@/components/ui/product-card";
 import { ProductListRow } from "@/components/catalog/product-list-row";
+import { JsonLd } from "@/components/seo/json-ld";
+import { abs, breadcrumbLd } from "@/lib/seo";
 
 const PAGE_SIZE = 10;
 
@@ -30,10 +32,15 @@ export async function generateMetadata({
   if (!category) return {};
   const name = category.name[locale];
   return {
-    title: `${name} | ${dict.brand.name}`,
+    title: name,
     description: `${name} — ${dict.meta.description}`,
-    alternates: { canonical: `/${locale}/cards/${slug}` },
-    openGraph: { title: `${name} | ${dict.brand.name}`, type: "website" },
+    alternates: { canonical: abs(`/${locale}/cards/${slug}`) },
+    openGraph: {
+      title: `${name} | ${dict.brand.name}`,
+      description: `${name} — ${dict.meta.description}`,
+      type: "website",
+      url: abs(`/${locale}/cards/${slug}`),
+    },
   };
 }
 
@@ -63,6 +70,13 @@ export default async function CategoryPage({
 
   return (
     <Container className="py-6 sm:py-8">
+      <JsonLd
+        data={breadcrumbLd([
+          { name: dict.header.home, url: abs(`/${locale}`) },
+          { name: dict.catalog.title, url: abs(`/${locale}/cards`) },
+          { name: category.name[locale], url: abs(`/${locale}/cards/${slug}`) },
+        ])}
+      />
       <Breadcrumbs
         items={[
           { label: dict.header.home, href: `/${locale}` },

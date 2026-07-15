@@ -67,10 +67,12 @@ export type Currency = {
   rate: number; // multiplier from base USD
 };
 
+// Only the currencies we actively support. Add SDG (or others) back here once
+// a reliable exchange rate is in place — everything reads from this list, so
+// storefront selector, checkout and the mobile app pick up the change.
 export const currencies: Currency[] = [
   { code: "USD", symbol: "$", flag: "🇺🇸", rate: 1 },
   { code: "EGP", symbol: "ج.م", flag: "🇪🇬", rate: 48.5 },
-  { code: "SDG", symbol: "ج.س", flag: "🇸🇩", rate: 600 },
 ];
 
 export const partnerCount = 13;

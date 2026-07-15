@@ -26,12 +26,14 @@ export function Header({
   currencyCode,
   accountName,
   categories,
+  logo,
 }: {
   dict: Dictionary;
   locale: Locale;
   currencyCode: string;
   accountName?: string | null;
   categories: Category[];
+  logo?: string | null;
 }) {
   const [scrolled, setScrolled] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
@@ -71,7 +73,7 @@ export function Header({
           <MenuIcon className="size-5" />
         </button>
 
-        <Logo locale={locale} name={dict.brand.name} />
+        <Logo locale={locale} name={dict.brand.name} src={logo} />
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-1 lg:flex ltr:ml-2 rtl:mr-2">
@@ -171,7 +173,7 @@ export function Header({
           />
           <div className="absolute inset-y-0 w-80 max-w-[85vw] overflow-y-auto bg-surface p-4 shadow-[var(--shadow-pop)] ltr:left-0 rtl:right-0">
             <div className="mb-4 flex items-center justify-between">
-              <Logo locale={locale} name={dict.brand.name} />
+              <Logo locale={locale} name={dict.brand.name} src={logo} />
               <button
                 type="button"
                 onClick={() => setDrawerOpen(false)}

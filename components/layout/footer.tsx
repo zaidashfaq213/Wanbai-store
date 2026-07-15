@@ -27,11 +27,13 @@ export function Footer({
   locale,
   categories,
   socials: s,
+  logo,
 }: {
   dict: Dictionary;
   locale: Locale;
   categories: Category[];
   socials: FooterSocials;
+  logo?: string | null;
 }) {
   // Only render channels the admin has actually configured (Admin → Settings).
   const wa = s.whatsapp?.trim();
@@ -71,7 +73,7 @@ export function Footer({
     <footer className="mt-16 border-t border-border bg-surface">
       <Container className="grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-2">
-          <Logo locale={locale} name={dict.brand.name} />
+          <Logo locale={locale} name={dict.brand.name} src={logo} />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted">
             {dict.footer.blurb}
           </p>
