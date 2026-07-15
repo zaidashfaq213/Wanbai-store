@@ -8,23 +8,33 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 
+// Accept either the Auth.js-style names (AUTH_GOOGLE_ID/SECRET) or the names
+// Google Cloud Console shows (GOOGLE_CLIENT_ID/SECRET), so whichever the .env
+// uses just works.
+const GOOGLE_ID = process.env.AUTH_GOOGLE_ID ?? process.env.GOOGLE_CLIENT_ID;
+const GOOGLE_SECRET =
+  process.env.AUTH_GOOGLE_SECRET ?? process.env.GOOGLE_CLIENT_SECRET;
+const FACEBOOK_ID = process.env.AUTH_FACEBOOK_ID ?? process.env.FACEBOOK_CLIENT_ID;
+const FACEBOOK_SECRET =
+  process.env.AUTH_FACEBOOK_SECRET ?? process.env.FACEBOOK_CLIENT_SECRET;
+
 // Only enable an OAuth provider when its credentials are configured, so the
 // login page can hide buttons that aren't wired up yet.
 const oauthProviders: NextAuthConfig["providers"] = [];
-if (process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET) {
+if (GOOGLE_ID && GOOGLE_SECRET) {
   oauthProviders.push(
     Google({
-      clientId: process.env.AUTH_GOOGLE_ID,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET,
+      clientId: GOOGLE_ID,
+      clientSecret: GOOGLE_SECRET,
       allowDangerousEmailAccountLinking: true,
     }),
   );
 }
-if (process.env.AUTH_FACEBOOK_ID && process.env.AUTH_FACEBOOK_SECRET) {
+if (FACEBOOK_ID && FACEBOOK_SECRET) {
   oauthProviders.push(
     Facebook({
-      clientId: process.env.AUTH_FACEBOOK_ID,
-      clientSecret: process.env.AUTH_FACEBOOK_SECRET,
+      clientId: FACEBOOK_ID,
+      clientSecret: FACEBOOK_SECRET,
       allowDangerousEmailAccountLinking: true,
     }),
   );
@@ -32,10 +42,8 @@ if (process.env.AUTH_FACEBOOK_ID && process.env.AUTH_FACEBOOK_SECRET) {
 
 /** Which OAuth providers are active — used by the login/signup UI. */
 export const enabledOAuth = {
-  google: Boolean(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET),
-  facebook: Boolean(
-    process.env.AUTH_FACEBOOK_ID && process.env.AUTH_FACEBOOK_SECRET,
-  ),
+  google: Boolean(GOOGLE_ID && GOOGLE_SECRET),
+  facebook: Boolean(FACEBOOK_ID && FACEBOOK_SECRET),
 };
 
 const credentialsSchema = z.object({
