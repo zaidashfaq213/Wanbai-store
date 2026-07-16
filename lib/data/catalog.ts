@@ -67,11 +67,11 @@ export type Currency = {
   rate: number; // multiplier from base USD
 };
 
-// Only the currencies we actively support. Everything reads from this list —
-// storefront selector, checkout and the mobile app — so add another entry here
-// (with its USD multiplier as `rate`) to switch it back on.
+// Single-currency store: the Sudanese Pound is the base unit (rate 1), so every
+// price the admin enters is already in ج.س and shown exactly as typed — no
+// conversion. To add another currency later, give it a `rate` = units per SDG.
 export const currencies: Currency[] = [
-  { code: "SDG", symbol: "ج.س", flag: "🇸🇩", rate: 600 },
+  { code: "SDG", symbol: "ج.س", flag: "🇸🇩", rate: 1 },
 ];
 
 export const partnerCount = 13;

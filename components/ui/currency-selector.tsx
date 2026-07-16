@@ -12,6 +12,9 @@ export function CurrencySelector({ current }: { current: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const active = currencies.find((c) => c.code === current) ?? currencies[0];
 
+  // With a single supported currency there is nothing to switch — hide it.
+  if (currencies.length <= 1) return null;
+
   function choose(code: string) {
     setCookie("currency", code);
     setOpen(false);
