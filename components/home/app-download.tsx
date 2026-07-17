@@ -83,7 +83,8 @@ export function AppDownload({
           <div className="flex flex-col items-start gap-2">
             <a
               href={APK_PATH}
-              download
+              download="wanbai-store.apk"
+              type="application/vnd.android.package-archive"
               className="inline-flex items-center gap-2.5 rounded-2xl brand-gradient px-6 py-3.5 text-sm font-black text-white shadow-[var(--shadow-pop)] transition-transform hover:scale-[1.03]"
             >
               <DownloadGlyph className="size-5" />
