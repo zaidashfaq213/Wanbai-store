@@ -5,10 +5,10 @@ import type {
   ProductDetail,
   Fulfillment,
   VariantGroup,
-  InputField,
   Faq,
   Review,
 } from "./product-detail";
+import { inputsForProduct } from "./catalog-generate";
 import type {
   Category as DbCategory,
   Product as DbProduct,
@@ -175,11 +175,11 @@ export async function getProductDetail(slug: string): Promise<ProductDetail | nu
   const p = await prisma.product.findUnique({
     where: { slug },
     include: {
+      category: { select: { slug: true } },
       variantGroups: {
         orderBy: { sortOrder: "asc" },
         include: { packages: { orderBy: { sortOrder: "asc" } } },
       },
-      inputs: { orderBy: { sortOrder: "asc" } },
       faqs: { orderBy: { sortOrder: "asc" } },
       reviews: { orderBy: { sortOrder: "asc" } },
     },
@@ -201,13 +201,10 @@ export async function getProductDetail(slug: string): Promise<ProductDetail | nu
     })),
   }));
 
-  const inputs: InputField[] = p.inputs.map((i) => ({
-    id: i.key,
-    label: { ar: i.labelAr, en: i.labelEn },
-    placeholder: { ar: i.placeholderAr, en: i.placeholderEn },
-    kind: (i.kind as InputField["kind"]) ?? "text",
-    required: i.required,
-  }));
+  // Input fields are derived from the product's category/slug (single source of
+  // truth in catalog-generate), so the client's per-game requirements apply to
+  // every product — including already-seeded ones — without a DB migration.
+  const inputs = inputsForProduct(p.slug, p.category.slug);
 
   const faqs: Faq[] = p.faqs.map((f) => ({
     q: { ar: f.qAr, en: f.qEn },

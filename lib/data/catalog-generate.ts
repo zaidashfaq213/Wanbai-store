@@ -98,31 +98,70 @@ function subscriptionPackages(product: Product): Package[] {
 }
 
 const SOCIAL_TIERS = [1000, 5000, 10000, 25000];
-function servicePackages(product: Product): Package[] {
-  return SOCIAL_TIERS.map((q, i) => ({
-    id: `pkg-${i}`,
-    label: L(`${q.toLocaleString("ar-EG")}`, q.toLocaleString("en-US")),
-    sublabel: L("متابع / مشاهدة", "Followers / Views"),
-    price: r2(product.priceFrom * (q / 1000)),
-    popular: i === 1,
+// Each social-media product offers three services — followers, likes and
+// views — as separate choices, priced per 1,000.
+const SOCIAL_SERVICES: { id: string; name: Localized; sublabel: Localized; mult: number }[] = [
+  { id: "followers", name: L("المتابعون", "Followers"), sublabel: L("متابع", "Followers"), mult: 1 },
+  { id: "likes", name: L("الإعجابات", "Likes"), sublabel: L("إعجاب", "Likes"), mult: 0.6 },
+  { id: "views", name: L("المشاهدات", "Views"), sublabel: L("مشاهدة", "Views"), mult: 0.3 },
+];
+function serviceGroups(product: Product): VariantGroup[] {
+  return SOCIAL_SERVICES.map((svc) => ({
+    id: svc.id,
+    name: svc.name,
+    packages: SOCIAL_TIERS.map((q, i) => ({
+      id: `${svc.id}-${i}`,
+      label: L(q.toLocaleString("ar-EG"), q.toLocaleString("en-US")),
+      sublabel: svc.sublabel,
+      price: r2(product.priceFrom * (q / 1000) * svc.mult),
+      popular: i === 1,
+    })),
   }));
 }
+
+// Reusable fields (manual-fulfilment: we sign into the account or contact the
+// buyer, so some products ask for login details + a WhatsApp number).
+const F_EMAIL: InputField = { id: "email", label: L("البريد الإلكتروني", "Email"), placeholder: L("أدخل بريدك الإلكتروني", "Enter your email"), kind: "text", required: true };
+const F_PASSWORD: InputField = { id: "password", label: L("كلمة المرور", "Password"), placeholder: L("أدخل كلمة مرور الحساب", "Enter the account password"), kind: "text", required: true };
+const F_WHATSAPP: InputField = { id: "whatsapp", label: L("رقم الواتساب", "WhatsApp number"), placeholder: L("أدخل رقم الواتساب", "Enter your WhatsApp number"), kind: "text", required: true };
+const F_PLAYER_ID: InputField = { id: "playerId", label: L("معرّف اللاعب (ID)", "Player ID"), placeholder: L("أدخل معرّف اللاعب", "Enter your Player ID"), kind: "text", required: true };
+const F_AREA_ID: InputField = { id: "areaId", label: L("معرّف المنطقة (Zone)", "Area / Zone ID"), placeholder: L("مثال: 1234", "e.g. 1234"), kind: "text", required: true };
+
+// Games whose fulfilment needs account login (email + password + WhatsApp).
+const ACCOUNT_LOGIN_GAMES = new Set(["efootball", "clash-of-clans"]);
+// Games we fulfil by contacting the buyer (email + WhatsApp).
+const CONTACT_GAMES = new Set(["brawl-stars"]);
 
 function buildInputs(product: Product): InputField[] {
   const cat = product.category;
   if (cat === "game-fill") {
-    const inputs: InputField[] = [
-      { id: "playerId", label: L("معرّف اللاعب (ID)", "Player ID"), placeholder: L("أدخل معرّف اللاعب", "Enter your Player ID"), kind: "text", required: true },
-    ];
-    if (product.slug === "mobile-legends" || product.slug === "genshin-impact") {
-      inputs.push({ id: "server", label: L("السيرفر / الزون", "Server / Zone"), placeholder: L("مثال: 1234", "e.g. 1234"), kind: "text", required: true });
-    }
-    return inputs;
+    // Mobile Legends: Player ID + Area/Zone ID.
+    if (product.slug === "mobile-legends") return [F_PLAYER_ID, F_AREA_ID];
+    if (product.slug === "genshin-impact")
+      return [F_PLAYER_ID, { id: "server", label: L("السيرفر / الزون", "Server / Zone"), placeholder: L("مثال: America", "e.g. America"), kind: "text", required: true }];
+    // eFootball, Clash of Clans → login credentials + WhatsApp.
+    if (ACCOUNT_LOGIN_GAMES.has(product.slug)) return [F_EMAIL, F_PASSWORD, F_WHATSAPP];
+    // Brawl Stars → email + WhatsApp.
+    if (CONTACT_GAMES.has(product.slug)) return [F_EMAIL, F_WHATSAPP];
+    // Default top-up game → Player ID.
+    return [F_PLAYER_ID];
   }
   if (cat === "telecom") return [{ id: "phone", label: L("رقم الهاتف", "Phone number"), placeholder: L("أدخل رقم الهاتف", "Enter phone number"), kind: "text", required: true }];
   if (cat === "e-payment") return [{ id: "account", label: L("رقم الحساب", "Account number"), placeholder: L("أدخل رقم الحساب", "Enter account number"), kind: "text", required: true }];
   if (cat === "social-media") return [{ id: "profile", label: L("رابط الحساب", "Profile link"), placeholder: L("الصق رابط حسابك", "Paste your profile link"), kind: "text", required: true }];
+  // App subscriptions → email + WhatsApp.
+  if (cat === "app-subscriptions") return [F_EMAIL, F_WHATSAPP];
   return [];
+}
+
+/**
+ * Input fields for a product, derived from its category/slug. This is the
+ * single source of truth for what a buyer must enter — the storefront and the
+ * mobile API both read it, so updating the rules above applies everywhere
+ * (including already-seeded products) without a DB migration.
+ */
+export function inputsForProduct(slug: string, categorySlug: string): InputField[] {
+  return buildInputs({ slug, category: categorySlug } as Product);
 }
 
 function buildVariantGroups(product: Product): VariantGroup[] {
@@ -148,6 +187,9 @@ function buildVariantGroups(product: Product): VariantGroup[] {
     ];
   }
 
+  // Social media: separate Followers / Likes / Views service groups.
+  if (product.category === "social-media") return serviceGroups(product);
+
   let packages: Package[];
   let name: Localized;
   switch (product.category) {
@@ -155,7 +197,6 @@ function buildVariantGroups(product: Product): VariantGroup[] {
     case "app-subscriptions": packages = subscriptionPackages(product); name = L("اختر المدة", "Choose duration"); break;
     case "telecom":
     case "e-payment": packages = rechargePackages([5, 10, 20, 50, 100]); name = L("اختر القيمة", "Choose amount"); break;
-    case "social-media": packages = servicePackages(product); name = L("اختر الكمية", "Choose quantity"); break;
     default: packages = valueCardPackages([5, 10, 25, 50, 100]); name = L("اختر الفئة", "Choose denomination");
   }
   return [{ id: "default", name, packages }];

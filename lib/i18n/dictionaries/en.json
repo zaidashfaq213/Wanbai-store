@@ -662,7 +662,12 @@
         "createSubmit": "Create product",
         "imageUpload": "Upload image",
         "imageUploadHint": "PNG, JPG or WebP up to 5 MB. Overrides the image path below.",
-        "currentImage": "Current image"
+        "currentImage": "Current image",
+        "addGroup": "Add service / group",
+        "groupNameEn": "Group name (English)",
+        "groupNameAr": "Group name (Arabic)",
+        "deleteGroup": "Delete group",
+        "renameGroup": "Rename"
       },
       "errors": {
         "slug_taken": "That slug is already used.",

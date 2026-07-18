@@ -121,7 +121,7 @@ export async function setUserRole(formData: FormData) {
 
 const adjustSchema = z.object({
   userId: z.string().min(1),
-  amountUsd: z.coerce.number().min(-100000).max(100000),
+  amountUsd: z.coerce.number().min(-10_000_000).max(10_000_000),
   reason: z.string().trim().max(200).optional(),
 });
 
@@ -162,7 +162,7 @@ export async function adjustWallet(
         userId: parsed.data.userId,
         type: "WALLET",
         title: cents >= 0 ? "Wallet credited" : "Wallet adjusted",
-        body: `${cents >= 0 ? "+" : "−"}$${Math.abs(parsed.data.amountUsd).toFixed(2)}${parsed.data.reason ? ` — ${parsed.data.reason}` : ""}`,
+        body: `${cents >= 0 ? "+" : "−"}${Math.abs(parsed.data.amountUsd).toFixed(2)} ج.س${parsed.data.reason ? ` — ${parsed.data.reason}` : ""}`,
         href: "/dashboard/wallet",
       },
     }),

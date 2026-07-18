@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Locale } from "@/lib/i18n/config";
 import type { Product, Currency } from "@/lib/data/catalog";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { ProductArt } from "@/components/ui/product-card";
 import { StarRating } from "@/components/ui/star-rating";
 import { ArrowIcon, BoltIcon } from "@/components/ui/icons";
@@ -10,12 +10,12 @@ import { ArrowIcon, BoltIcon } from "@/components/ui/icons";
 export function ProductListRow({
   product,
   locale,
-  currency,
   dict,
 }: {
   product: Product;
   locale: Locale;
-  currency: Currency;
+  // Kept for call-site compatibility; the row no longer shows a price.
+  currency?: Currency;
   dict: Dictionary;
 }) {
   return (
@@ -48,13 +48,7 @@ export function ProductListRow({
           {product.badge[locale]}
         </span>
       </div>
-      <div className="flex flex-col items-end gap-2 ltr:text-right rtl:text-left">
-        <div className="leading-tight">
-          <span className="block text-[11px] text-muted">{dict.product.from}</span>
-          <span className="text-base font-extrabold text-primary">
-            {formatPrice(product.priceFrom, currency.symbol, currency.rate, locale)}
-          </span>
-        </div>
+      <div className="flex flex-col items-end justify-center gap-2 ltr:text-right rtl:text-left">
         <span className="inline-flex items-center gap-1 rounded-lg brand-gradient px-3 py-1.5 text-xs font-bold text-white">
           {dict.product.buyNow}
           <ArrowIcon className="size-3.5 rtl:rotate-180" />

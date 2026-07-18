@@ -19,7 +19,7 @@ export type PaymentState = { ok: boolean; code?: string };
 // ---------------------------------------------------------------------------
 
 const topUpSchema = z.object({
-  amountUsd: z.coerce.number().min(1).max(5000),
+  amountUsd: z.coerce.number().min(1).max(10_000_000),
   bankAccountId: z.string().min(1),
   senderName: z.string().trim().max(120).optional(),
   reference: z.string().trim().max(120).optional(),
@@ -161,7 +161,7 @@ export async function approveSubmission(formData: FormData) {
           userId: sub.userId,
           type: "WALLET",
           title: "Wallet top-up approved",
-          body: `$${(sub.amount / 100).toFixed(2)} added to your wallet.`,
+          body: `${(sub.amount / 100).toFixed(2)} ج.س added to your wallet.`,
           href: "/dashboard/wallet",
         },
       });
@@ -303,7 +303,7 @@ export async function refundOrder(formData: FormData) {
           userId: order.userId,
           type: "WALLET",
           title: `Order ${order.ref} refunded`,
-          body: `$${(order.total / 100).toFixed(2)} was added back to your wallet.`,
+          body: `${(order.total / 100).toFixed(2)} ج.س was added back to your wallet.`,
           href: "/dashboard/wallet",
         },
       });

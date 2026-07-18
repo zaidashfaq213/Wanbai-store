@@ -110,7 +110,7 @@ const productSchema = z.object({
   badgeEn: z.string().trim().max(40).default("Instant"),
   badgeAr: z.string().trim().max(40).default("تسليم فوري"),
   initial: z.string().trim().min(1).max(4),
-  priceFromUsd: z.coerce.number().min(0).max(100000),
+  priceFromUsd: z.coerce.number().min(0).max(10_000_000),
   image: z.string().trim().max(300).optional(),
   active: z.boolean(),
 });
@@ -232,7 +232,7 @@ const productUpdateSchema = z.object({
   badgeEn: z.string().trim().max(40),
   badgeAr: z.string().trim().max(40),
   initial: z.string().trim().min(1).max(4),
-  priceFromUsd: z.coerce.number().min(0).max(100000),
+  priceFromUsd: z.coerce.number().min(0).max(10_000_000),
   image: z.string().trim().max(300).optional(),
   fulfillment: z.enum(["TOPUP", "CODE", "SERVICE"]),
   overviewEn: z.string().trim().max(2000),
@@ -305,7 +305,7 @@ const packageSchema = z.object({
   id: z.string().min(1),
   labelEn: z.string().trim().min(1).max(80),
   labelAr: z.string().trim().min(1).max(80),
-  priceUsd: z.coerce.number().min(0).max(100000),
+  priceUsd: z.coerce.number().min(0).max(10_000_000),
   popular: z.boolean(),
 });
 
@@ -354,5 +354,63 @@ export async function deletePackage(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const productId = String(formData.get("productId") ?? "");
   await prisma.package.delete({ where: { id } });
+  revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${productId}`);
+}
+
+// --- Variant / service groups ----------------------------------------------
+// A product can offer several groups (e.g. social media: Followers / Likes /
+// Views). Admin can add, rename and remove them on any existing product.
+
+const groupSchema = z.object({
+  id: z.string().min(1),
+  nameEn: z.string().trim().min(1).max(60),
+  nameAr: z.string().trim().min(1).max(60),
+});
+
+export async function addVariantGroup(formData: FormData) {
+  if (!(await requireAdminUser())) return;
+  const productId = String(formData.get("productId") ?? "");
+  const nameEn = String(formData.get("nameEn") ?? "").trim() || "New group";
+  const nameAr = String(formData.get("nameAr") ?? "").trim() || "مجموعة جديدة";
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    include: { variantGroups: true },
+  });
+  if (!product) return;
+  // Seed with one starter package so the group is usable straight away.
+  await prisma.variantGroup.create({
+    data: {
+      productId,
+      nameEn,
+      nameAr,
+      sortOrder: product.variantGroups.length,
+      packages: { create: { labelEn: "New package", labelAr: "باقة جديدة", price: 100, sortOrder: 0 } },
+    },
+  });
+  revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${productId}`);
+}
+
+export async function updateVariantGroup(
+  _prev: CatalogState,
+  formData: FormData,
+): Promise<CatalogState> {
+  if (!(await requireAdminUser())) return { ok: false, code: "requires_auth" };
+  const parsed = groupSchema.safeParse({
+    id: formData.get("id"),
+    nameEn: formData.get("nameEn"),
+    nameAr: formData.get("nameAr"),
+  });
+  if (!parsed.success) return { ok: false, code: "invalid_input" };
+  const { id, ...rest } = parsed.data;
+  const g = await prisma.variantGroup.update({ where: { id }, data: rest });
+  revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${g.productId}`);
+  return { ok: true, code: "saved" };
+}
+
+export async function deleteVariantGroup(formData: FormData) {
+  if (!(await requireAdminUser())) return;
+  const id = String(formData.get("id") ?? "");
+  const productId = String(formData.get("productId") ?? "");
+  await prisma.variantGroup.delete({ where: { id } });
   revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${productId}`);
 }

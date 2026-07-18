@@ -7,6 +7,9 @@ import {
   updatePackage,
   addPackage,
   deletePackage,
+  addVariantGroup,
+  updateVariantGroup,
+  deleteVariantGroup,
   type CatalogState,
 } from "@/lib/actions/catalog";
 
@@ -70,6 +73,76 @@ function PackageRow({
   );
 }
 
+function GroupHeader({
+  locale,
+  dict,
+  productId,
+  group,
+}: {
+  locale: Locale;
+  dict: Dictionary["admin"]["catalog"]["products"];
+  productId: string;
+  group: PkgGroup;
+}) {
+  const [state, action, pending] = useActionState<CatalogState, FormData>(updateVariantGroup, { ok: false });
+  return (
+    <div className="flex flex-wrap items-end gap-2 border-b border-border pb-2">
+      <form action={action} className="flex flex-1 flex-wrap items-end gap-2">
+        <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="id" value={group.id} />
+        <label className="flex flex-col gap-0.5">
+          <span className="text-[10px] font-semibold text-muted">{dict.groupNameEn}</span>
+          <input name="nameEn" defaultValue={group.nameEn} className={`${FIELD} w-36`} />
+        </label>
+        <label className="flex flex-col gap-0.5">
+          <span className="text-[10px] font-semibold text-muted">{dict.groupNameAr}</span>
+          <input name="nameAr" defaultValue={group.nameAr} dir="rtl" className={`${FIELD} w-36`} />
+        </label>
+        <button type="submit" disabled={pending} className="h-9 rounded-lg border border-border px-3 text-xs font-bold hover:bg-surface-2 disabled:opacity-60">
+          {dict.renameGroup}
+        </button>
+        {state.ok && state.code === "saved" && <span className="pb-2 text-xs font-bold text-emerald-500">✓</span>}
+      </form>
+      <form action={deleteVariantGroup}>
+        <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="id" value={group.id} />
+        <input type="hidden" name="productId" value={productId} />
+        <button type="submit" className="h-9 rounded-lg border border-border px-2.5 text-xs font-bold text-red-500 hover:bg-red-500/10">
+          {dict.deleteGroup}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+function AddGroupForm({
+  locale,
+  dict,
+  productId,
+}: {
+  locale: Locale;
+  dict: Dictionary["admin"]["catalog"]["products"];
+  productId: string;
+}) {
+  return (
+    <form action={addVariantGroup} className="flex flex-wrap items-end gap-2 rounded-xl border border-dashed border-border p-2.5">
+      <input type="hidden" name="locale" value={locale} />
+      <input type="hidden" name="productId" value={productId} />
+      <label className="flex flex-col gap-0.5">
+        <span className="text-[10px] font-semibold text-muted">{dict.groupNameEn}</span>
+        <input name="nameEn" placeholder="Followers" className={`${FIELD} w-36`} />
+      </label>
+      <label className="flex flex-col gap-0.5">
+        <span className="text-[10px] font-semibold text-muted">{dict.groupNameAr}</span>
+        <input name="nameAr" placeholder="المتابعون" dir="rtl" className={`${FIELD} w-36`} />
+      </label>
+      <button type="submit" className="h-9 rounded-lg brand-gradient px-3 text-xs font-bold text-white">
+        + {dict.addGroup}
+      </button>
+    </form>
+  );
+}
+
 export function PackageEditor({
   locale,
   dict,
@@ -86,9 +159,7 @@ export function PackageEditor({
       <h3 className="font-extrabold">{dict.pricing}</h3>
       {groups.map((g) => (
         <div key={g.id} className="flex flex-col gap-2">
-          <p className="text-sm font-bold text-muted">
-            {locale === "ar" ? g.nameAr : g.nameEn}
-          </p>
+          <GroupHeader locale={locale} dict={dict} productId={productId} group={g} />
           {g.packages.map((pkg) => (
             <PackageRow key={pkg.id} locale={locale} dict={dict} productId={productId} pkg={pkg} />
           ))}
@@ -101,6 +172,7 @@ export function PackageEditor({
           </form>
         </div>
       ))}
+      <AddGroupForm locale={locale} dict={dict} productId={productId} />
     </div>
   );
 }

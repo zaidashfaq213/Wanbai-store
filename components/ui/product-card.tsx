@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Locale } from "@/lib/i18n/config";
 import type { Product, Currency } from "@/lib/data/catalog";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { BoltIcon, StarIcon } from "./icons";
 
 export function ProductArt({
@@ -33,12 +33,12 @@ export function ProductArt({
 export function ProductCard({
   product,
   locale,
-  currency,
   dict,
 }: {
   product: Product;
   locale: Locale;
-  currency: Currency;
+  // Kept for call-site compatibility; the card no longer shows a price.
+  currency?: Currency;
   dict: Dictionary;
 }) {
   return (
@@ -70,12 +70,6 @@ export function ProductCard({
           <span className="font-semibold text-foreground">{product.rating.toFixed(1)}</span>
           <span>
             ({product.reviews} {dict.product.reviews})
-          </span>
-        </div>
-        <div className="mt-auto flex items-baseline gap-1 pt-1">
-          <span className="text-[11px] text-muted">{dict.product.from}</span>
-          <span className="text-sm font-extrabold text-primary">
-            {formatPrice(product.priceFrom, currency.symbol, currency.rate, locale)}
           </span>
         </div>
       </div>

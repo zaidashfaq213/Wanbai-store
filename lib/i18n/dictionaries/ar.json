@@ -662,7 +662,12 @@
         "createSubmit": "إنشاء المنتج",
         "imageUpload": "رفع صورة",
         "imageUploadHint": "PNG أو JPG أو WebP حتى 5 ميجابايت. تتجاوز مسار الصورة أدناه.",
-        "currentImage": "الصورة الحالية"
+        "currentImage": "الصورة الحالية",
+        "addGroup": "إضافة خدمة / مجموعة",
+        "groupNameEn": "اسم المجموعة (بالإنجليزية)",
+        "groupNameAr": "اسم المجموعة (بالعربية)",
+        "deleteGroup": "حذف المجموعة",
+        "renameGroup": "إعادة تسمية"
       },
       "errors": {
         "slug_taken": "هذا المعرّف مستخدم بالفعل.",
