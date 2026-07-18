@@ -49,6 +49,13 @@ export async function generateMetadata({
       follow: true,
       googleBot: { index: true, follow: true, "max-image-preview": "large" },
     },
+    // Google Search Console ownership. Override via GOOGLE_SITE_VERIFICATION in
+    // .env; falls back to the token Google issued for this property.
+    verification: {
+      google:
+        process.env.GOOGLE_SITE_VERIFICATION ??
+        "7hgUrTE4u_MwurG3XSZnj9LbveMmGvIaeKkzfRepdNg",
+    },
     openGraph: {
       title: dict.meta.title,
       description: dict.meta.description,
