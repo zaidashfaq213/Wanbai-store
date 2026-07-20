@@ -5,20 +5,14 @@ import { locales, defaultLocale } from "./lib/i18n/config";
 const LOCALE_COOKIE = "NEXT_LOCALE";
 
 function resolveLocale(request: NextRequest): string {
+  // Respect an explicit choice saved by the language switcher (so a user who
+  // switches to English stays on English). Otherwise ALWAYS default to Arabic —
+  // we deliberately do NOT auto-detect the browser's Accept-Language, so every
+  // first-time visitor lands on the Arabic site.
   const cookieLocale = request.cookies.get(LOCALE_COOKIE)?.value;
   if (cookieLocale && (locales as readonly string[]).includes(cookieLocale)) {
     return cookieLocale;
   }
-
-  const accept = request.headers.get("accept-language") ?? "";
-  const preferred = accept
-    .split(",")
-    .map((part) => part.split(";")[0].trim().slice(0, 2).toLowerCase());
-
-  for (const lang of preferred) {
-    if ((locales as readonly string[]).includes(lang)) return lang;
-  }
-
   return defaultLocale;
 }
 

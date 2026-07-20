@@ -28,7 +28,8 @@ export function LanguageSwitcher({ locale }: { locale: Locale }) {
       title={localeLabels[other]}
     >
       <GlobeIcon className="size-[18px]" />
-      <span className="hidden sm:inline">{other.toUpperCase()}</span>
+      {/* Show the language you'd switch TO — e.g. "English" on the Arabic site. */}
+      <span className="hidden sm:inline">{localeLabels[other]}</span>
     </button>
   );
 }
