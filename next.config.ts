@@ -11,9 +11,19 @@ const nextConfig: NextConfig = {
     "10.0.0.*",
   ],
   experimental: {
-    // Logo/product images are uploaded through Server Actions, which cap the
-    // request body at 1 MB by default — raise it so large images go through.
-    serverActions: { bodySizeLimit: "25mb" },
+    serverActions: {
+      // Logo/product images are uploaded through Server Actions, which cap the
+      // request body at 1 MB by default — raise it so large images go through.
+      bodySizeLimit: "25mb",
+      // Behind a reverse proxy, Next validates the Server Action's Origin against
+      // the Host. List the production domain(s) here so live actions aren't
+      // rejected (this is what causes "A server error occurred" on every form).
+      allowedOrigins: [
+        "wanbai-store.tech",
+        "www.wanbai-store.tech",
+        "localhost:3000",
+      ],
+    },
   },
 };
 
