@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { cn } from "@/lib/utils";
-import { logoutAction } from "@/lib/auth/actions";
+import { LogoutButton } from "@/components/ui/logout-button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import {
   GridIcon,
@@ -135,15 +135,16 @@ export function AdminChrome({
       >
         {dict.nav.backToStore}
       </Link>
-      <form action={logoutAction}>
-        <input type="hidden" name="locale" value={locale} />
-        <button
-          type="submit"
-          className="w-full rounded-xl px-3 py-2.5 text-start text-sm font-semibold text-red-500 transition-colors hover:bg-red-500/10"
-        >
-          {dict.nav.logout}
-        </button>
-      </form>
+      <LogoutButton
+        locale={locale}
+        labels={{
+          logout: dict.nav.logout,
+          logoutTitle: dict.nav.logoutTitle,
+          logoutBody: dict.nav.logoutBody,
+          logoutConfirm: dict.nav.logoutConfirm,
+          logoutCancel: dict.nav.logoutCancel,
+        }}
+      />
     </div>
   );
 

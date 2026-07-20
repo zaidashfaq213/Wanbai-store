@@ -256,7 +256,11 @@
       "wallet": "Wallet",
       "profile": "Profile",
       "logout": "Log out",
-      "tickets": "Support"
+      "tickets": "Support",
+      "logoutTitle": "Log out?",
+      "logoutBody": "You'll need to sign in again to access your account.",
+      "logoutConfirm": "Log out",
+      "logoutCancel": "Cancel"
     },
     "overview": {
       "balance": "Wallet balance",
@@ -465,7 +469,11 @@
       "blog": "Blog",
       "faqs": "Help FAQs",
       "settings": "Settings",
-      "reviews": "Reviews"
+      "reviews": "Reviews",
+      "logoutTitle": "Log out?",
+      "logoutBody": "You'll need to sign in again to access your account.",
+      "logoutConfirm": "Log out",
+      "logoutCancel": "Cancel"
     },
     "overview": {
       "subtitle": "Store operations at a glance",

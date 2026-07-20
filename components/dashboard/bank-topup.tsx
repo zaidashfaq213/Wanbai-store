@@ -19,7 +19,6 @@ export type BankOption = {
   logo?: string | null;
 };
 
-const PRESETS = [5, 10, 25, 50, 100];
 const FIELD =
   "h-11 w-full rounded-xl border border-border bg-surface-2 px-3.5 text-sm outline-none transition-colors placeholder:text-muted focus:border-primary/50 focus:bg-surface";
 
@@ -81,7 +80,7 @@ export function BankTopUp({
   dict: Dictionary["payments"];
   banks: BankOption[];
 }) {
-  const [amount, setAmount] = useState("10");
+  const [amount, setAmount] = useState("");
   const [bankId, setBankId] = useState(banks[0]?.id ?? "");
   const [preview, setPreview] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -138,31 +137,14 @@ export function BankTopUp({
       <input type="hidden" name="locale" value={locale} />
       <input type="hidden" name="bankAccountId" value={bankId} />
 
-      {/* Amount */}
+      {/* Amount — the user types it in (no presets) */}
       <div>
         <p className="mb-2 text-sm font-bold">{dict.amount}</p>
-        <div className="mb-2 grid grid-cols-5 gap-2">
-          {PRESETS.map((v) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => setAmount(String(v))}
-              className={cn(
-                "rounded-xl border py-2 text-sm font-bold transition-colors",
-                amount === String(v)
-                  ? "border-primary bg-primary/5 text-primary"
-                  : "border-border hover:bg-surface-2",
-              )}
-            >
-              ${v}
-            </button>
-          ))}
-        </div>
         <input
           name="amountUsd"
           type="number"
           min={1}
-          max={5000}
+          max={10000000}
           step="1"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}

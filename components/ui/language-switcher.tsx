@@ -1,20 +1,21 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { locales, localeLabels, type Locale } from "@/lib/i18n/config";
 import { setCookie } from "@/lib/utils";
 import { GlobeIcon } from "./icons";
 
 export function LanguageSwitcher({ locale }: { locale: Locale }) {
   const pathname = usePathname();
-  const router = useRouter();
 
   function switchTo(next: Locale) {
     if (next === locale) return;
     setCookie("NEXT_LOCALE", next);
     const segments = pathname.split("/");
     segments[1] = next; // replace the leading locale segment
-    router.push(segments.join("/") || `/${next}`);
+    // Full navigation (not router.push): guarantees the new locale, cookie and
+    // RTL/LTR direction on <html> all apply cleanly.
+    window.location.assign(segments.join("/") || `/${next}`);
   }
 
   const other = locales.find((l) => l !== locale)!;
