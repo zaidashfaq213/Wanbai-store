@@ -73,8 +73,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
   pages: {
     // Locale-prefixed guards are handled in the dashboard layout; this is the
-    // fallback path Auth.js redirects to for protected calls.
-    signIn: "/en/login",
+    // fallback path Auth.js redirects to for protected calls (Arabic default).
+    signIn: "/ar/login",
   },
   providers: [
     ...oauthProviders,
@@ -93,8 +93,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         });
         // No user, or an OAuth-only account without a password set.
         if (!user?.passwordHash) return null;
-        // Block sign-in until the signup email code has been verified.
-        if (!user.emailVerified) return null;
+        // Email verification is disabled — no emailVerified gate here.
 
         const ok = await bcrypt.compare(password, user.passwordHash);
         if (!ok) return null;

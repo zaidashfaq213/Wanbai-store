@@ -14,6 +14,7 @@ export async function GET() {
       instructionsEn: b.instructionsEn,
       instructionsAr: b.instructionsAr,
       color: b.color,
+      logo: b.logo,
     })),
   });
 }

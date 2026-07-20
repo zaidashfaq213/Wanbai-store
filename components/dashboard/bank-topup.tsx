@@ -16,6 +16,7 @@ export type BankOption = {
   instructionsEn: string | null;
   instructionsAr: string | null;
   color: string | null;
+  logo?: string | null;
 };
 
 const PRESETS = [5, 10, 25, 50, 100];
@@ -46,12 +47,21 @@ function BankTile({
           : "border-border bg-surface hover:border-primary/40",
       )}
     >
-      <span
-        className="grid size-11 shrink-0 place-items-center rounded-xl text-sm font-black text-white shadow-sm"
-        style={{ backgroundColor: bank.color ?? "#6d28d9" }}
-      >
-        {initials}
-      </span>
+      {bank.logo ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={bank.logo}
+          alt={name}
+          className="size-11 shrink-0 rounded-xl bg-white object-contain p-1 shadow-sm"
+        />
+      ) : (
+        <span
+          className="grid size-11 shrink-0 place-items-center rounded-xl text-sm font-black text-white shadow-sm"
+          style={{ backgroundColor: bank.color ?? "#6d28d9" }}
+        >
+          {initials}
+        </span>
+      )}
       <span className="min-w-0">
         <span className="block truncate text-sm font-bold">{name}</span>
         <span className="block truncate text-xs text-muted" dir="ltr">

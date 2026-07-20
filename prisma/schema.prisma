@@ -330,6 +330,7 @@ model BankAccount {
   instructionsEn String?
   instructionsAr String?
   color          String? // brand color used on the payment card
+  logo           String? @db.Text // uploaded bank logo as a base64 data URL
   active         Boolean @default(true)
   sortOrder      Int     @default(0)
 

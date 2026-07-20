@@ -566,7 +566,11 @@
       "color": "Color",
       "nameEn": "Name (English)",
       "nameAr": "Name (Arabic)",
-      "invalid": "Please check the form."
+      "invalid": "Please check the form.",
+      "logo": "Logo",
+      "uploadLogo": "Upload logo",
+      "removeLogo": "Remove logo",
+      "logoHint": "PNG, JPG or WebP up to 5 MB."
     },
     "users": {
       "title": "Users",

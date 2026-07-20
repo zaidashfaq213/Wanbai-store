@@ -19,6 +19,7 @@ export type BankRow = {
   instructionsEn: string | null;
   instructionsAr: string | null;
   color: string | null;
+  logo: string | null;
   active: boolean;
 };
 
@@ -42,12 +43,21 @@ export function BankEditForm({
       <input type="hidden" name="locale" value={locale} />
 
       <div className="flex items-center gap-3">
-        <span
-          className="grid size-10 place-items-center rounded-xl text-sm font-black text-white"
-          style={{ backgroundColor: bank.color ?? "#6d28d9" }}
-        >
-          {bank.nameEn.replace(/[^A-Za-z]/g, "").slice(0, 2).toUpperCase()}
-        </span>
+        {bank.logo ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={bank.logo}
+            alt={bank.nameEn}
+            className="size-10 rounded-xl object-contain"
+          />
+        ) : (
+          <span
+            className="grid size-10 place-items-center rounded-xl text-sm font-black text-white"
+            style={{ backgroundColor: bank.color ?? "#6d28d9" }}
+          >
+            {bank.nameEn.replace(/[^A-Za-z]/g, "").slice(0, 2).toUpperCase()}
+          </span>
+        )}
         <div>
           <p className="font-bold">{locale === "ar" ? bank.nameAr : bank.nameEn}</p>
           <p className="text-xs text-muted">{bank.key}</p>
@@ -56,6 +66,25 @@ export function BankEditForm({
           <span className="text-sm font-bold text-emerald-500 ltr:ml-auto rtl:mr-auto">
             {dict.saved}
           </span>
+        )}
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="flex flex-col gap-1">
+          <span className="text-xs font-semibold text-muted">{dict.uploadLogo}</span>
+          <input
+            type="file"
+            name="logo"
+            accept="image/png,image/jpeg,image/webp"
+            className="text-sm file:me-3 file:rounded-lg file:border-0 file:bg-surface-2 file:px-3 file:py-2 file:text-sm file:font-bold"
+          />
+          <span className="text-[11px] text-muted">{dict.logoHint}</span>
+        </label>
+        {bank.logo && (
+          <label className="flex items-center gap-2 self-end pb-2 text-sm font-semibold">
+            <input type="checkbox" name="removeLogo" className="size-4 accent-[var(--color-primary)]" />
+            {dict.removeLogo}
+          </label>
         )}
       </div>
 

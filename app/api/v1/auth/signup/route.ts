@@ -1,8 +1,7 @@
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
-import { issueVerificationCode } from "@/lib/auth/codes";
-import { ok, fail } from "@/lib/api/core";
+import { ok, fail, signToken } from "@/lib/api/core";
 
 const schema = z.object({
   name: z.string().trim().min(2).max(80),
@@ -26,11 +25,24 @@ export async function POST(req: Request) {
   if (await prisma.user.findUnique({ where: { email } })) return fail("email_taken", 409);
   if (await prisma.user.findUnique({ where: { username } })) return fail("username_taken", 409);
 
-  await prisma.user.create({
-    data: { name, username, email, passwordHash: await bcrypt.hash(password, 12) },
+  // Email verification is disabled: create the account already verified and
+  // return a token so the app is signed in immediately.
+  const user = await prisma.user.create({
+    data: {
+      name,
+      username,
+      email,
+      passwordHash: await bcrypt.hash(password, 12),
+      emailVerified: new Date(),
+    },
   });
-  await issueVerificationCode(email);
 
-  // Account exists but is unverified — the app now asks for the 6-digit code.
-  return ok({ verificationRequired: true, email }, 201);
+  const token = await signToken(user.id, user.role);
+  return ok(
+    {
+      token,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+    },
+    201,
+  );
 }

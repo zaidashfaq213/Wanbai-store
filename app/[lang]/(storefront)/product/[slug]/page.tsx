@@ -97,6 +97,7 @@ export default async function ProductPage({
     instructionsEn: b.instructionsEn,
     instructionsAr: b.instructionsAr,
     color: b.color,
+    logo: b.logo,
   }));
   const totalReviews = detail.ratingBreakdown.reduce((a, b) => a + b, 0);
   const p = dict.product;

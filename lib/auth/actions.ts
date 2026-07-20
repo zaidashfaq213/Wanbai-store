@@ -90,15 +90,19 @@ export async function signupAction(
   if (usernameTaken) return { ok: false, code: "username_taken" };
 
   const passwordHash = await bcrypt.hash(password, 12);
-  // Create the account as unverified; access is gated until the emailed code
-  // is confirmed on the verify-email page.
+  // Email verification is disabled: create the account already verified and
+  // sign the user straight in.
   await prisma.user.create({
-    data: { name, username, email, passwordHash, preferredLocale: locale },
+    data: { name, username, email, passwordHash, preferredLocale: locale, emailVerified: new Date() },
   });
-  await issueVerificationCode(email);
 
-  // redirect() throws NEXT_REDIRECT which propagates out of the action.
-  redirect(`/${locale}/verify-email?email=${encodeURIComponent(email)}`);
+  try {
+    await signIn("credentials", { email, password, redirectTo: `/${locale}/dashboard` });
+  } catch (error) {
+    if (error instanceof AuthError) return { ok: false, code: "invalid_credentials" };
+    throw error;
+  }
+  return { ok: true };
 }
 
 const verifySchema = z.object({
@@ -178,22 +182,6 @@ export async function loginAction(
     password: formData.get("password"),
   });
   if (!parsed.success) return { ok: false, code: "invalid_credentials" };
-
-  // Give unverified users a clear message (and a resend path) instead of a
-  // generic "invalid credentials" from the credentials provider.
-  const account = await prisma.user.findUnique({
-    where: { email: parsed.data.email },
-  });
-  if (account?.passwordHash && !account.emailVerified) {
-    const match = await bcrypt.compare(parsed.data.password, account.passwordHash);
-    if (match) {
-      // Re-issue a code and send them to the verify page (redirect throws).
-      await issueVerificationCode(parsed.data.email);
-      redirect(
-        `/${locale}/verify-email?email=${encodeURIComponent(parsed.data.email)}&notice=unverified`,
-      );
-    }
-  }
 
   // Only allow a small allow-list of post-login destinations (no open redirect).
   const next = String(formData.get("next") ?? "");

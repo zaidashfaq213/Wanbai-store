@@ -365,8 +365,24 @@ export async function updateBankAccount(
   });
   if (!parsed.success) return { ok: false, code: "invalid_input" };
 
+  // Logo: upload a new file, keep the current one, or clear it.
+  let logo: string | null | undefined; // undefined = leave unchanged
+  if (formData.get("removeLogo") === "on") {
+    logo = null;
+  } else {
+    const file = formData.get("logo");
+    if (file instanceof File && file.size > 0) {
+      const upload = await imageToDataUrl(file);
+      if (!upload.ok) return { ok: false, code: `logo_${upload.error}` };
+      logo = upload.dataUrl;
+    }
+  }
+
   const { id, ...data } = parsed.data;
-  await prisma.bankAccount.update({ where: { id }, data });
+  await prisma.bankAccount.update({
+    where: { id },
+    data: { ...data, ...(logo !== undefined ? { logo } : {}) },
+  });
   revalidatePath(`/${locale}/admin/banks`);
   return { ok: true, code: "saved" };
 }

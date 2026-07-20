@@ -44,6 +44,7 @@ export default async function WalletPage({
     instructionsEn: b.instructionsEn,
     instructionsAr: b.instructionsAr,
     color: b.color,
+    logo: b.logo,
   }));
 
   return (
