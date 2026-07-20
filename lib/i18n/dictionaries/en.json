@@ -234,7 +234,8 @@
       "submit": "Verify & continue",
       "resend": "Didn't get it? Resend code",
       "resent": "A new code has been sent.",
-      "verifiedBanner": "Email verified! Please sign in to continue."
+      "verifiedBanner": "Email verified! Please sign in to continue.",
+      "spamHint": "Can't find the email? Check your Spam / Junk folder and mark it as “Not spam” so future emails reach your inbox."
     },
     "panel": {
       "headline": "Everything digital, delivered instantly",

@@ -350,6 +350,10 @@ export function VerifyEmailForm({
         )}
       </form>
 
+      <p className="rounded-xl border border-dashed border-border px-3.5 py-2.5 text-center text-xs leading-relaxed text-muted">
+        {dict.verify.spamHint}
+      </p>
+
       <Link
         href={`/${locale}/login`}
         className="text-center text-sm font-semibold text-muted hover:text-primary"
