@@ -99,6 +99,15 @@ export async function updateProfile(
   });
   if (!parsed.success) return { ok: false, code: "invalid_input" };
 
+  // The session id may point to a user that no longer exists (e.g. the DB was
+  // reseeded after login). Guard so it returns a clean "please sign in again"
+  // instead of a 500 that shows "A server error occurred".
+  const exists = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { id: true },
+  });
+  if (!exists) return { ok: false, code: "requires_auth" };
+
   await prisma.user.update({
     where: { id: user.id },
     data: {
