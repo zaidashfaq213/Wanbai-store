@@ -8,6 +8,7 @@ import { AuthError } from "next-auth";
 import { prisma } from "@/lib/db";
 import { signIn, signOut, enabledOAuth } from "@/auth";
 import { sendMail } from "@/lib/mail";
+import { verificationEmail } from "@/lib/emails/verification";
 import { isLocale, defaultLocale } from "@/lib/i18n/config";
 
 // Result codes are mapped to localized strings on the client (dict.auth.errors).
@@ -40,14 +41,7 @@ async function issueVerificationCode(email: string) {
       expires: new Date(Date.now() + CODE_TTL_MS),
     },
   });
-  await sendMail({
-    to: email,
-    subject: "WANBAI-STORE — Your verification code",
-    text: `Your WANBAI-STORE verification code is ${code}. It expires in 15 minutes.`,
-    html: `<p>Your WANBAI-STORE verification code is:</p>
-<p style="font-size:28px;font-weight:800;letter-spacing:6px">${code}</p>
-<p>This code expires in 15 minutes. If you didn't request it, ignore this email.</p>`,
-  });
+  await sendMail({ to: email, ...verificationEmail(code) });
 }
 
 const signupSchema = z.object({
@@ -90,19 +84,15 @@ export async function signupAction(
   if (usernameTaken) return { ok: false, code: "username_taken" };
 
   const passwordHash = await bcrypt.hash(password, 12);
-  // Email verification is disabled: create the account already verified and
-  // sign the user straight in.
+  // Create the account as unverified; access is gated until the emailed code
+  // is confirmed on the verify-email page.
   await prisma.user.create({
-    data: { name, username, email, passwordHash, preferredLocale: locale, emailVerified: new Date() },
+    data: { name, username, email, passwordHash, preferredLocale: locale },
   });
+  await issueVerificationCode(email);
 
-  try {
-    await signIn("credentials", { email, password, redirectTo: `/${locale}/dashboard` });
-  } catch (error) {
-    if (error instanceof AuthError) return { ok: false, code: "invalid_credentials" };
-    throw error;
-  }
-  return { ok: true };
+  // redirect() throws NEXT_REDIRECT which propagates out of the action.
+  redirect(`/${locale}/verify-email?email=${encodeURIComponent(email)}`);
 }
 
 const verifySchema = z.object({
@@ -182,6 +172,22 @@ export async function loginAction(
     password: formData.get("password"),
   });
   if (!parsed.success) return { ok: false, code: "invalid_credentials" };
+
+  // Give unverified users a clear message (and a resend path) instead of a
+  // generic "invalid credentials" from the credentials provider.
+  const account = await prisma.user.findUnique({
+    where: { email: parsed.data.email },
+  });
+  if (account?.passwordHash && !account.emailVerified) {
+    const match = await bcrypt.compare(parsed.data.password, account.passwordHash);
+    if (match) {
+      // Re-issue a code and send them to the verify page (redirect throws).
+      await issueVerificationCode(parsed.data.email);
+      redirect(
+        `/${locale}/verify-email?email=${encodeURIComponent(parsed.data.email)}&notice=unverified`,
+      );
+    }
+  }
 
   // Only allow a small allow-list of post-login destinations (no open redirect).
   const next = String(formData.get("next") ?? "");

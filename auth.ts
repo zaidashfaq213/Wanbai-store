@@ -93,7 +93,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         });
         // No user, or an OAuth-only account without a password set.
         if (!user?.passwordHash) return null;
-        // Email verification is disabled — no emailVerified gate here.
+        // Block sign-in until the signup email code has been verified.
+        if (!user.emailVerified) return null;
 
         const ok = await bcrypt.compare(password, user.passwordHash);
         if (!ok) return null;

@@ -2,6 +2,7 @@ import "server-only";
 import { createHash, randomInt } from "crypto";
 import { prisma } from "@/lib/db";
 import { sendMail } from "@/lib/mail";
+import { verificationEmail } from "@/lib/emails/verification";
 
 // Shared 6-digit email-verification logic, used by both the web server actions
 // and the mobile REST API so the rules stay identical.
@@ -28,14 +29,7 @@ export async function issueVerificationCode(email: string) {
       expires: new Date(Date.now() + CODE_TTL_MS),
     },
   });
-  await sendMail({
-    to: email,
-    subject: "WANBAI-STORE — Your verification code",
-    text: `Your WANBAI-STORE verification code is ${code}. It expires in 15 minutes.`,
-    html: `<p>Your WANBAI-STORE verification code is:</p>
-<p style="font-size:28px;font-weight:800;letter-spacing:6px">${code}</p>
-<p>This code expires in 15 minutes. If you didn't request it, ignore this email.</p>`,
-  });
+  await sendMail({ to: email, ...verificationEmail(code) });
 }
 
 export type CodeResult = { ok: true } | { ok: false; code: string };

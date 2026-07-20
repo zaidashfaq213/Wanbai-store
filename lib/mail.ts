@@ -42,10 +42,13 @@ export async function sendMail({ to, subject, html, text }: MailInput) {
   }
   await tx.sendMail({
     from: SMTP_FROM ?? "WANBAI-STORE <no-reply@wanbai.store>",
+    // A valid Reply-To (a real inbox) improves inbox placement.
+    replyTo: SMTP_USER,
     to,
     subject,
     html,
-    text,
+    // Always include a plain-text alternative — HTML-only mail scores as spam.
+    text: text ?? html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
   });
   return { delivered: true as const };
 }

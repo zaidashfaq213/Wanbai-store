@@ -1,6 +1,7 @@
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
+import { issueVerificationCode } from "@/lib/auth/codes";
 import { ok, fail, signToken } from "@/lib/api/core";
 
 const schema = z.object({
@@ -18,7 +19,12 @@ export async function POST(req: Request) {
   const match = await bcrypt.compare(parsed.data.password, user.passwordHash);
   if (!match) return fail("invalid_credentials", 401);
 
-  // Email verification is disabled — no emailVerified gate.
+  // Unverified: re-issue a code and tell the app to show the verify screen.
+  if (!user.emailVerified) {
+    await issueVerificationCode(user.email);
+    return fail("email_unverified", 403, { email: user.email });
+  }
+
   const token = await signToken(user.id, user.role);
   return ok({
     token,
