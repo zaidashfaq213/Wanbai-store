@@ -79,6 +79,7 @@ export default async function AdminUsersPage({
                     <UserDetailModal
                       locale={locale}
                       dict={u}
+                      confirm={dict.admin.confirm}
                       currency={currency}
                       labels={labels}
                       user={{ id: user.id, isSelf: user.id === admin.id }}

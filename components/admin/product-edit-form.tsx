@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { updateProduct, deleteProduct, type CatalogState } from "@/lib/actions/catalog";
+import { ConfirmButton } from "@/components/ui/confirm-button";
 
 const FIELD =
   "h-10 w-full rounded-xl border border-border bg-surface-2 px-3 text-sm outline-none focus:border-primary/50";
@@ -32,6 +33,7 @@ export type ProductCore = {
 export function ProductEditForm({
   locale,
   dict,
+  confirm,
   errors,
   fulfillments,
   product,
@@ -39,6 +41,7 @@ export function ProductEditForm({
 }: {
   locale: Locale;
   dict: Dictionary["admin"]["catalog"]["products"];
+  confirm: Dictionary["admin"]["confirm"];
   errors: Dictionary["admin"]["catalog"]["errors"];
   fulfillments: Record<string, string>;
   product: ProductCore;
@@ -160,13 +163,17 @@ export function ProductEditForm({
         <button type="submit" disabled={pending} className="rounded-xl brand-gradient px-5 py-2 text-sm font-bold text-white disabled:opacity-60">
           {dict.save}
         </button>
-        <button
-          type="submit"
-          formAction={deleteProduct}
+        <ConfirmButton
+          action={deleteProduct}
+          hidden={{ id: product.id, locale }}
+          title={confirm.deleteTitle}
+          body={confirm.deleteBody}
+          confirmText={confirm.yes}
+          cancelText={confirm.no}
           className="rounded-xl border border-border px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-500/10"
         >
           {dict.delete}
-        </button>
+        </ConfirmButton>
       </div>
     </form>
   );

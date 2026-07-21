@@ -8,9 +8,11 @@ import {
   getUserDetail,
   adjustWallet,
   deleteUser,
+  setUserRole,
   type UserDetail,
   type AdminState,
 } from "@/lib/actions/admin";
+import { ConfirmButton } from "@/components/ui/confirm-button";
 import { formatCents, cn } from "@/lib/utils";
 
 type Labels = {
@@ -42,12 +44,14 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export function UserDetailModal({
   locale,
   dict,
+  confirm,
   currency,
   labels,
   user,
 }: {
   locale: Locale;
   dict: Dictionary["admin"]["users"];
+  confirm: Dictionary["admin"]["confirm"];
   currency: Currency;
   labels: Labels;
   user: { id: string; isSelf: boolean };
@@ -140,6 +144,40 @@ export function UserDetailModal({
                   </div>
                 </Section>
 
+                {/* Role & access */}
+                {!user.isSelf && (
+                  <Section title={dict.setRole}>
+                    <div className="flex flex-wrap gap-2">
+                      {([
+                        ["USER", dict.roleUser],
+                        ["MANAGER", dict.roleManager],
+                        ["ADMIN", dict.roleSupervisor],
+                      ] as const).map(([value, label]) => {
+                        const active = data.role === value;
+                        return (
+                          <form key={value} action={setUserRole}>
+                            <input type="hidden" name="locale" value={locale} />
+                            <input type="hidden" name="userId" value={user.id} />
+                            <input type="hidden" name="role" value={value} />
+                            <button
+                              type="submit"
+                              className={cn(
+                                "rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors",
+                                active
+                                  ? "border-primary bg-primary/10 text-primary"
+                                  : "border-border hover:bg-surface-2",
+                              )}
+                            >
+                              {label}
+                            </button>
+                          </form>
+                        );
+                      })}
+                    </div>
+                    <p className="mt-2 text-xs text-muted">{dict.roleHint}</p>
+                  </Section>
+                )}
+
                 {/* Orders */}
                 <Section title={`${d.orders} (${data.orders.length})`}>
                   {data.orders.length === 0 ? (
@@ -207,13 +245,19 @@ export function UserDetailModal({
 
                 {/* Delete */}
                 {!user.isSelf && (
-                  <form action={deleteUser} className="border-t border-border pt-4">
-                    <input type="hidden" name="locale" value={locale} />
-                    <input type="hidden" name="userId" value={user.id} />
-                    <button type="submit" className="rounded-xl border border-border px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-500/10">
+                  <div className="border-t border-border pt-4">
+                    <ConfirmButton
+                      action={deleteUser}
+                      hidden={{ locale, userId: user.id }}
+                      title={confirm.deleteTitle}
+                      body={confirm.deleteBody}
+                      confirmText={confirm.yes}
+                      cancelText={confirm.no}
+                      className="rounded-xl border border-border px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-500/10"
+                    >
                       {dict.delete}
-                    </button>
-                  </form>
+                    </ConfirmButton>
+                  </div>
                 )}
               </div>
             )}

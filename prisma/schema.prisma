@@ -25,7 +25,8 @@ datasource db {
 
 enum Role {
   USER
-  ADMIN
+  ADMIN // Supervisor — full control panel
+  MANAGER // limited staff — Orders (requests) + Payments (deposits) only
 }
 
 model User {

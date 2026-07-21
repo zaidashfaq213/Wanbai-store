@@ -23,7 +23,7 @@ export default async function AdminBanksPage({
       <PageHeader title={b.title} subtitle={b.subtitle} />
       <div className="flex flex-col gap-4">
         {banks.map((bank) => (
-          <BankEditForm key={bank.id} locale={locale} dict={b} bank={bank as BankRow} />
+          <BankEditForm key={bank.id} locale={locale} dict={b} confirm={dict.admin.confirm} bank={bank as BankRow} />
         ))}
         <BankCreateForm locale={locale} dict={b} />
       </div>

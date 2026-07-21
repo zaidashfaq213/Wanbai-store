@@ -1,6 +1,6 @@
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
-import { requireAdmin } from "@/lib/auth/session";
+import { requireStaff } from "@/lib/auth/session";
 import { getPendingSubmissionCount } from "@/lib/data/payments";
 import { getOpenTicketCount, getSettings } from "@/lib/data/content";
 import { AdminChrome } from "@/components/admin/admin-chrome";
@@ -14,7 +14,7 @@ export default async function AdminLayout({
 }) {
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const user = await requireAdmin(locale);
+  const user = await requireStaff(locale);
   const dict = await getDictionary(locale);
   const [pending, openTickets, settings] = await Promise.all([
     getPendingSubmissionCount(),
@@ -31,6 +31,7 @@ export default async function AdminLayout({
       logo={settings.logo}
       dict={dict.admin}
       themeLabel={dict.header.theme}
+      role={user.role}
       user={{ name, initial: (name.trim()[0] ?? "A").toUpperCase() }}
       pending={pending}
       openTickets={openTickets}

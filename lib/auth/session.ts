@@ -43,10 +43,43 @@ export async function requireUser(locale: Locale, callbackPath?: string) {
   return user;
 }
 
-/** Require an ADMIN user. Guests → admin login; non-admins → dashboard. */
+// Admin panel roles. ADMIN = "Supervisor" (full access); MANAGER = limited
+// staff who only handle Orders (requests) + Payments (deposits).
+export const STAFF_ROLES = ["ADMIN", "MANAGER"] as const;
+export function isStaff(role?: string | null) {
+  return role === "ADMIN" || role === "MANAGER";
+}
+
+/** Session user if they're admin-panel staff (ADMIN or MANAGER), else null. */
+export async function getStaffUser() {
+  const u = await getSessionUser();
+  return u && isStaff(u.role) ? u : null;
+}
+/** Session user if they're a Supervisor (full ADMIN), else null. */
+export async function getAdminUser() {
+  const u = await getSessionUser();
+  return u && u.role === "ADMIN" ? u : null;
+}
+
+/**
+ * Require any admin-panel user (Supervisor OR Manager). Used by the admin
+ * layout and the Orders / Payments pages that both roles can access.
+ */
+export async function requireStaff(locale: Locale) {
+  const user = await getSessionUser();
+  if (!user) redirect(`/${locale}/admin/login`);
+  if (!isStaff(user.role)) redirect(`/${locale}/dashboard`);
+  return user;
+}
+
+/**
+ * Require a Supervisor (full ADMIN). Guests → admin login; a Manager is sent to
+ * their allowed home (Orders); regular users → dashboard.
+ */
 export async function requireAdmin(locale: Locale) {
   const user = await getSessionUser();
   if (!user) redirect(`/${locale}/admin/login`);
+  if (user.role === "MANAGER") redirect(`/${locale}/admin/orders`);
   if (user.role !== "ADMIN") redirect(`/${locale}/dashboard`);
   return user;
 }

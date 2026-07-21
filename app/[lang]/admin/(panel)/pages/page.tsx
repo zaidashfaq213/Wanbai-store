@@ -25,12 +25,12 @@ export default async function AdminPagesPage({
           <PageForm
             key={p.id}
             locale={locale}
-            dict={d}
+            dict={d} confirm={dict.admin.confirm}
             errors={dict.admin.content.errors}
             page={p as PageRow}
           />
         ))}
-        <PageForm locale={locale} dict={d} errors={dict.admin.content.errors} />
+        <PageForm locale={locale} dict={d} confirm={dict.admin.confirm} errors={dict.admin.content.errors} />
       </div>
     </div>
   );

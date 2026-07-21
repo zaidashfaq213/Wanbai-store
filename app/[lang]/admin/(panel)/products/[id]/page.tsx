@@ -51,6 +51,7 @@ export default async function AdminEditProductPage({
         <ProductEditForm
           locale={locale}
           dict={p}
+          confirm={dict.admin.confirm}
           errors={dict.admin.catalog.errors}
           fulfillments={dict.admin.catalog.fulfillments as Record<string, string>}
           product={{
@@ -76,7 +77,7 @@ export default async function AdminEditProductPage({
             label: locale === "ar" ? c.nameAr : c.nameEn,
           }))}
         />
-        <PackageEditor locale={locale} dict={p} productId={product.id} groups={groups} />
+        <PackageEditor locale={locale} dict={p} confirm={dict.admin.confirm} productId={product.id} groups={groups} />
       </div>
     </div>
   );

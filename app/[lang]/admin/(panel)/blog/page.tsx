@@ -25,12 +25,12 @@ export default async function AdminBlogPage({
           <PostForm
             key={p.id}
             locale={locale}
-            dict={d}
+            dict={d} confirm={dict.admin.confirm}
             errors={dict.admin.content.errors}
             post={p as PostRow}
           />
         ))}
-        <PostForm locale={locale} dict={d} errors={dict.admin.content.errors} />
+        <PostForm locale={locale} dict={d} confirm={dict.admin.confirm} errors={dict.admin.content.errors} />
       </div>
     </div>
   );

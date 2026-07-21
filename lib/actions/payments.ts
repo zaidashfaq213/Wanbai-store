@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { getSessionUser } from "@/lib/auth/session";
+import { getSessionUser, getAdminUser, isStaff } from "@/lib/auth/session";
 import { imageToDataUrl, PROOF_MAX_BYTES } from "@/lib/upload";
 import { sendMail } from "@/lib/mail";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
@@ -122,14 +122,17 @@ export async function submitOrderPayment(
 // Admin: approve / reject a submission, and manually fulfill orders
 // ---------------------------------------------------------------------------
 
-async function requireAdminUser() {
+// Orders + Payments are handled by BOTH Supervisors (ADMIN) and Managers, so
+// these actions accept any staff. Bank-account edits stay Supervisor-only
+// (they use getAdminUser directly).
+async function requireStaffUser() {
   const user = await getSessionUser();
-  if (!user || user.role !== "ADMIN") return null;
+  if (!user || !isStaff(user.role)) return null;
   return user;
 }
 
 export async function approveSubmission(formData: FormData) {
-  const admin = await requireAdminUser();
+  const admin = await requireStaffUser();
   if (!admin) return;
   const id = String(formData.get("id") ?? "");
   const locale = loc(String(formData.get("locale") ?? ""));
@@ -188,7 +191,7 @@ export async function approveSubmission(formData: FormData) {
 }
 
 export async function rejectSubmission(formData: FormData) {
-  const admin = await requireAdminUser();
+  const admin = await requireStaffUser();
   if (!admin) return;
   const id = String(formData.get("id") ?? "");
   const note = String(formData.get("note") ?? "").slice(0, 300);
@@ -221,7 +224,7 @@ export async function rejectSubmission(formData: FormData) {
 
 // Manually fulfill an order: set the delivered code and mark it DELIVERED.
 export async function fulfillOrder(formData: FormData) {
-  const admin = await requireAdminUser();
+  const admin = await requireStaffUser();
   if (!admin) return;
   const orderId = String(formData.get("orderId") ?? "");
   const code = String(formData.get("code") ?? "").trim().slice(0, 500);
@@ -274,7 +277,7 @@ export async function fulfillOrder(formData: FormData) {
 
 // Refund a paid/delivered order: credit the customer's wallet and mark REFUNDED.
 export async function refundOrder(formData: FormData) {
-  const admin = await requireAdminUser();
+  const admin = await requireStaffUser();
   if (!admin) return;
   const orderId = String(formData.get("orderId") ?? "");
   const locale = loc(String(formData.get("locale") ?? ""));
@@ -323,7 +326,7 @@ const orderStatusSchema = z.enum([
 ]);
 
 export async function updateOrderStatus(formData: FormData) {
-  const admin = await requireAdminUser();
+  const admin = await requireStaffUser();
   if (!admin) return;
   const orderId = String(formData.get("orderId") ?? "");
   const locale = loc(String(formData.get("locale") ?? ""));
@@ -351,7 +354,7 @@ export async function updateBankAccount(
   _prev: PaymentState,
   formData: FormData,
 ): Promise<PaymentState> {
-  const admin = await requireAdminUser();
+  const admin = await getAdminUser(); // Supervisor only
   if (!admin) return { ok: false, code: "requires_auth" };
   const locale = loc(String(formData.get("locale") ?? ""));
 

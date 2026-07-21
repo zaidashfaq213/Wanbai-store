@@ -5,6 +5,7 @@ import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { updateBankAccount, type PaymentState } from "@/lib/actions/payments";
 import { deleteBankAccount } from "@/lib/actions/admin";
+import { ConfirmButton } from "@/components/ui/confirm-button";
 
 const FIELD =
   "h-10 w-full rounded-xl border border-border bg-surface-2 px-3 text-sm outline-none focus:border-primary/50";
@@ -26,10 +27,12 @@ export type BankRow = {
 export function BankEditForm({
   locale,
   dict,
+  confirm,
   bank,
 }: {
   locale: Locale;
   dict: Dictionary["admin"]["banks"];
+  confirm: Dictionary["admin"]["confirm"];
   bank: BankRow;
 }) {
   const [state, action, pending] = useActionState<PaymentState, FormData>(
@@ -120,13 +123,17 @@ export function BankEditForm({
           >
             {dict.save}
           </button>
-          <button
-            type="submit"
-            formAction={deleteBankAccount}
+          <ConfirmButton
+            action={deleteBankAccount}
+            hidden={{ id: bank.id, locale }}
+            title={confirm.deleteTitle}
+            body={confirm.deleteBody}
+            confirmText={confirm.yes}
+            cancelText={confirm.no}
             className="rounded-xl border border-border px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-500/10"
           >
             {dict.delete}
-          </button>
+          </ConfirmButton>
         </div>
       </div>
     </form>

@@ -613,7 +613,12 @@
         "noSubmissions": "No payments.",
         "transactions": "Wallet history",
         "noTransactions": "No transactions."
-      }
+      },
+      "setRole": "Role & access",
+      "roleUser": "User",
+      "roleManager": "Manager",
+      "roleSupervisor": "Supervisor",
+      "roleHint": "Supervisor = full panel · Manager = Orders + Payments only"
     },
     "roles": {
       "USER": "Member",
@@ -804,6 +809,16 @@
         "logo_bad_type": "Logo must be PNG, JPG or WebP.",
         "logo_empty": "Choose a logo image."
       }
+    },
+    "confirm": {
+      "deleteTitle": "Delete this item?",
+      "deleteBody": "This action can't be undone.",
+      "refundTitle": "Refund this order?",
+      "refundBody": "The amount will be returned to the customer's wallet. This can't be undone.",
+      "rejectTitle": "Reject this payment?",
+      "rejectBody": "The customer will be notified that their payment was rejected.",
+      "yes": "Confirm",
+      "no": "Cancel"
     }
   },
   "help": {

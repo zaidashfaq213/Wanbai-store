@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
-import { requireAdmin } from "@/lib/auth/session";
+import { requireStaff } from "@/lib/auth/session";
 import { getCurrency } from "@/lib/data/currency";
 import { getSubmissions } from "@/lib/data/payments";
 import { cn } from "@/lib/utils";
@@ -23,7 +23,7 @@ export default async function AdminPaymentsPage({
   const { lang } = await params;
   const { status, type } = await searchParams;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  await requireAdmin(locale);
+  await requireStaff(locale);
   const dict = await getDictionary(locale);
   const p = dict.admin.payments;
   const currency = await getCurrency();

@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { getSessionUser } from "@/lib/auth/session";
+import { getSessionUser, getStaffUser } from "@/lib/auth/session";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 
 function loc(v: string): Locale {
@@ -138,7 +138,7 @@ export async function adminReplyOrder(
   _prev: SupportState,
   formData: FormData,
 ): Promise<SupportState> {
-  const admin = await requireAdminUser();
+  const admin = await getStaffUser(); // Managers handle orders too
   if (!admin) return { ok: false, code: "requires_auth" };
   const locale = loc(String(formData.get("locale") ?? ""));
 

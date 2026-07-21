@@ -26,13 +26,13 @@ export default async function AdminFaqsPage({
           <FaqForm
             key={f.id}
             locale={locale}
-            dict={d}
+            dict={d} confirm={dict.admin.confirm}
             errors={dict.admin.content.errors}
             faq={f as FaqRow}
             categories={cats}
           />
         ))}
-        <FaqForm locale={locale} dict={d} errors={dict.admin.content.errors} categories={cats} />
+        <FaqForm locale={locale} dict={d} confirm={dict.admin.confirm} errors={dict.admin.content.errors} categories={cats} />
       </div>
     </div>
   );

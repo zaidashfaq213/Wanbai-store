@@ -13,6 +13,7 @@ import {
   saveSettings,
   type ContentState,
 } from "@/lib/actions/content";
+import { ConfirmButton } from "@/components/ui/confirm-button";
 
 const FIELD =
   "h-10 w-full rounded-xl border border-border bg-surface-2 px-3 text-sm outline-none focus:border-primary/50";
@@ -24,6 +25,7 @@ const DEL =
   "rounded-xl border border-border px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-500/10";
 
 type Errors = Dictionary["admin"]["content"]["errors"];
+type Confirm = Dictionary["admin"]["confirm"];
 
 function Status({ state, saved, errors }: { state: ContentState; saved: string; errors: Errors }) {
   if (state.ok && state.code === "saved")
@@ -52,11 +54,13 @@ export type PageRow = {
 export function PageForm({
   locale,
   dict,
+  confirm,
   errors,
   page,
 }: {
   locale: Locale;
   dict: Dictionary["admin"]["content"]["pages"];
+  confirm: Confirm;
   errors: Errors;
   page?: PageRow;
 }) {
@@ -98,7 +102,9 @@ export function PageForm({
       <div className="flex gap-2">
         <button type="submit" disabled={pending} className={BTN}>{dict.save}</button>
         {page && (
-          <button type="submit" formAction={deletePage} className={DEL}>{dict.delete}</button>
+          <ConfirmButton action={deletePage} hidden={{ id: page.id, locale }} title={confirm.deleteTitle} body={confirm.deleteBody} confirmText={confirm.yes} cancelText={confirm.no} className={DEL}>
+            {dict.delete}
+          </ConfirmButton>
         )}
       </div>
     </form>
@@ -112,11 +118,13 @@ export type PostRow = PageRow & { excerptEn: string; excerptAr: string };
 export function PostForm({
   locale,
   dict,
+  confirm,
   errors,
   post,
 }: {
   locale: Locale;
   dict: Dictionary["admin"]["content"]["blog"];
+  confirm: Confirm;
   errors: Errors;
   post?: PostRow;
 }) {
@@ -166,7 +174,9 @@ export function PostForm({
       <div className="flex gap-2">
         <button type="submit" disabled={pending} className={BTN}>{dict.save}</button>
         {post && (
-          <button type="submit" formAction={deletePost} className={DEL}>{dict.delete}</button>
+          <ConfirmButton action={deletePost} hidden={{ id: post.id, locale }} title={confirm.deleteTitle} body={confirm.deleteBody} confirmText={confirm.yes} cancelText={confirm.no} className={DEL}>
+            {dict.delete}
+          </ConfirmButton>
         )}
       </div>
     </form>
@@ -188,12 +198,14 @@ export type FaqRow = {
 export function FaqForm({
   locale,
   dict,
+  confirm,
   errors,
   faq,
   categories,
 }: {
   locale: Locale;
   dict: Dictionary["admin"]["content"]["faqs"];
+  confirm: Confirm;
   errors: Errors;
   faq?: FaqRow;
   categories: string[];
@@ -240,7 +252,9 @@ export function FaqForm({
       <div className="flex gap-2">
         <button type="submit" disabled={pending} className={BTN}>{dict.save}</button>
         {faq && (
-          <button type="submit" formAction={deleteFaq} className={DEL}>{dict.delete}</button>
+          <ConfirmButton action={deleteFaq} hidden={{ id: faq.id, locale }} title={confirm.deleteTitle} body={confirm.deleteBody} confirmText={confirm.yes} cancelText={confirm.no} className={DEL}>
+            {dict.delete}
+          </ConfirmButton>
         )}
       </div>
     </form>

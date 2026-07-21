@@ -9,6 +9,7 @@ import {
   deleteCategory,
   type CatalogState,
 } from "@/lib/actions/catalog";
+import { ConfirmButton } from "@/components/ui/confirm-button";
 
 const FIELD =
   "h-10 w-full rounded-xl border border-border bg-surface-2 px-3 text-sm outline-none focus:border-primary/50";
@@ -28,11 +29,13 @@ export type CategoryRow = {
 export function CategoryForm({
   locale,
   dict,
+  confirm,
   errors,
   category,
 }: {
   locale: Locale;
   dict: Dictionary["admin"]["catalog"]["categories"];
+  confirm: Dictionary["admin"]["confirm"];
   errors: Dictionary["admin"]["catalog"]["errors"];
   category?: CategoryRow;
 }) {
@@ -108,13 +111,17 @@ export function CategoryForm({
           {dict.save}
         </button>
         {category && category.productsCount === 0 && (
-          <button
-            type="submit"
-            formAction={deleteCategory}
+          <ConfirmButton
+            action={deleteCategory}
+            hidden={{ id: category.id, locale }}
+            title={confirm.deleteTitle}
+            body={confirm.deleteBody}
+            confirmText={confirm.yes}
+            cancelText={confirm.no}
             className="rounded-xl border border-border px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-500/10"
           >
             {dict.delete}
-          </button>
+          </ConfirmButton>
         )}
       </div>
     </form>

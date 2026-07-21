@@ -33,12 +33,13 @@ export default async function AdminCategoriesPage({
     <div>
       <PageHeader title={c.title} subtitle={c.subtitle} />
       <div className="grid gap-4 lg:grid-cols-2">
-        <CategoryForm locale={locale} dict={c} errors={dict.admin.catalog.errors} />
+        <CategoryForm locale={locale} dict={c} confirm={dict.admin.confirm} errors={dict.admin.catalog.errors} />
         {categories.map((cat) => (
           <CategoryForm
             key={cat.id}
             locale={locale}
             dict={c}
+            confirm={dict.admin.confirm}
             errors={dict.admin.catalog.errors}
             category={cat}
           />

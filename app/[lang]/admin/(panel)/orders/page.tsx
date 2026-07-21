@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
-import { requireAdmin } from "@/lib/auth/session";
+import { requireStaff } from "@/lib/auth/session";
 import { getCurrency } from "@/lib/data/currency";
 import { getAllOrders, getUnreadOrderMessages } from "@/lib/data/payments";
 import { fulfillOrder, updateOrderStatus, refundOrder } from "@/lib/actions/payments";
+import { ConfirmButton } from "@/components/ui/confirm-button";
 import { formatCents, cn } from "@/lib/utils";
 import { PageHeader } from "@/components/dashboard/page-header";
 
@@ -29,7 +30,7 @@ export default async function AdminOrdersPage({
   const { lang } = await params;
   const { status } = await searchParams;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  await requireAdmin(locale);
+  await requireStaff(locale);
   const dict = await getDictionary(locale);
   const o = dict.admin.orders;
   const statuses = o.statuses as Record<string, string>;
@@ -180,16 +181,19 @@ export default async function AdminOrdersPage({
                 </div>
 
                 {(order.status === "PAID" || order.status === "DELIVERED") && (
-                  <form action={refundOrder} className="mt-2">
-                    <input type="hidden" name="orderId" value={order.id} />
-                    <input type="hidden" name="locale" value={locale} />
-                    <button
-                      type="submit"
+                  <div className="mt-2">
+                    <ConfirmButton
+                      action={refundOrder}
+                      hidden={{ orderId: order.id, locale }}
+                      title={dict.admin.confirm.refundTitle}
+                      body={dict.admin.confirm.refundBody}
+                      confirmText={dict.admin.confirm.yes}
+                      cancelText={dict.admin.confirm.no}
                       className="rounded-xl border border-border px-3 py-1.5 text-xs font-bold text-fuchsia-500 transition-colors hover:bg-fuchsia-500/10"
                     >
                       {o.refund}
-                    </button>
-                  </form>
+                    </ConfirmButton>
+                  </div>
                 )}
               </div>
             );

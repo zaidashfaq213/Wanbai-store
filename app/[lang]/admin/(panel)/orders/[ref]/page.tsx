@@ -2,13 +2,14 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
-import { requireAdmin } from "@/lib/auth/session";
+import { requireStaff } from "@/lib/auth/session";
 import { getCurrency } from "@/lib/data/currency";
 import { getAdminOrderDetail } from "@/lib/data/payments";
 import { fulfillOrder, updateOrderStatus, refundOrder } from "@/lib/actions/payments";
 import { formatCents, cn } from "@/lib/utils";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { OrderChat } from "@/components/order/order-chat";
+import { ConfirmButton } from "@/components/ui/confirm-button";
 
 const STATUS_STYLES: Record<string, string> = {
   PENDING: "bg-amber-500/10 text-amber-500",
@@ -34,7 +35,7 @@ export default async function AdminOrderDetailPage({
 }) {
   const { lang, ref } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  await requireAdmin(locale);
+  await requireStaff(locale);
   const dict = await getDictionary(locale);
   const o = dict.admin.orders;
   const statuses = o.statuses as Record<string, string>;
@@ -199,16 +200,19 @@ export default async function AdminOrderDetailPage({
           </div>
 
           {(order.status === "PAID" || order.status === "DELIVERED") && (
-            <form action={refundOrder} className="mt-3">
-              <input type="hidden" name="orderId" value={order.id} />
-              <input type="hidden" name="locale" value={locale} />
-              <button
-                type="submit"
+            <div className="mt-3">
+              <ConfirmButton
+                action={refundOrder}
+                hidden={{ orderId: order.id, locale }}
+                title={dict.admin.confirm.refundTitle}
+                body={dict.admin.confirm.refundBody}
+                confirmText={dict.admin.confirm.yes}
+                cancelText={dict.admin.confirm.no}
                 className="rounded-xl border border-border px-3 py-1.5 text-xs font-bold text-fuchsia-500 transition-colors hover:bg-fuchsia-500/10"
               >
                 {o.refund}
-              </button>
-            </form>
+              </ConfirmButton>
+            </div>
           )}
         </section>
 

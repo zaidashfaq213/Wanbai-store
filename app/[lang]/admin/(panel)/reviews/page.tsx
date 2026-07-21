@@ -6,6 +6,7 @@ import { deleteReview, toggleReviewApproval } from "@/lib/actions/content";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { StarIcon } from "@/components/ui/icons";
+import { ConfirmButton } from "@/components/ui/confirm-button";
 
 export default async function AdminReviewsPage({
   params,
@@ -76,16 +77,17 @@ export default async function AdminReviewsPage({
                     {r.approved ? d.unapprove : d.approve}
                   </button>
                 </form>
-                <form action={deleteReview}>
-                  <input type="hidden" name="id" value={r.id} />
-                  <input type="hidden" name="locale" value={locale} />
-                  <button
-                    type="submit"
-                    className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-500/10"
-                  >
-                    {d.delete}
-                  </button>
-                </form>
+                <ConfirmButton
+                  action={deleteReview}
+                  hidden={{ id: r.id, locale }}
+                  title={dict.admin.confirm.deleteTitle}
+                  body={dict.admin.confirm.deleteBody}
+                  confirmText={dict.admin.confirm.yes}
+                  cancelText={dict.admin.confirm.no}
+                  className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold text-red-500 hover:bg-red-500/10"
+                >
+                  {d.delete}
+                </ConfirmButton>
               </div>
             </div>
           ))}

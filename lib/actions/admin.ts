@@ -111,10 +111,11 @@ export async function setUserRole(formData: FormData) {
   const admin = await requireAdminUser();
   if (!admin) return;
   const userId = String(formData.get("userId") ?? "");
-  const role = formData.get("role") === "ADMIN" ? "ADMIN" : "USER";
+  const raw = String(formData.get("role") ?? "");
+  const role = raw === "ADMIN" ? "ADMIN" : raw === "MANAGER" ? "MANAGER" : "USER";
   const locale = loc(String(formData.get("locale") ?? ""));
-  // Don't let an admin strip their own admin rights (avoid lock-out).
-  if (userId === admin.id && role === "USER") return;
+  // Don't let a Supervisor strip their own rights (avoid lock-out).
+  if (userId === admin.id && role !== "ADMIN") return;
   await prisma.user.update({ where: { id: userId }, data: { role } });
   revalidatePath(`/${locale}/admin/users`);
 }

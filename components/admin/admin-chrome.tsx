@@ -47,6 +47,7 @@ export function AdminChrome({
   logo,
   dict,
   themeLabel,
+  role,
   user,
   pending,
   openTickets,
@@ -57,6 +58,7 @@ export function AdminChrome({
   logo?: string | null;
   dict: Dictionary["admin"];
   themeLabel: string;
+  role: string;
   user: { name: string; initial: string };
   pending: number;
   openTickets: number;
@@ -66,7 +68,7 @@ export function AdminChrome({
   const [open, setOpen] = useState(false);
   const base = `/${locale}/admin`;
 
-  const items: Array<{ key: NavKey; href: string; badge?: number }> = [
+  const allItems: Array<{ key: NavKey; href: string; badge?: number }> = [
     { key: "overview", href: base },
     { key: "payments", href: `${base}/payments`, badge: pending },
     { key: "orders", href: `${base}/orders` },
@@ -81,6 +83,13 @@ export function AdminChrome({
     { key: "users", href: `${base}/users` },
     { key: "settings", href: `${base}/settings` },
   ];
+
+  // A Manager only handles Orders (requests) + Payments (deposits); a
+  // Supervisor (ADMIN) sees everything.
+  const items =
+    role === "MANAGER"
+      ? allItems.filter((i) => i.key === "payments" || i.key === "orders")
+      : allItems;
 
   const isActive = (href: string) =>
     href === base ? pathname === base : pathname.startsWith(href);

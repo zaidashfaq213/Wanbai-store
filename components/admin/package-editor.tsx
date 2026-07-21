@@ -12,6 +12,9 @@ import {
   deleteVariantGroup,
   type CatalogState,
 } from "@/lib/actions/catalog";
+import { ConfirmButton } from "@/components/ui/confirm-button";
+
+type Confirm = Dictionary["admin"]["confirm"];
 
 const FIELD =
   "h-9 rounded-lg border border-border bg-surface-2 px-2.5 text-sm outline-none focus:border-primary/50";
@@ -26,11 +29,13 @@ export type PkgGroup = {
 function PackageRow({
   locale,
   dict,
+  confirm,
   productId,
   pkg,
 }: {
   locale: Locale;
   dict: Dictionary["admin"]["catalog"]["products"];
+  confirm: Confirm;
   productId: string;
   pkg: PkgGroup["packages"][number];
 }) {
@@ -61,14 +66,17 @@ function PackageRow({
         </button>
         {state.ok && state.code === "saved" && <span className="pb-2 text-xs font-bold text-emerald-500">✓</span>}
       </form>
-      <form action={deletePackage}>
-        <input type="hidden" name="locale" value={locale} />
-        <input type="hidden" name="id" value={pkg.id} />
-        <input type="hidden" name="productId" value={productId} />
-        <button type="submit" className="h-9 rounded-lg border border-border px-2.5 text-xs font-bold text-red-500 hover:bg-red-500/10">
-          ✕
-        </button>
-      </form>
+      <ConfirmButton
+        action={deletePackage}
+        hidden={{ locale, id: pkg.id, productId }}
+        title={confirm.deleteTitle}
+        body={confirm.deleteBody}
+        confirmText={confirm.yes}
+        cancelText={confirm.no}
+        className="h-9 rounded-lg border border-border px-2.5 text-xs font-bold text-red-500 hover:bg-red-500/10"
+      >
+        ✕
+      </ConfirmButton>
     </div>
   );
 }
@@ -76,11 +84,13 @@ function PackageRow({
 function GroupHeader({
   locale,
   dict,
+  confirm,
   productId,
   group,
 }: {
   locale: Locale;
   dict: Dictionary["admin"]["catalog"]["products"];
+  confirm: Confirm;
   productId: string;
   group: PkgGroup;
 }) {
@@ -103,14 +113,17 @@ function GroupHeader({
         </button>
         {state.ok && state.code === "saved" && <span className="pb-2 text-xs font-bold text-emerald-500">✓</span>}
       </form>
-      <form action={deleteVariantGroup}>
-        <input type="hidden" name="locale" value={locale} />
-        <input type="hidden" name="id" value={group.id} />
-        <input type="hidden" name="productId" value={productId} />
-        <button type="submit" className="h-9 rounded-lg border border-border px-2.5 text-xs font-bold text-red-500 hover:bg-red-500/10">
-          {dict.deleteGroup}
-        </button>
-      </form>
+      <ConfirmButton
+        action={deleteVariantGroup}
+        hidden={{ locale, id: group.id, productId }}
+        title={confirm.deleteTitle}
+        body={confirm.deleteBody}
+        confirmText={confirm.yes}
+        cancelText={confirm.no}
+        className="h-9 rounded-lg border border-border px-2.5 text-xs font-bold text-red-500 hover:bg-red-500/10"
+      >
+        {dict.deleteGroup}
+      </ConfirmButton>
     </div>
   );
 }
@@ -146,11 +159,13 @@ function AddGroupForm({
 export function PackageEditor({
   locale,
   dict,
+  confirm,
   productId,
   groups,
 }: {
   locale: Locale;
   dict: Dictionary["admin"]["catalog"]["products"];
+  confirm: Confirm;
   productId: string;
   groups: PkgGroup[];
 }) {
@@ -159,9 +174,9 @@ export function PackageEditor({
       <h3 className="font-extrabold">{dict.pricing}</h3>
       {groups.map((g) => (
         <div key={g.id} className="flex flex-col gap-2">
-          <GroupHeader locale={locale} dict={dict} productId={productId} group={g} />
+          <GroupHeader locale={locale} dict={dict} confirm={confirm} productId={productId} group={g} />
           {g.packages.map((pkg) => (
-            <PackageRow key={pkg.id} locale={locale} dict={dict} productId={productId} pkg={pkg} />
+            <PackageRow key={pkg.id} locale={locale} dict={dict} confirm={confirm} productId={productId} pkg={pkg} />
           ))}
           <form action={addPackage}>
             <input type="hidden" name="locale" value={locale} />
