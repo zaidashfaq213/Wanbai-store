@@ -125,7 +125,7 @@ export async function setUserRole(formData: FormData) {
 // --- Staff (Supervisors / Managers) ----------------------------------------
 
 /** Existing staff accounts (ADMIN or MANAGER), newest first. */
-export function getStaffList() {
+export async function getStaffList() {
   return prisma.user.findMany({
     where: { role: { in: ["ADMIN", "MANAGER"] } },
     orderBy: { createdAt: "desc" },
