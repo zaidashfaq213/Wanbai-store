@@ -190,9 +190,10 @@ export async function loginAction(
   }
 
   // Only allow a small allow-list of post-login destinations (no open redirect).
+  // Regular users land on the storefront homepage (not the dashboard) so they
+  // can keep shopping; only the admin-panel login explicitly asks for /admin.
   const next = String(formData.get("next") ?? "");
-  const redirectTo =
-    next === "admin" ? `/${locale}/admin` : `/${locale}/dashboard`;
+  const redirectTo = next === "admin" ? `/${locale}/admin` : `/${locale}`;
 
   try {
     await signIn("credentials", {
@@ -219,7 +220,7 @@ export async function oauthLoginAction(formData: FormData) {
   if (!enabledOAuth[provider]) {
     redirect(`/${locale}/login?error=oauth_unavailable`);
   }
-  await signIn(provider, { redirectTo: `/${locale}/dashboard` });
+  await signIn(provider, { redirectTo: `/${locale}` });
 }
 
 export async function logoutAction(formData: FormData) {
