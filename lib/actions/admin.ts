@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/session";
@@ -118,6 +119,70 @@ export async function setUserRole(formData: FormData) {
   if (userId === admin.id && role !== "ADMIN") return;
   await prisma.user.update({ where: { id: userId }, data: { role } });
   revalidatePath(`/${locale}/admin/users`);
+  revalidatePath(`/${locale}/admin/staff`);
+}
+
+// --- Staff (Supervisors / Managers) ----------------------------------------
+
+/** Existing staff accounts (ADMIN or MANAGER), newest first. */
+export function getStaffList() {
+  return prisma.user.findMany({
+    where: { role: { in: ["ADMIN", "MANAGER"] } },
+    orderBy: { createdAt: "desc" },
+    select: { id: true, name: true, username: true, email: true, role: true, createdAt: true },
+  });
+}
+
+const staffSchema = z.object({
+  name: z.string().trim().min(2).max(80),
+  username: z.string().trim().toLowerCase().min(3).max(30).regex(/^[a-z0-9_]+$/),
+  email: z.string().trim().toLowerCase().email(),
+  password: z.string().min(8).max(100),
+  role: z.enum(["ADMIN", "MANAGER"]),
+});
+
+/** Create a new staff account (Supervisor or Manager), verified immediately. */
+export async function createStaff(
+  _prev: AdminState,
+  formData: FormData,
+): Promise<AdminState> {
+  const admin = await requireAdminUser();
+  if (!admin) return { ok: false, code: "requires_auth" };
+  const locale = loc(String(formData.get("locale") ?? ""));
+
+  const parsed = staffSchema.safeParse({
+    name: formData.get("name"),
+    username: formData.get("username"),
+    email: formData.get("email"),
+    password: formData.get("password"),
+    role: formData.get("role"),
+  });
+  if (!parsed.success) {
+    const field = parsed.error.issues[0]?.path[0];
+    if (field === "password") return { ok: false, code: "weak_password" };
+    if (field === "email") return { ok: false, code: "invalid_email" };
+    if (field === "username") return { ok: false, code: "invalid_username" };
+    return { ok: false, code: "invalid_input" };
+  }
+  const { name, username, email, password, role } = parsed.data;
+
+  if (await prisma.user.findUnique({ where: { email } })) return { ok: false, code: "email_taken" };
+  if (await prisma.user.findUnique({ where: { username } })) return { ok: false, code: "username_taken" };
+
+  // Staff sign in with these credentials right away — no email verification.
+  await prisma.user.create({
+    data: {
+      name,
+      username,
+      email,
+      passwordHash: await bcrypt.hash(password, 12),
+      role,
+      emailVerified: new Date(),
+    },
+  });
+
+  revalidatePath(`/${locale}/admin/staff`);
+  return { ok: true, code: "created" };
 }
 
 const adjustSchema = z.object({

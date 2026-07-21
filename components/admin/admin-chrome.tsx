@@ -33,6 +33,7 @@ const ICONS: Record<string, typeof GridIcon> = {
   categories: ListIcon,
   banks: ShieldIcon,
   users: UserIcon,
+  staff: ShieldIcon,
   tickets: SupportIcon,
   reviews: StarIcon,
   pages: ListIcon,
@@ -81,6 +82,7 @@ export function AdminChrome({
     { key: "faqs", href: `${base}/faqs` },
     { key: "banks", href: `${base}/banks` },
     { key: "users", href: `${base}/users` },
+    { key: "staff", href: `${base}/staff` },
     { key: "settings", href: `${base}/settings` },
   ];
 

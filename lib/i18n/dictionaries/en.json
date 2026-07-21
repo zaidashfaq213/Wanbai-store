@@ -473,7 +473,8 @@
       "logoutTitle": "Log out?",
       "logoutBody": "You'll need to sign in again to access your account.",
       "logoutConfirm": "Log out",
-      "logoutCancel": "Cancel"
+      "logoutCancel": "Cancel",
+      "staff": "Staff"
     },
     "overview": {
       "subtitle": "Store operations at a glance",
@@ -819,6 +820,30 @@
       "rejectBody": "The customer will be notified that their payment was rejected.",
       "yes": "Confirm",
       "no": "Cancel"
+    },
+    "staff": {
+      "title": "Staff & roles",
+      "subtitle": "Create Supervisors and Managers and set what they can access",
+      "create": "Add staff member",
+      "name": "Full name",
+      "username": "Username",
+      "email": "Email",
+      "password": "Password",
+      "role": "Role",
+      "roleSupervisor": "Supervisor",
+      "roleManager": "Manager",
+      "roleHint": "Supervisor = full panel · Manager = Orders + Payments only",
+      "add": "Create",
+      "created": "Staff member created.",
+      "existing": "Current staff",
+      "none": "No staff yet.",
+      "you": "You",
+      "changeRole": "Change role",
+      "makeSupervisor": "Make Supervisor",
+      "makeManager": "Make Manager",
+      "revoke": "Remove access",
+      "confirmRevokeTitle": "Remove staff access?",
+      "confirmRevokeBody": "This account becomes a normal user and loses admin panel access."
     }
   },
   "help": {

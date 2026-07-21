@@ -8,11 +8,16 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 
-// Auth.js builds the OAuth callback from the site origin (AUTH_URL). If the
-// .env only provides GOOGLE_REDIRECT_URI (the value registered in Google
-// Console), derive AUTH_URL from its origin so the callback Auth.js sends to
-// Google exactly matches what was registered — no separate AUTH_URL needed.
-if (!process.env.AUTH_URL && process.env.GOOGLE_REDIRECT_URI) {
+// In PRODUCTION, derive the site origin (AUTH_URL) from GOOGLE_REDIRECT_URI so
+// the OAuth callback Auth.js sends to Google matches what's registered there.
+// In development we deliberately DON'T set it — otherwise a production
+// GOOGLE_REDIRECT_URI would make localhost logins redirect to the live domain.
+// Locally, `trustHost: true` uses the real request host (localhost:3000).
+if (
+  process.env.NODE_ENV === "production" &&
+  !process.env.AUTH_URL &&
+  process.env.GOOGLE_REDIRECT_URI
+) {
   try {
     const origin = new URL(process.env.GOOGLE_REDIRECT_URI).origin;
     process.env.AUTH_URL = origin;

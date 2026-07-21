@@ -8,7 +8,6 @@ import {
   getUserDetail,
   adjustWallet,
   deleteUser,
-  setUserRole,
   type UserDetail,
   type AdminState,
 } from "@/lib/actions/admin";
@@ -143,40 +142,6 @@ export function UserDetailModal({
                     </form>
                   </div>
                 </Section>
-
-                {/* Role & access */}
-                {!user.isSelf && (
-                  <Section title={dict.setRole}>
-                    <div className="flex flex-wrap gap-2">
-                      {([
-                        ["USER", dict.roleUser],
-                        ["MANAGER", dict.roleManager],
-                        ["ADMIN", dict.roleSupervisor],
-                      ] as const).map(([value, label]) => {
-                        const active = data.role === value;
-                        return (
-                          <form key={value} action={setUserRole}>
-                            <input type="hidden" name="locale" value={locale} />
-                            <input type="hidden" name="userId" value={user.id} />
-                            <input type="hidden" name="role" value={value} />
-                            <button
-                              type="submit"
-                              className={cn(
-                                "rounded-lg border px-3 py-1.5 text-xs font-bold transition-colors",
-                                active
-                                  ? "border-primary bg-primary/10 text-primary"
-                                  : "border-border hover:bg-surface-2",
-                              )}
-                            >
-                              {label}
-                            </button>
-                          </form>
-                        );
-                      })}
-                    </div>
-                    <p className="mt-2 text-xs text-muted">{dict.roleHint}</p>
-                  </Section>
-                )}
 
                 {/* Orders */}
                 <Section title={`${d.orders} (${data.orders.length})`}>
