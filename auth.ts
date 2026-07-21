@@ -76,6 +76,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   // still persisted via the Prisma adapter for account linking.
   session: { strategy: "jwt" },
   trustHost: true,
+  // Behind an nginx reverse proxy, Node sees plain HTTP even though the site
+  // is HTTPS. Left on "auto", Auth.js decides per-request whether OAuth/PKCE
+  // cookies need the `Secure` flag — inconsistent detection there is exactly
+  // what causes "pkceCodeVerifier could not be parsed" on the callback. Since
+  // the site is always served over HTTPS in production, fix this explicitly
+  // instead of relying on proxy headers.
+  useSecureCookies: process.env.NODE_ENV === "production",
   pages: {
     // Locale-prefixed guards are handled in the dashboard layout; this is the
     // fallback path Auth.js redirects to for protected calls (Arabic default).
