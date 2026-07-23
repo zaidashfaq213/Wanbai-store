@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
@@ -13,8 +14,12 @@ import type { Locale } from "@/lib/i18n/config";
  * write action (orders, tickets, favorites, profile) from throwing foreign-key
  * / "record not found" errors. If the DB is briefly unreachable we trust the
  * token instead of blocking public pages.
+ *
+ * Wrapped in cache(): layouts and pages (and requireUser/requireAdmin/
+ * requireStaff, which all call this) commonly run more than once per request
+ * — cache() collapses the auth() call + existence check to a single lookup.
  */
-export async function getSessionUser() {
+export const getSessionUser = cache(async () => {
   const session = await auth();
   const user = session?.user;
   if (!user?.id) return null;
@@ -28,7 +33,7 @@ export async function getSessionUser() {
     // DB unreachable — don't block; fall back to the token.
   }
   return user;
-}
+});
 
 /**
  * Require an authenticated user. Redirects guests to the locale login page

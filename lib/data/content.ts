@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { prisma } from "@/lib/db";
 
 // --- CMS pages -------------------------------------------------------------
@@ -48,11 +49,13 @@ export function getHelpFaqs() {
 
 // --- Store settings (singleton) --------------------------------------------
 
-export async function getSettings() {
+// Called by the storefront layout AND several pages/actions in the same
+// request — cache() collapses those into a single DB round trip.
+export const getSettings = cache(async () => {
   const existing = await prisma.storeSettings.findUnique({ where: { id: "store" } });
   if (existing) return existing;
   return prisma.storeSettings.create({ data: { id: "store" } });
-}
+});
 
 // --- Support tickets -------------------------------------------------------
 

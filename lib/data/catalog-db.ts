@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { prisma } from "@/lib/db";
 import type { Category, Product } from "./catalog";
 import type {
@@ -49,13 +50,17 @@ const FULFILLMENT_MAP: Record<ProductFulfillment, Fulfillment> = {
 
 // --- categories ---
 
-export async function getCategories(): Promise<Category[]> {
+// Wrapped in React's request-scoped cache(): the storefront layout AND each
+// page (e.g. the homepage) call this independently to build the header/footer
+// nav plus page content. Without dedup that's 2+ identical DB round trips on
+// every single navigation — this was the main cause of a slow "home" link.
+export const getCategories = cache(async (): Promise<Category[]> => {
   const rows = await prisma.category.findMany({
     where: { active: true },
     orderBy: { sortOrder: "asc" },
   });
   return rows.map(toCategory);
-}
+});
 
 // --- products ---
 
@@ -65,14 +70,18 @@ function toProductWithCat(p: ProductWithCategory): Product {
   return { ...toProduct(p), category: p.category.slug };
 }
 
-export async function getProductBySlug(slug: string): Promise<Product | undefined> {
-  const p = await prisma.product.findUnique({
-    where: { slug },
-    include: { category: { select: { slug: true } } },
-  });
-  if (!p || !p.active) return undefined;
-  return toProductWithCat(p);
-}
+// The product page calls this once in generateMetadata() and again in the
+// page body — cache() collapses that back to a single DB query per request.
+export const getProductBySlug = cache(
+  async (slug: string): Promise<Product | undefined> => {
+    const p = await prisma.product.findUnique({
+      where: { slug },
+      include: { category: { select: { slug: true } } },
+    });
+    if (!p || !p.active) return undefined;
+    return toProductWithCat(p);
+  },
+);
 
 export async function getProductsByCategory(
   categorySlug: string,
@@ -132,13 +141,13 @@ export async function getRelatedProducts(
 }
 
 /** The product's DB id — needed to attach a customer review. */
-export async function getProductId(slug: string): Promise<string | null> {
+export const getProductId = cache(async (slug: string): Promise<string | null> => {
   const p = await prisma.product.findUnique({
     where: { slug },
     select: { id: true },
   });
   return p?.id ?? null;
-}
+});
 
 // --- admin: full rows including inactive ---
 
@@ -171,7 +180,7 @@ export function getAdminProduct(id: string) {
 
 // --- product detail ---
 
-export async function getProductDetail(slug: string): Promise<ProductDetail | null> {
+export const getProductDetail = cache(async (slug: string): Promise<ProductDetail | null> => {
   const p = await prisma.product.findUnique({
     where: { slug },
     include: {
@@ -237,4 +246,4 @@ export async function getProductDetail(slug: string): Promise<ProductDetail | nu
     reviews,
     ratingBreakdown,
   };
-}
+});
