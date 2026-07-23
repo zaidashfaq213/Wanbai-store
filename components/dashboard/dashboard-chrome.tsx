@@ -182,11 +182,13 @@ export function DashboardChrome({
 
           <Link
             href={`/${locale}`}
+            prefetch
             aria-label={dict.backToStore}
             title={dict.backToStore}
-            className="grid size-9 place-items-center rounded-xl text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
+            className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border px-2.5 text-xs font-bold text-muted transition-colors hover:border-primary/40 hover:bg-surface-2 hover:text-primary sm:px-3 sm:text-sm"
           >
-            <HomeIcon className="size-5" />
+            <HomeIcon className="size-4" />
+            <span className="hidden sm:inline">{dict.backToStore}</span>
           </Link>
 
           <Link

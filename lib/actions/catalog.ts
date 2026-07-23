@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
@@ -53,6 +53,8 @@ export async function createCategory(
 
   await prisma.category.create({ data: parsed.data });
   revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/categories`);
+  updateTag("categories");
+  updateTag("products");
   return { ok: true, code: "saved" };
 }
 
@@ -74,6 +76,8 @@ export async function updateCategory(
 
   await prisma.category.update({ where: { id }, data: parsed.data });
   revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/categories`);
+  updateTag("categories");
+  updateTag("products");
   return { ok: true, code: "saved" };
 }
 
@@ -84,6 +88,8 @@ export async function deleteCategory(formData: FormData) {
   if (count > 0) return; // don't delete a category that still has products
   await prisma.category.delete({ where: { id } });
   revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/categories`);
+  updateTag("categories");
+  updateTag("products");
 }
 
 // --- Products --------------------------------------------------------------
@@ -221,6 +227,7 @@ export async function createProduct(
   });
 
   revalidatePath(`/${locale}/admin/products`);
+  updateTag("products");
   redirect(`/${locale}/admin/products/${created.id}`);
 }
 
@@ -288,6 +295,7 @@ export async function updateProduct(
   });
   revalidatePath(`/${locale}/admin/products/${id}`);
   revalidatePath(`/${locale}/product`, "layout");
+  updateTag("products");
   return { ok: true, code: "saved" };
 }
 
@@ -296,6 +304,7 @@ export async function deleteProduct(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const locale = loc(String(formData.get("locale") ?? ""));
   await prisma.product.delete({ where: { id } });
+  updateTag("products");
   redirect(`/${locale}/admin/products`);
 }
 
@@ -326,6 +335,7 @@ export async function updatePackage(
   const { id, priceUsd, ...rest } = parsed.data;
   await prisma.package.update({ where: { id }, data: { ...rest, price: cents(priceUsd) } });
   revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products`);
+  updateTag("products");
   return { ok: true, code: "saved" };
 }
 
@@ -347,6 +357,7 @@ export async function addPackage(formData: FormData) {
     },
   });
   revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${group.productId}`);
+  updateTag("products");
 }
 
 export async function deletePackage(formData: FormData) {
@@ -355,6 +366,7 @@ export async function deletePackage(formData: FormData) {
   const productId = String(formData.get("productId") ?? "");
   await prisma.package.delete({ where: { id } });
   revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${productId}`);
+  updateTag("products");
 }
 
 // --- Variant / service groups ----------------------------------------------
@@ -388,6 +400,7 @@ export async function addVariantGroup(formData: FormData) {
     },
   });
   revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${productId}`);
+  updateTag("products");
 }
 
 export async function updateVariantGroup(
@@ -404,6 +417,7 @@ export async function updateVariantGroup(
   const { id, ...rest } = parsed.data;
   const g = await prisma.variantGroup.update({ where: { id }, data: rest });
   revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${g.productId}`);
+  updateTag("products");
   return { ok: true, code: "saved" };
 }
 
@@ -413,4 +427,5 @@ export async function deleteVariantGroup(formData: FormData) {
   const productId = String(formData.get("productId") ?? "");
   await prisma.variantGroup.delete({ where: { id } });
   revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${productId}`);
+  updateTag("products");
 }

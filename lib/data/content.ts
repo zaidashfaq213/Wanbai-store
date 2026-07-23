@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 
 // --- CMS pages -------------------------------------------------------------
@@ -50,12 +51,19 @@ export function getHelpFaqs() {
 // --- Store settings (singleton) --------------------------------------------
 
 // Called by the storefront layout AND several pages/actions in the same
-// request — cache() collapses those into a single DB round trip.
-export const getSettings = cache(async () => {
-  const existing = await prisma.storeSettings.findUnique({ where: { id: "store" } });
-  if (existing) return existing;
-  return prisma.storeSettings.create({ data: { id: "store" } });
-});
+// request — cache() collapses those into one DB round trip, and unstable_cache
+// then serves repeat visits across requests without hitting Postgres at all.
+export const getSettings = cache(
+  unstable_cache(
+    async () => {
+      const existing = await prisma.storeSettings.findUnique({ where: { id: "store" } });
+      if (existing) return existing;
+      return prisma.storeSettings.create({ data: { id: "store" } });
+    },
+    ["content:settings"],
+    { revalidate: 60, tags: ["settings"] },
+  ),
+);
 
 // --- Support tickets -------------------------------------------------------
 

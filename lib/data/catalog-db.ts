@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/db";
 import type { Category, Product } from "./catalog";
 import type {
@@ -50,17 +51,27 @@ const FULFILLMENT_MAP: Record<ProductFulfillment, Fulfillment> = {
 
 // --- categories ---
 
-// Wrapped in React's request-scoped cache(): the storefront layout AND each
-// page (e.g. the homepage) call this independently to build the header/footer
-// nav plus page content. Without dedup that's 2+ identical DB round trips on
-// every single navigation — this was the main cause of a slow "home" link.
-export const getCategories = cache(async (): Promise<Category[]> => {
-  const rows = await prisma.category.findMany({
-    where: { active: true },
-    orderBy: { sortOrder: "asc" },
-  });
-  return rows.map(toCategory);
-});
+// Two layers of caching stacked here:
+//  - unstable_cache: caches the DB result ACROSS requests for 60s, tagged
+//    "categories" so admin edits invalidate it immediately (see catalog.ts
+//    actions). This is what makes navigating to the homepage fast — most
+//    visits are served without touching Postgres at all.
+//  - React cache(): dedupes repeat calls WITHIN one request (the storefront
+//    layout and the page both need this).
+// Together these were the fix for the slow "home" navigation.
+export const getCategories = cache(
+  unstable_cache(
+    async (): Promise<Category[]> => {
+      const rows = await prisma.category.findMany({
+        where: { active: true },
+        orderBy: { sortOrder: "asc" },
+      });
+      return rows.map(toCategory);
+    },
+    ["catalog:categories"],
+    { revalidate: 60, tags: ["categories"] },
+  ),
+);
 
 // --- products ---
 
@@ -71,30 +82,39 @@ function toProductWithCat(p: ProductWithCategory): Product {
 }
 
 // The product page calls this once in generateMetadata() and again in the
-// page body — cache() collapses that back to a single DB query per request.
+// page body — cache() collapses that to one call per request; unstable_cache
+// then serves repeat visits (across requests) without hitting Postgres.
 export const getProductBySlug = cache(
-  async (slug: string): Promise<Product | undefined> => {
-    const p = await prisma.product.findUnique({
-      where: { slug },
-      include: { category: { select: { slug: true } } },
-    });
-    if (!p || !p.active) return undefined;
-    return toProductWithCat(p);
-  },
+  unstable_cache(
+    async (slug: string): Promise<Product | undefined> => {
+      const p = await prisma.product.findUnique({
+        where: { slug },
+        include: { category: { select: { slug: true } } },
+      });
+      if (!p || !p.active) return undefined;
+      return toProductWithCat(p);
+    },
+    ["catalog:product-by-slug"],
+    { revalidate: 60, tags: ["products"] },
+  ),
 );
 
-export async function getProductsByCategory(
-  categorySlug: string,
-  limit?: number,
-): Promise<Product[]> {
-  const rows = await prisma.product.findMany({
-    where: { active: true, category: { slug: categorySlug } },
-    include: { category: { select: { slug: true } } },
-    orderBy: { sortOrder: "asc" },
-    take: limit,
-  });
-  return rows.map(toProductWithCat);
-}
+// The homepage fans this out once per category (in parallel) to build each
+// showcase row — the single biggest contributor to a slow first paint. Cached
+// per (categorySlug, limit) combination for 60s.
+export const getProductsByCategory = unstable_cache(
+  async (categorySlug: string, limit?: number): Promise<Product[]> => {
+    const rows = await prisma.product.findMany({
+      where: { active: true, category: { slug: categorySlug } },
+      include: { category: { select: { slug: true } } },
+      orderBy: { sortOrder: "asc" },
+      take: limit,
+    });
+    return rows.map(toProductWithCat);
+  },
+  ["catalog:products-by-category"],
+  { revalidate: 60, tags: ["products"] },
+);
 
 export async function getAllProducts(): Promise<Product[]> {
   const rows = await prisma.product.findMany({
@@ -180,20 +200,24 @@ export function getAdminProduct(id: string) {
 
 // --- product detail ---
 
-export const getProductDetail = cache(async (slug: string): Promise<ProductDetail | null> => {
-  const p = await prisma.product.findUnique({
-    where: { slug },
-    include: {
-      category: { select: { slug: true } },
-      variantGroups: {
-        orderBy: { sortOrder: "asc" },
-        include: { packages: { orderBy: { sortOrder: "asc" } } },
-      },
-      faqs: { orderBy: { sortOrder: "asc" } },
-      reviews: { orderBy: { sortOrder: "asc" } },
-    },
-  });
-  if (!p) return null;
+// The heaviest single query on the site (variant groups + packages + faqs +
+// reviews in one go) — cached the same way as getProductBySlug above.
+export const getProductDetail = cache(
+  unstable_cache(
+    async (slug: string): Promise<ProductDetail | null> => {
+      const p = await prisma.product.findUnique({
+        where: { slug },
+        include: {
+          category: { select: { slug: true } },
+          variantGroups: {
+            orderBy: { sortOrder: "asc" },
+            include: { packages: { orderBy: { sortOrder: "asc" } } },
+          },
+          faqs: { orderBy: { sortOrder: "asc" } },
+          reviews: { orderBy: { sortOrder: "asc" } },
+        },
+      });
+      if (!p) return null;
 
   const variantGroups: VariantGroup[] = p.variantGroups.map((g) => ({
     id: g.id,
@@ -236,14 +260,18 @@ export const getProductDetail = cache(async (slug: string): Promise<ProductDetai
     bd[4] ?? 0,
   ];
 
-  return {
-    fulfillment: FULFILLMENT_MAP[p.fulfillment],
-    variantGroups,
-    inputs,
-    overview: { ar: p.overviewAr, en: p.overviewEn },
-    howToUse: { ar: p.howToUseAr, en: p.howToUseEn },
-    faqs,
-    reviews,
-    ratingBreakdown,
-  };
-});
+      return {
+        fulfillment: FULFILLMENT_MAP[p.fulfillment],
+        variantGroups,
+        inputs,
+        overview: { ar: p.overviewAr, en: p.overviewEn },
+        howToUse: { ar: p.howToUseAr, en: p.howToUseEn },
+        faqs,
+        reviews,
+        ratingBreakdown,
+      };
+    },
+    ["catalog:product-detail"],
+    { revalidate: 60, tags: ["products"] },
+  ),
+);

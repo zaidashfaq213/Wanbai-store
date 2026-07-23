@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/session";
@@ -217,6 +217,7 @@ export async function saveSettings(
   });
   // The logo shows in every storefront/admin layout, so refresh broadly.
   revalidatePath("/", "layout");
+  updateTag("settings");
   return { ok: true, code: "saved" };
 }
 
