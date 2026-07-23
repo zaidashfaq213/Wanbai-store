@@ -872,7 +872,20 @@
     "telegram": "Telegram",
     "email": "Email",
     "ticket": "Open a support ticket",
-    "ticketBody": "Best for order issues — we track every reply"
+    "ticketBody": "Best for order issues — we track every reply",
+    "heroTag": "We're here for you",
+    "formTitle": "Send us a message",
+    "formSubtitle": "Fill in the form and our team will reply by email.",
+    "name": "Your name",
+    "emailAddress": "Your email",
+    "subject": "Subject",
+    "message": "Message",
+    "send": "Send message",
+    "sending": "Sending…",
+    "sent": "Message sent! We'll get back to you by email soon.",
+    "errorGeneric": "Couldn't send your message. Please try again or use WhatsApp.",
+    "channelsTitle": "Other ways to reach us",
+    "hoursNote": "We typically reply within a few hours."
   },
   "blog": {
     "title": "Blog",
@@ -913,5 +926,68 @@
       "Tap Install, then open Wanbai Store and sign in."
     ],
     "note": "Android only. The unknown-sources prompt is normal for any app installed outside Google Play."
+  },
+  "supportWidget": {
+    "button": "Need help?",
+    "title": "Support",
+    "subtitle": "Quick answers — tap a question",
+    "intro": "Hi! 👋 Tap a question below for an instant answer, or reach us directly for anything else.",
+    "search": "Search a question…",
+    "noResults": "No matching questions. Try contacting us directly below.",
+    "back": "← Back to questions",
+    "stillNeedHelp": "Still need help?",
+    "contactUs": "Contact us",
+    "openTicket": "Open a support ticket",
+    "close": "Close",
+    "faqs": [
+      {
+        "q": "How long does delivery take?",
+        "a": "Delivery is instant in most cases — within seconds to a few minutes after your payment is confirmed. You'll get the code or top-up right in your account and by email."
+      },
+      {
+        "q": "What payment methods are available?",
+        "a": "You can pay by bank transfer (اوو-كاش, MyCashi, or BOK) — just upload a screenshot of your transfer — or from your wallet balance if you've topped it up."
+      },
+      {
+        "q": "How do I add funds to my wallet?",
+        "a": "Go to Dashboard → Wallet → Add funds, choose a bank, transfer the amount, then upload your payment screenshot. Our team confirms it and credits your wallet."
+      },
+      {
+        "q": "My order is still pending, what do I do?",
+        "a": "Pending means we're waiting on your payment screenshot or reviewing it. Check Dashboard → Orders — if it's been over a few hours, open a support ticket and we'll check it right away."
+      },
+      {
+        "q": "I didn't receive my order",
+        "a": "First check Dashboard → Orders for your delivered code. If it's marked Paid but nothing arrived, please open a support ticket with your order number and we'll resolve it fast."
+      },
+      {
+        "q": "Can I get a refund?",
+        "a": "Since these are digital products, orders can't be cancelled once fulfilled. If something went wrong on our end, open a support ticket and we'll sort it out — see our Return Policy for details."
+      },
+      {
+        "q": "Is my payment safe?",
+        "a": "Yes. We don't store card numbers — payments are manual bank transfers reviewed by our team, and all data is handled securely."
+      },
+      {
+        "q": "I entered the wrong Player ID / details",
+        "a": "Contact support immediately via WhatsApp or a ticket before the order is fulfilled — once delivered we usually can't reverse it."
+      },
+      {
+        "q": "I didn't get my verification code",
+        "a": "Check your spam/junk folder and mark it as “Not spam”. Still nothing? Use “Resend code” on the verification page."
+      },
+      {
+        "q": "How do I change the language or currency?",
+        "a": "Use the language switcher in the header to change between Arabic and English. The store currently runs in Sudanese Pound (ج.س)."
+      },
+      {
+        "q": "How do I track my order?",
+        "a": "Go to Dashboard → Orders. Tap any order to see its full status, payment proof, and chat directly with our team about it."
+      },
+      {
+        "q": "How can I contact a real person?",
+        "a": "Use the WhatsApp button below, or open a support ticket from your dashboard — a real team member will reply."
+      }
+    ]
   }
 }

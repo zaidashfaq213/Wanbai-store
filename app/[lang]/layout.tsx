@@ -11,6 +11,7 @@ import {
   type Locale,
 } from "@/lib/i18n/config";
 import { SITE_URL, abs, languageAlternates } from "@/lib/seo";
+import { SupportWidget } from "@/components/support/support-widget";
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -88,6 +89,7 @@ export default async function LangLayout({
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
   const dir = localeDirection[locale];
   const isDark = (await cookies()).get("theme")?.value === "dark";
+  const dict = await getDictionary(locale);
 
   return (
     <html
@@ -97,7 +99,10 @@ export default async function LangLayout({
       style={{ colorScheme: isDark ? "dark" : "light" }}
       suppressHydrationWarning
     >
-      <body className="min-h-full bg-background text-foreground">{children}</body>
+      <body className="min-h-full bg-background text-foreground">
+        {children}
+        <SupportWidget locale={locale} dict={dict.supportWidget} />
+      </body>
     </html>
   );
 }

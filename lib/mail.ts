@@ -25,6 +25,9 @@ export type MailInput = {
   subject: string;
   html: string;
   text?: string;
+  // Overrides the default Reply-To (SMTP_USER) — e.g. the contact form sets
+  // this to the visitor's email so support can just hit reply.
+  replyTo?: string;
 };
 
 /**
@@ -32,7 +35,7 @@ export type MailInput = {
  * message is logged to the server console instead of failing — so the reset
  * flow is still testable before a real mail provider is wired up.
  */
-export async function sendMail({ to, subject, html, text }: MailInput) {
+export async function sendMail({ to, subject, html, text, replyTo }: MailInput) {
   const tx = getTransporter();
   if (!tx) {
     console.info(
@@ -44,7 +47,7 @@ export async function sendMail({ to, subject, html, text }: MailInput) {
     await tx.sendMail({
       from: SMTP_FROM ?? "WANBAI-STORE <no-reply@wanbai.store>",
       // A valid Reply-To (a real inbox) improves inbox placement.
-      replyTo: SMTP_USER,
+      replyTo: replyTo ?? SMTP_USER,
       to,
       subject,
       html,
