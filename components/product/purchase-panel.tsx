@@ -70,6 +70,14 @@ export function PurchasePanel({
   const totalCents = pkg ? Math.round(pkg.price * 100) : 0;
   const canWallet = isAuthed && walletBalanceCents >= totalCents;
 
+  // Wallet may have been affordable for a cheaper package (or before the
+  // balance changed) but the shopper then picked a pricier package/variant —
+  // the Wallet option is now disabled. Derive the effective method at render
+  // time instead of holding it in state, so "Buy Now" always submits with the
+  // payment method that's actually available/selected, not a stale WALLET
+  // choice the server would just reject.
+  const activeMethod = method === "WALLET" && !canWallet ? "BANK" : method;
+
   function selectGroup(i: number) {
     setGroupIdx(i);
     setPkgId(defaultPackage(variantGroups[i]).id);
@@ -104,7 +112,7 @@ export function PurchasePanel({
       const res = await createOrder({
         locale,
         currency: currency.code,
-        paymentMethod: method,
+        paymentMethod: activeMethod,
         item: {
           productSlug: product.slug,
           productName: product.name,
@@ -278,7 +286,7 @@ export function PurchasePanel({
               disabled={!canWallet}
               className={cn(
                 "flex items-center justify-between rounded-xl border px-3.5 py-3 text-start transition-colors disabled:opacity-50",
-                method === "WALLET"
+                activeMethod === "WALLET"
                   ? "border-primary bg-primary/5"
                   : "border-border hover:bg-surface-2",
               )}
@@ -294,7 +302,7 @@ export function PurchasePanel({
               onClick={() => setMethod("BANK")}
               className={cn(
                 "flex items-center justify-between rounded-xl border px-3.5 py-3 text-start transition-colors",
-                method === "BANK"
+                activeMethod === "BANK"
                   ? "border-primary bg-primary/5"
                   : "border-border hover:bg-surface-2",
               )}
