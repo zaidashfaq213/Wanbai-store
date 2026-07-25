@@ -24,15 +24,33 @@ export default async function AdminNewProductPage({
         {p.back}
       </Link>
       <PageHeader title={p.newProduct} subtitle={p.subtitle} />
-      <ProductCreateForm
-        locale={locale}
-        dict={p}
-        errors={dict.admin.catalog.errors}
-        categories={categories.map((c) => ({
-          id: c.id,
-          label: locale === "ar" ? c.nameAr : c.nameEn,
-        }))}
-      />
+
+      {categories.length === 0 ? (
+        // A product always belongs to a category — with none created yet, the
+        // category <select> below would be empty and the browser blocks
+        // submission with a native "select an item" prompt that looks like a
+        // broken/unexplained error. Guide the admin to fix the real cause.
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border bg-surface p-10 text-center">
+          <p className="text-base font-bold">{p.noCategoriesTitle}</p>
+          <p className="max-w-sm text-sm text-muted">{p.noCategoriesBody}</p>
+          <Link
+            href={`/${locale}/admin/categories`}
+            className="rounded-xl brand-gradient px-5 py-2.5 text-sm font-bold text-white"
+          >
+            {p.noCategoriesCta}
+          </Link>
+        </div>
+      ) : (
+        <ProductCreateForm
+          locale={locale}
+          dict={p}
+          errors={dict.admin.catalog.errors}
+          categories={categories.map((c) => ({
+            id: c.id,
+            label: locale === "ar" ? c.nameAr : c.nameEn,
+          }))}
+        />
+      )}
     </div>
   );
 }

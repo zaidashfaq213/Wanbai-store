@@ -686,7 +686,10 @@
         "groupNameEn": "اسم المجموعة (بالإنجليزية)",
         "groupNameAr": "اسم المجموعة (بالعربية)",
         "deleteGroup": "حذف المجموعة",
-        "renameGroup": "إعادة تسمية"
+        "renameGroup": "إعادة تسمية",
+        "noCategoriesTitle": "أنشئ تصنيفاً أولاً",
+        "noCategoriesBody": "تحتاج إلى تصنيف واحد على الأقل قبل إضافة منتجات — كل منتج يجب أن ينتمي إلى تصنيف.",
+        "noCategoriesCta": "الذهاب إلى التصنيفات"
       },
       "errors": {
         "slug_taken": "هذا المعرّف مستخدم بالفعل.",
@@ -695,7 +698,8 @@
         "saved": "تم الحفظ",
         "image_too_large": "الصورة أكبر من 5 ميجابايت.",
         "image_bad_type": "يجب أن تكون الصورة PNG أو JPG أو WebP.",
-        "image_empty": "اختر صورة."
+        "image_empty": "اختر صورة.",
+        "server_error": "حدث خطأ أثناء الحفظ. حاول مرة أخرى."
       },
       "fulfillments": {
         "TOPUP": "شحن",

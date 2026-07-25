@@ -686,7 +686,10 @@
         "groupNameEn": "Group name (English)",
         "groupNameAr": "Group name (Arabic)",
         "deleteGroup": "Delete group",
-        "renameGroup": "Rename"
+        "renameGroup": "Rename",
+        "noCategoriesTitle": "Create a category first",
+        "noCategoriesBody": "You need at least one category before you can add products — products always belong to a category.",
+        "noCategoriesCta": "Go to Categories"
       },
       "errors": {
         "slug_taken": "That slug is already used.",
@@ -695,7 +698,8 @@
         "saved": "Saved",
         "image_too_large": "Image is larger than 5 MB.",
         "image_bad_type": "Image must be PNG, JPG or WebP.",
-        "image_empty": "Choose an image."
+        "image_empty": "Choose an image.",
+        "server_error": "Something went wrong saving this. Please try again."
       },
       "fulfillments": {
         "TOPUP": "Top-up",

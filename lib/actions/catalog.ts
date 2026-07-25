@@ -165,7 +165,9 @@ export async function createProduct(
     reviews: 0,
   });
 
-  const created = await prisma.product.create({
+  let created;
+  try {
+    created = await prisma.product.create({
     data: {
       slug: d.slug,
       categoryId: d.categoryId,
@@ -224,7 +226,14 @@ export async function createProduct(
         })),
       },
     },
-  });
+    });
+  } catch (err) {
+    // Don't let an unexpected DB error (e.g. a stale category, a schema that
+    // hasn't been migrated yet) crash into Next's generic error page — log it
+    // for diagnosis and surface a message the admin can actually act on.
+    console.error("[createProduct] failed:", err);
+    return { ok: false, code: "server_error" };
+  }
 
   revalidatePath(`/${locale}/admin/products`);
   updateTag("products");
