@@ -298,10 +298,15 @@ export async function updateProduct(
     imageUpdate = { image };
   }
 
-  await prisma.product.update({
-    where: { id },
-    data: { ...rest, priceFrom: cents(priceFromUsd), ...imageUpdate },
-  });
+  try {
+    await prisma.product.update({
+      where: { id },
+      data: { ...rest, priceFrom: cents(priceFromUsd), ...imageUpdate },
+    });
+  } catch (err) {
+    console.error("[updateProduct] failed:", err);
+    return { ok: false, code: "server_error" };
+  }
   revalidatePath(`/${locale}/admin/products/${id}`);
   revalidatePath(`/${locale}/product`, "layout");
   updateTag("products");

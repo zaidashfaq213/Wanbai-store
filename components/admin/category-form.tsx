@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import {
@@ -10,6 +10,7 @@ import {
   type CatalogState,
 } from "@/lib/actions/catalog";
 import { ConfirmButton } from "@/components/ui/confirm-button";
+import { slugify } from "@/lib/utils";
 
 const FIELD =
   "h-10 w-full rounded-xl border border-border bg-surface-2 px-3 text-sm outline-none focus:border-primary/50";
@@ -44,6 +45,11 @@ export function CategoryForm({
     isEdit ? updateCategory : createCategory,
     { ok: false },
   );
+  // Auto-fill the slug from the English name — see the same note in
+  // ProductCreateForm. Only relevant in create mode (the slug field is
+  // read-only/hidden once a category exists).
+  const [slug, setSlug] = useState("");
+  const [slugTouched, setSlugTouched] = useState(false);
 
   return (
     <form action={action} className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4">
@@ -77,7 +83,18 @@ export function CategoryForm({
         {!isEdit && (
           <label className="flex flex-col gap-1">
             <span className="text-xs font-semibold text-muted">{dict.slug}</span>
-            <input name="slug" required pattern="[a-z0-9-]+" placeholder="e.g. game-fill" className={FIELD} />
+            <input
+              name="slug"
+              required
+              pattern="[a-z0-9-]+"
+              placeholder="e.g. game-fill"
+              value={slug}
+              onChange={(e) => {
+                setSlugTouched(true);
+                setSlug(slugify(e.target.value));
+              }}
+              className={FIELD}
+            />
           </label>
         )}
         <label className="flex flex-col gap-1">
@@ -86,7 +103,15 @@ export function CategoryForm({
         </label>
         <label className="flex flex-col gap-1">
           <span className="text-xs font-semibold text-muted">{dict.nameEn}</span>
-          <input name="nameEn" defaultValue={category?.nameEn ?? ""} required className={FIELD} />
+          <input
+            name="nameEn"
+            defaultValue={category?.nameEn ?? ""}
+            required
+            className={FIELD}
+            onChange={(e) => {
+              if (!isEdit && !slugTouched) setSlug(slugify(e.target.value));
+            }}
+          />
         </label>
         <label className="flex flex-col gap-1">
           <span className="text-xs font-semibold text-muted">{dict.nameAr}</span>

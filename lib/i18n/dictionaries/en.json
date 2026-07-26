@@ -411,7 +411,10 @@
       "paidBody": "Payment received from your wallet. We're preparing your order and you'll be notified."
     },
     "signInToBuy": "Sign in to buy",
-    "signInHint": "Choose wallet or bank transfer after signing in."
+    "signInHint": "Pay instantly from your wallet balance.",
+    "insufficientTitle": "Not enough wallet balance",
+    "insufficientBody": "Top up your wallet with a bank transfer, then come back to buy this.",
+    "topUpWallet": "Top up wallet"
   },
   "payments": {
     "topUpTitle": "Add funds by bank transfer",

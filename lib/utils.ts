@@ -2,6 +2,26 @@ export function cn(...classes: Array<string | false | null | undefined>): string
   return classes.filter(Boolean).join(" ");
 }
 
+/**
+ * Turn any free-form text into a clean, URL-safe slug (lowercase, hyphenated,
+ * a-z0-9 only). Handles accented Latin letters (café → cafe), punctuation,
+ * numbers, extra whitespace and mixed case. Non-Latin text (e.g. Arabic-only
+ * input) collapses to an empty string — slugs are inherently Latin/ASCII
+ * identifiers, so callers should slugify the English name, not the Arabic one.
+ */
+const DIACRITICS_RE = new RegExp("[̀-ͯ]", "g");
+
+export function slugify(text: string, maxLength = 60): string {
+  return text
+    .normalize("NFKD")
+    .replace(DIACRITICS_RE, "") // strip accents/diacritics
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-") // any run of non-alphanumerics -> one hyphen
+    .replace(/^-+|-+$/g, "") // trim leading/trailing hyphens
+    .slice(0, maxLength)
+    .replace(/-+$/g, ""); // a slice() can leave a trailing hyphen — trim again
+}
+
 /** Replace {key} placeholders in a string with values. */
 export function fmt(
   template: string,

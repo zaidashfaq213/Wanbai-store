@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { createProduct, type CatalogState } from "@/lib/actions/catalog";
+import { slugify } from "@/lib/utils";
 
 const FIELD =
   "h-10 w-full rounded-xl border border-border bg-surface-2 px-3 text-sm outline-none focus:border-primary/50";
@@ -23,6 +24,12 @@ export function ProductCreateForm({
     createProduct,
     { ok: false },
   );
+  // Auto-fill the slug from the English name (most admins don't know slugs
+  // must be lowercase-hyphenated — typing a display name there used to trip
+  // the browser's native pattern validation with a confusing popup). Once the
+  // admin edits the slug field directly, stop overwriting it.
+  const [slug, setSlug] = useState("");
+  const [slugTouched, setSlugTouched] = useState(false);
 
   return (
     <form action={action} className="flex max-w-2xl flex-col gap-3 rounded-2xl border border-border bg-surface p-5">
@@ -37,7 +44,18 @@ export function ProductCreateForm({
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1">
           <span className="text-xs font-semibold text-muted">{dict.slug}</span>
-          <input name="slug" required pattern="[a-z0-9-]+" placeholder="e.g. free-fire" className={FIELD} />
+          <input
+            name="slug"
+            required
+            pattern="[a-z0-9-]+"
+            placeholder="e.g. free-fire"
+            value={slug}
+            onChange={(e) => {
+              setSlugTouched(true);
+              setSlug(slugify(e.target.value));
+            }}
+            className={FIELD}
+          />
         </label>
         <label className="flex flex-col gap-1">
           <span className="text-xs font-semibold text-muted">{dict.category}</span>
@@ -49,7 +67,14 @@ export function ProductCreateForm({
         </label>
         <label className="flex flex-col gap-1">
           <span className="text-xs font-semibold text-muted">{dict.name} (EN)</span>
-          <input name="nameEn" required className={FIELD} />
+          <input
+            name="nameEn"
+            required
+            className={FIELD}
+            onChange={(e) => {
+              if (!slugTouched) setSlug(slugify(e.target.value));
+            }}
+          />
         </label>
         <label className="flex flex-col gap-1">
           <span className="text-xs font-semibold text-muted">{dict.name} (AR)</span>

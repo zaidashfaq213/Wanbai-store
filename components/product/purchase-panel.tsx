@@ -14,9 +14,7 @@ import type {
 import { cn, formatPrice, formatCents } from "@/lib/utils";
 import { createOrder } from "@/lib/actions/checkout";
 import { toggleFavorite } from "@/lib/actions/account";
-import { BoltIcon, HeartIcon, ShareIcon, UserIcon } from "@/components/ui/icons";
-import { OrderPaymentForm } from "@/components/dashboard/order-payment-form";
-import { type BankOption } from "@/components/dashboard/bank-topup";
+import { BoltIcon, HeartIcon, ShareIcon, UserIcon, WalletIcon } from "@/components/ui/icons";
 
 function defaultPackage(group: VariantGroup): Package {
   return group.packages.find((p) => p.popular) ?? group.packages[0];
@@ -28,8 +26,11 @@ const DELIVERY_MAP: Record<Fulfillment, "TOPUP" | "CODE" | "SERVICE"> = {
   service: "SERVICE",
 };
 
-type SuccessResult = { code: string; orderRef: string };
+type SuccessResult = { orderRef: string };
 
+// Buying is wallet-only — bank transfer per order was removed, so every
+// purchase settles instantly against a balance the customer already topped up
+// (that's still done by bank transfer, just on the Wallet page, not here).
 export function PurchasePanel({
   product,
   variantGroups,
@@ -40,7 +41,6 @@ export function PurchasePanel({
   dict,
   isAuthed,
   walletBalanceCents,
-  banks,
 }: {
   product: { slug: string; name: string; categorySlug: string };
   variantGroups: VariantGroup[];
@@ -51,13 +51,11 @@ export function PurchasePanel({
   dict: Dictionary;
   isAuthed: boolean;
   walletBalanceCents: number;
-  banks: BankOption[];
 }) {
   const router = useRouter();
   const [groupIdx, setGroupIdx] = useState(0);
   const [pkgId, setPkgId] = useState(() => defaultPackage(variantGroups[0]).id);
   const [values, setValues] = useState<Record<string, string>>({});
-  const [method, setMethod] = useState<"WALLET" | "BANK">("BANK");
   const [toast, setToast] = useState<string | null>(null);
   const [success, setSuccess] = useState<SuccessResult | null>(null);
   const [pending, startTransition] = useTransition();
@@ -68,15 +66,7 @@ export function PurchasePanel({
   const c = dict.checkout;
 
   const totalCents = pkg ? Math.round(pkg.price * 100) : 0;
-  const canWallet = isAuthed && walletBalanceCents >= totalCents;
-
-  // Wallet may have been affordable for a cheaper package (or before the
-  // balance changed) but the shopper then picked a pricier package/variant —
-  // the Wallet option is now disabled. Derive the effective method at render
-  // time instead of holding it in state, so "Buy Now" always submits with the
-  // payment method that's actually available/selected, not a stale WALLET
-  // choice the server would just reject.
-  const activeMethod = method === "WALLET" && !canWallet ? "BANK" : method;
+  const canAfford = isAuthed && walletBalanceCents >= totalCents;
 
   function selectGroup(i: number) {
     setGroupIdx(i);
@@ -91,7 +81,6 @@ export function PurchasePanel({
   function errorFor(code?: string) {
     const map: Record<string, string> = {
       insufficient_funds: c.errors.insufficientFunds,
-      email_required: c.errors.emailRequired,
       requires_auth: c.errors.requiresAuth,
       invalid_input: c.errors.invalidInput,
     };
@@ -107,12 +96,12 @@ export function PurchasePanel({
     if (!pkg) return flash(p.needPackage);
     const missing = inputs.some((f) => f.required && !values[f.id]?.trim());
     if (missing) return flash(p.needFields);
+    if (!canAfford) return flash(c.errors.insufficientFunds);
 
     startTransition(async () => {
       const res = await createOrder({
         locale,
         currency: currency.code,
-        paymentMethod: activeMethod,
         item: {
           productSlug: product.slug,
           productName: product.name,
@@ -126,50 +115,31 @@ export function PurchasePanel({
       });
 
       if (!res.ok) return flash(errorFor(res.code));
-      setSuccess({ code: res.code ?? "order_pending", orderRef: res.orderRef ?? "" });
+      setSuccess({ orderRef: res.orderRef ?? "" });
       router.refresh(); // refresh wallet balance / notifications in the shell
     });
   }
 
   if (success) {
-    const isPending = success.code === "order_pending"; // bank transfer
     return (
       <div className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5">
         <div className="text-center">
           <div className="mx-auto grid size-12 place-items-center rounded-full bg-emerald-500/10 text-2xl">
-            {isPending ? "🧾" : "✅"}
+            ✅
           </div>
-          <p className="mt-2 text-lg font-black">
-            {isPending ? c.success.pendingTitle : c.success.paidTitle}
-          </p>
+          <p className="mt-2 text-lg font-black">{c.success.paidTitle}</p>
           <p className="mt-1 text-sm text-muted">
             {c.success.orderRef}: <span className="font-bold">{success.orderRef}</span>
           </p>
         </div>
 
-        {/* Wallet-paid: preparing. Bank: show the transfer + screenshot form here. */}
-        {!isPending ? (
-          <>
-            <p className="text-center text-sm text-muted">{c.success.paidBody}</p>
-            <a
-              href={`/${locale}/dashboard/orders`}
-              className="rounded-xl brand-gradient py-3 text-center text-sm font-bold text-white"
-            >
-              {c.success.viewOrders}
-            </a>
-          </>
-        ) : (
-          <>
-            <p className="text-center text-sm text-muted">{dict.payments.pendingBody}</p>
-            <OrderPaymentForm
-              locale={locale}
-              dict={dict.payments}
-              banks={banks}
-              orderRef={success.orderRef}
-              defaultOpen
-            />
-          </>
-        )}
+        <p className="text-center text-sm text-muted">{c.success.paidBody}</p>
+        <a
+          href={`/${locale}/dashboard/orders`}
+          className="rounded-xl brand-gradient py-3 text-center text-sm font-bold text-white"
+        >
+          {c.success.viewOrders}
+        </a>
 
         <button
           type="button"
@@ -275,46 +245,20 @@ export function PurchasePanel({
         </p>
       )}
 
-      {/* Payment method (logged-in only) */}
+      {/* Wallet balance (logged-in only — buying is wallet-only) */}
       {isAuthed && (
-        <div>
-          <p className="mb-2 text-sm font-bold">{c.paymentMethod}</p>
-          <div className="grid gap-2">
-            <button
-              type="button"
-              onClick={() => canWallet && setMethod("WALLET")}
-              disabled={!canWallet}
-              className={cn(
-                "flex items-center justify-between rounded-xl border px-3.5 py-3 text-start transition-colors disabled:opacity-50",
-                activeMethod === "WALLET"
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:bg-surface-2",
-              )}
-            >
-              <span className="text-sm font-bold">{c.payWallet}</span>
-              <span className="text-xs text-muted">
-                {formatCents(walletBalanceCents, currency.symbol, currency.rate, locale)}
-                {!canWallet && ` · ${c.errors.insufficientFunds}`}
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMethod("BANK")}
-              className={cn(
-                "flex items-center justify-between rounded-xl border px-3.5 py-3 text-start transition-colors",
-                activeMethod === "BANK"
-                  ? "border-primary bg-primary/5"
-                  : "border-border hover:bg-surface-2",
-              )}
-            >
-              <span className="text-sm font-bold">{c.payGateway}</span>
-              <span className="text-xs text-muted">{c.payGatewayNote}</span>
-            </button>
-          </div>
+        <div className="flex items-center justify-between rounded-xl border border-border bg-surface-2 px-3.5 py-3">
+          <span className="flex items-center gap-2 text-sm font-bold">
+            <WalletIcon className="size-4 text-primary" />
+            {c.payWallet}
+          </span>
+          <span className={cn("text-sm font-extrabold", canAfford ? "text-primary" : "text-red-500")}>
+            {formatCents(walletBalanceCents, currency.symbol, currency.rate, locale)}
+          </span>
         </div>
       )}
 
-      {/* Total + buy / sign-in */}
+      {/* Total + buy / top-up / sign-in */}
       <div className="rounded-2xl border border-border bg-surface p-4">
         <div className="mb-3 flex items-center justify-between">
           <span className="text-sm text-muted">{p.total}</span>
@@ -323,18 +267,34 @@ export function PurchasePanel({
           </span>
         </div>
         {isAuthed ? (
-          <>
-            <button
-              type="button"
-              onClick={buyNow}
-              disabled={pending}
-              className="flex w-full items-center justify-center gap-2 rounded-xl brand-gradient py-3.5 text-base font-bold text-white shadow-sm transition-transform hover:scale-[1.01] disabled:opacity-60 disabled:hover:scale-100"
-            >
-              <BoltIcon className="size-5" />
-              {pending ? c.placingOrder : p.buyNow}
-            </button>
-            <p className="mt-2 text-center text-xs text-muted">{p.buyNote}</p>
-          </>
+          canAfford ? (
+            <>
+              <button
+                type="button"
+                onClick={buyNow}
+                disabled={pending}
+                className="flex w-full items-center justify-center gap-2 rounded-xl brand-gradient py-3.5 text-base font-bold text-white shadow-sm transition-transform hover:scale-[1.01] disabled:opacity-60 disabled:hover:scale-100"
+              >
+                <BoltIcon className="size-5" />
+                {pending ? c.placingOrder : p.buyNow}
+              </button>
+              <p className="mt-2 text-center text-xs text-muted">{p.buyNote}</p>
+            </>
+          ) : (
+            <>
+              <p className="mb-3 text-center text-sm font-semibold text-red-500">
+                {c.insufficientTitle}
+              </p>
+              <a
+                href={`/${locale}/dashboard/wallet`}
+                className="flex w-full items-center justify-center gap-2 rounded-xl brand-gradient py-3.5 text-base font-bold text-white shadow-sm transition-transform hover:scale-[1.01]"
+              >
+                <WalletIcon className="size-5" />
+                {c.topUpWallet}
+              </a>
+              <p className="mt-2 text-center text-xs text-muted">{c.insufficientBody}</p>
+            </>
+          )
         ) : (
           <>
             <button

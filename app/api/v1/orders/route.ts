@@ -24,10 +24,13 @@ export const GET = withAuth(async (_req, user) => {
   return ok({ orders });
 });
 
+// Buying a service is wallet-only — bank transfer per order was removed so
+// every purchase settles instantly against a balance already verified via the
+// wallet top-up review. Bank transfer still exists only to FUND the wallet
+// (POST /wallet/topup), not to pay for an order directly.
 const createSchema = z.object({
   currency: z.string().default("USD"),
   locale: z.string().default("ar"),
-  paymentMethod: z.enum(["WALLET", "BANK"]),
   item: z.object({
     productSlug: z.string().min(1),
     productName: z.string().min(1),
@@ -40,11 +43,11 @@ const createSchema = z.object({
   }),
 });
 
-// POST /api/v1/orders — buy with wallet (instant debit) or bank transfer
+// POST /api/v1/orders — buy with wallet balance (instant debit)
 export const POST = withAuth(async (req, user) => {
   const parsed = createSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return fail("invalid_input");
-  const { currency, locale, paymentMethod, item } = parsed.data;
+  const { currency, locale, item } = parsed.data;
 
   const unitPrice = Math.round(item.unitPriceUsd * 100);
   const total = unitPrice;
@@ -62,71 +65,51 @@ export const POST = withAuth(async (req, user) => {
     inputs: item.inputs ?? undefined,
   };
 
-  if (paymentMethod === "WALLET") {
-    const fresh = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { walletBalance: true },
-    });
-    if (!fresh || fresh.walletBalance < total) return fail("insufficient_funds", 402);
-
-    const order = await prisma.$transaction(async (tx) => {
-      const created = await tx.order.create({
-        data: {
-          ref,
-          userId: user.id,
-          email: user.email,
-          status: "PAID",
-          paymentMethod: "WALLET",
-          subtotal: total,
-          total,
-          currency,
-          locale,
-          items: { create: itemData },
-        },
-        include: { items: true },
-      });
-      await tx.user.update({
-        where: { id: user.id },
-        data: { walletBalance: { decrement: total } },
-      });
-      await tx.walletTransaction.create({
-        data: {
-          userId: user.id,
-          amount: -total,
-          type: "PURCHASE",
-          description: `Order ${ref}`,
-          orderId: created.id,
-        },
-      });
-      await tx.notification.create({
-        data: {
-          userId: user.id,
-          type: "ORDER",
-          title: `Order ${ref} paid`,
-          body: `${item.productName} — ${item.packageLabel}. We're preparing it now.`,
-          href: "/dashboard/orders",
-        },
-      });
-      return created;
-    });
-    return ok({ order, status: "order_paid" }, 201);
-  }
-
-  // Bank transfer: pending until the screenshot is approved by an admin.
-  const order = await prisma.order.create({
-    data: {
-      ref,
-      userId: user.id,
-      email: user.email,
-      status: "PENDING",
-      paymentMethod: "BANK",
-      subtotal: total,
-      total,
-      currency,
-      locale,
-      items: { create: itemData },
-    },
-    include: { items: true },
+  const fresh = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { walletBalance: true },
   });
-  return ok({ order, status: "order_pending" }, 201);
+  if (!fresh || fresh.walletBalance < total) return fail("insufficient_funds", 402);
+
+  const order = await prisma.$transaction(async (tx) => {
+    const created = await tx.order.create({
+      data: {
+        ref,
+        userId: user.id,
+        email: user.email,
+        status: "PAID",
+        paymentMethod: "WALLET",
+        subtotal: total,
+        total,
+        currency,
+        locale,
+        items: { create: itemData },
+      },
+      include: { items: true },
+    });
+    await tx.user.update({
+      where: { id: user.id },
+      data: { walletBalance: { decrement: total } },
+    });
+    await tx.walletTransaction.create({
+      data: {
+        userId: user.id,
+        amount: -total,
+        type: "PURCHASE",
+        description: `Order ${ref}`,
+        orderId: created.id,
+      },
+    });
+    await tx.notification.create({
+      data: {
+        userId: user.id,
+        type: "ORDER",
+        title: `Order ${ref} paid`,
+        body: `${item.productName} — ${item.packageLabel}. We're preparing it now.`,
+        href: "/dashboard/orders",
+      },
+    });
+    return created;
+  });
+  return ok({ order, status: "order_paid" }, 201);
 });

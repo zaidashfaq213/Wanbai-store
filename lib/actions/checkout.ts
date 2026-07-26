@@ -7,11 +7,14 @@ import { getSessionUser } from "@/lib/auth/session";
 
 // One purchasable line coming from the product purchase panel. Prices arrive in
 // USD dollars and are stored as integer cents.
+//
+// Buying a service is wallet-only — bank transfer per order was removed so
+// every purchase settles instantly against a balance we've already verified
+// (via the wallet top-up review). Bank transfer still exists, but only to
+// FUND the wallet (see lib/actions/payments.ts submitWalletTopUp).
 const checkoutSchema = z.object({
   locale: z.string(),
   currency: z.string().default("USD"),
-  email: z.string().trim().toLowerCase().email().optional(),
-  paymentMethod: z.enum(["WALLET", "BANK"]),
   item: z.object({
     productSlug: z.string().min(1),
     productName: z.string().min(1),
@@ -30,7 +33,6 @@ export type CheckoutResult = {
   ok: boolean;
   code?: string; // localizable message key
   orderRef?: string;
-  redirect?: string;
 };
 
 function orderRef() {
@@ -40,126 +42,78 @@ function orderRef() {
 export async function createOrder(input: CheckoutInput): Promise<CheckoutResult> {
   const parsed = checkoutSchema.safeParse(input);
   if (!parsed.success) return { ok: false, code: "invalid_input" };
-  const { locale, currency, paymentMethod, item } = parsed.data;
+  const { locale, currency, item } = parsed.data;
 
   const user = await getSessionUser();
-  const email = user?.email ?? parsed.data.email;
-  if (!email) return { ok: false, code: "email_required" };
+  if (!user?.email) return { ok: false, code: "requires_auth" };
+  const userId = user.id;
+  const email = user.email;
 
   const unitPrice = Math.round(item.unitPriceUsd * 100);
   const total = unitPrice; // single item, quantity 1
 
-  const ref = orderRef();
-
-  // --- Wallet checkout: debit balance + mark PAID. Admin fulfils manually
-  // (enters the real code), matching the no-API model. ---
-  if (paymentMethod === "WALLET") {
-    if (!user) return { ok: false, code: "requires_auth" };
-
-    const dbUser = await prisma.user.findUnique({
-      where: { id: user.id },
-      select: { walletBalance: true },
-    });
-    if (!dbUser || dbUser.walletBalance < total) {
-      return { ok: false, code: "insufficient_funds" };
-    }
-
-    const order = await prisma.$transaction(async (tx) => {
-      const created = await tx.order.create({
-        data: {
-          ref,
-          userId: user.id,
-          email,
-          status: "PAID",
-          paymentMethod: "WALLET",
-          subtotal: total,
-          total,
-          currency,
-          locale,
-          items: {
-            create: {
-              productSlug: item.productSlug,
-              productName: item.productName,
-              categorySlug: item.categorySlug,
-              variantLabel: item.variantLabel,
-              packageLabel: item.packageLabel,
-              unitPrice,
-              quantity: 1,
-              deliveryType: item.deliveryType,
-              inputs: item.inputs ?? undefined,
-            },
-          },
-        },
-      });
-
-      await tx.user.update({
-        where: { id: user.id },
-        data: { walletBalance: { decrement: total } },
-      });
-      await tx.walletTransaction.create({
-        data: {
-          userId: user.id,
-          amount: -total,
-          type: "PURCHASE",
-          description: `Order ${ref}`,
-          orderId: created.id,
-        },
-      });
-      await tx.notification.create({
-        data: {
-          userId: user.id,
-          type: "ORDER",
-          title: `Order ${ref} paid`,
-          body: `${item.productName} — ${item.packageLabel}. We're preparing it now.`,
-          href: "/dashboard/orders",
-        },
-      });
-      return created;
-    });
-
-    return { ok: true, code: "order_paid", orderRef: order.ref };
+  const dbUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { walletBalance: true },
+  });
+  if (!dbUser || dbUser.walletBalance < total) {
+    return { ok: false, code: "insufficient_funds" };
   }
 
-  // --- Bank transfer: create a pending order; the customer then uploads a
-  // payment screenshot which an admin reviews and approves. ---
-  const order = await prisma.order.create({
-    data: {
-      ref,
-      userId: user?.id ?? null,
-      email,
-      status: "PENDING",
-      paymentMethod: "BANK",
-      subtotal: total,
-      total,
-      currency,
-      locale,
-      items: {
-        create: {
-          productSlug: item.productSlug,
-          productName: item.productName,
-          categorySlug: item.categorySlug,
-          variantLabel: item.variantLabel,
-          packageLabel: item.packageLabel,
-          unitPrice,
-          quantity: 1,
-          deliveryType: item.deliveryType,
-          inputs: item.inputs ?? undefined,
+  const ref = orderRef();
+
+  const order = await prisma.$transaction(async (tx) => {
+    const created = await tx.order.create({
+      data: {
+        ref,
+        userId,
+        email,
+        status: "PAID",
+        paymentMethod: "WALLET",
+        subtotal: total,
+        total,
+        currency,
+        locale,
+        items: {
+          create: {
+            productSlug: item.productSlug,
+            productName: item.productName,
+            categorySlug: item.categorySlug,
+            variantLabel: item.variantLabel,
+            packageLabel: item.packageLabel,
+            unitPrice,
+            quantity: 1,
+            deliveryType: item.deliveryType,
+            inputs: item.inputs ?? undefined,
+          },
         },
       },
-    },
-  });
+    });
 
-  if (user) {
-    await prisma.notification.create({
+    await tx.user.update({
+      where: { id: user.id },
+      data: { walletBalance: { decrement: total } },
+    });
+    await tx.walletTransaction.create({
+      data: {
+        userId: user.id,
+        amount: -total,
+        type: "PURCHASE",
+        description: `Order ${ref}`,
+        orderId: created.id,
+      },
+    });
+    await tx.notification.create({
       data: {
         userId: user.id,
         type: "ORDER",
-        title: `Order ${ref} created`,
-        body: "Awaiting payment.",
+        title: `Order ${ref} paid`,
+        body: `${item.productName} — ${item.packageLabel}. We're preparing it now.`,
         href: "/dashboard/orders",
       },
     });
-  }
+    return created;
+  });
 
-  return { ok: true, code: "order_pending", orderRef: order.ref };
+  return { ok: true, code: "order_paid", orderRef: order.ref };
 }

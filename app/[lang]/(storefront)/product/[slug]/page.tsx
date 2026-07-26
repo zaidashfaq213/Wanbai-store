@@ -5,8 +5,6 @@ import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { getCurrency } from "@/lib/data/currency";
 import { getSessionUser } from "@/lib/auth/session";
 import { isFavorited, getWalletSummary } from "@/lib/data/account";
-import { getActiveBankAccounts } from "@/lib/data/payments";
-import { type BankOption } from "@/components/dashboard/bank-topup";
 import { hasPurchased, hasReviewed } from "@/lib/data/content";
 import { ReviewForm } from "@/components/product/review-form";
 import {
@@ -86,19 +84,6 @@ export default async function ProductPage({
       !(await hasReviewed(user.id, productId!));
   }
   const related = await getRelatedProducts(product);
-  const banksRaw = await getActiveBankAccounts();
-  const banks: BankOption[] = banksRaw.map((b) => ({
-    id: b.id,
-    key: b.key,
-    nameEn: b.nameEn,
-    nameAr: b.nameAr,
-    accountName: b.accountName,
-    accountNumber: b.accountNumber,
-    instructionsEn: b.instructionsEn,
-    instructionsAr: b.instructionsAr,
-    color: b.color,
-    logo: b.logo,
-  }));
   const totalReviews = detail.ratingBreakdown.reduce((a, b) => a + b, 0);
   const p = dict.product;
 
@@ -215,7 +200,6 @@ export default async function ProductPage({
               dict={dict}
               isAuthed={isAuthed}
               walletBalanceCents={walletBalanceCents}
-              banks={banks}
             />
           </div>
         </div>
