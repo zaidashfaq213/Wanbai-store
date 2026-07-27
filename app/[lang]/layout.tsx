@@ -35,8 +35,10 @@ export async function generateMetadata({
   const settings = await getSettings();
   return {
     metadataBase: new URL(SITE_URL),
-    // Falls back to the bundled app/icon.svg convention when no favicon is uploaded.
-    ...(settings.favicon ? { icons: { icon: settings.favicon } } : {}),
+    // public/icon.svg (a plain static asset, not the app/ file-based icon
+    // convention — that convention silently wins over metadata.icons, which
+    // is exactly why a favicon uploaded in Settings wasn't showing up).
+    icons: { icon: settings.favicon || "/icon.svg" },
     title: {
       default: dict.meta.title,
       // Every page gets "<page> | <brand>" automatically.
