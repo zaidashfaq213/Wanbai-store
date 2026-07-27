@@ -5,6 +5,10 @@ import "server-only";
 // hard stop is the Server Action body limit set in next.config.ts.
 export const PROOF_MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 export const IMAGE_MAX_BYTES = 25 * 1024 * 1024; // 25 MB
+// Logo/favicon are embedded as a data URL directly in the HTML of every
+// single page (header + <link rel="icon">), so they stay small — this also
+// keeps them well clear of Next's ~2MB unstable_cache item limit elsewhere.
+export const BRANDING_MAX_BYTES = 2 * 1024 * 1024; // 2 MB
 const ALLOWED = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
 // Favicons are commonly shipped as .ico or .svg — browsers/OSes report a few
 // different MIME types for .ico depending on how the file was saved.
