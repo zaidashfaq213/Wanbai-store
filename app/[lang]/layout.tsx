@@ -12,6 +12,7 @@ import {
 } from "@/lib/i18n/config";
 import { SITE_URL, abs, languageAlternates } from "@/lib/seo";
 import { SupportWidget } from "@/components/support/support-widget";
+import { getSettings } from "@/lib/data/content";
 
 const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -31,8 +32,11 @@ export async function generateMetadata({
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
   const dict = await getDictionary(locale);
+  const settings = await getSettings();
   return {
     metadataBase: new URL(SITE_URL),
+    // Falls back to the bundled app/icon.svg convention when no favicon is uploaded.
+    ...(settings.favicon ? { icons: { icon: settings.favicon } } : {}),
     title: {
       default: dict.meta.title,
       // Every page gets "<page> | <brand>" automatically.

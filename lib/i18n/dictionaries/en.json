@@ -692,7 +692,25 @@
         "renameGroup": "Rename",
         "noCategoriesTitle": "Create a category first",
         "noCategoriesBody": "You need at least one category before you can add products — products always belong to a category.",
-        "noCategoriesCta": "Go to Categories"
+        "noCategoriesCta": "Go to Categories",
+        "inputs": {
+          "title": "Extra checkout fields",
+          "subtitle": "Add custom fields the buyer must fill in for this product — e.g. account email, password, WhatsApp number.",
+          "none": "No custom fields yet.",
+          "add": "Add field",
+          "key": "Field key",
+          "keyHint": "Letters, numbers, underscore only — used internally, e.g. \"email\".",
+          "labelEn": "Label (English)",
+          "labelAr": "Label (Arabic)",
+          "placeholderEn": "Placeholder (English)",
+          "placeholderAr": "Placeholder (Arabic)",
+          "kind": "Field type",
+          "kindText": "Text",
+          "kindNumber": "Number",
+          "required": "Required",
+          "save": "Save",
+          "delete": "Delete"
+        }
       },
       "errors": {
         "slug_taken": "That slug is already used.",
@@ -702,7 +720,8 @@
         "image_too_large": "Image is larger than 5 MB.",
         "image_bad_type": "Image must be PNG, JPG or WebP.",
         "image_empty": "Choose an image.",
-        "server_error": "Something went wrong saving this. Please try again."
+        "server_error": "Something went wrong saving this. Please try again.",
+        "key_taken": "That field key is already used on this product."
       },
       "fulfillments": {
         "TOPUP": "Top-up",
@@ -773,7 +792,11 @@
         "logo": "Site logo",
         "logoHint": "PNG, JPG or WebP up to 5 MB. Leave empty to keep the current one.",
         "currentLogo": "Current logo",
-        "removeLogo": "Remove logo (use default)"
+        "removeLogo": "Remove logo (use default)",
+        "favicon": "Browser-tab favicon",
+        "faviconHint": "PNG, JPG or WebP up to 5 MB. Leave empty to keep the current one.",
+        "currentFavicon": "Current favicon",
+        "removeFavicon": "Remove favicon (use default)"
       },
       "reviews": {
         "title": "Reviews",

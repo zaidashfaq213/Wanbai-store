@@ -443,3 +443,118 @@ export async function deleteVariantGroup(formData: FormData) {
   revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${productId}`);
   updateTag("products");
 }
+
+// --- Custom product inputs --------------------------------------------------
+// On top of the automatic per-category/per-game fields (catalog-generate.ts),
+// admins can attach extra checkout fields to any individual product — e.g.
+// account email/password/WhatsApp for order fulfilment. A custom field with
+// the same key as an automatic one overrides it (see catalog-db.ts merge).
+
+const productInputSchema = z.object({
+  id: z.string().optional(),
+  productId: z.string().min(1),
+  key: z.string().trim().min(1).max(40).regex(/^[a-zA-Z0-9_]+$/),
+  labelEn: z.string().trim().min(1).max(80),
+  labelAr: z.string().trim().min(1).max(80),
+  placeholderEn: z.string().trim().max(120).optional(),
+  placeholderAr: z.string().trim().max(120).optional(),
+  kind: z.enum(["text", "number"]).default("text"),
+  required: z.boolean(),
+});
+
+export async function addProductInput(
+  _prev: CatalogState,
+  formData: FormData,
+): Promise<CatalogState> {
+  if (!(await requireAdminUser())) return { ok: false, code: "requires_auth" };
+  const parsed = productInputSchema.safeParse({
+    productId: formData.get("productId"),
+    key: formData.get("key"),
+    labelEn: formData.get("labelEn"),
+    labelAr: formData.get("labelAr"),
+    placeholderEn: formData.get("placeholderEn") || undefined,
+    placeholderAr: formData.get("placeholderAr") || undefined,
+    kind: formData.get("kind") || "text",
+    required: formData.get("required") === "on",
+  });
+  if (!parsed.success) return { ok: false, code: "invalid_input" };
+  const { productId, ...rest } = parsed.data;
+
+  const existing = await prisma.productInput.findMany({ where: { productId } });
+  if (existing.some((i) => i.key === rest.key)) return { ok: false, code: "key_taken" };
+
+  try {
+    await prisma.productInput.create({
+      data: {
+        productId,
+        key: rest.key,
+        labelEn: rest.labelEn,
+        labelAr: rest.labelAr,
+        placeholderEn: rest.placeholderEn ?? "",
+        placeholderAr: rest.placeholderAr ?? "",
+        kind: rest.kind,
+        required: rest.required,
+        sortOrder: existing.length,
+      },
+    });
+  } catch {
+    return { ok: false, code: "server_error" };
+  }
+  revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${productId}`);
+  updateTag("products");
+  return { ok: true, code: "saved" };
+}
+
+export async function updateProductInput(
+  _prev: CatalogState,
+  formData: FormData,
+): Promise<CatalogState> {
+  if (!(await requireAdminUser())) return { ok: false, code: "requires_auth" };
+  const parsed = productInputSchema.safeParse({
+    id: formData.get("id"),
+    productId: formData.get("productId"),
+    key: formData.get("key"),
+    labelEn: formData.get("labelEn"),
+    labelAr: formData.get("labelAr"),
+    placeholderEn: formData.get("placeholderEn") || undefined,
+    placeholderAr: formData.get("placeholderAr") || undefined,
+    kind: formData.get("kind") || "text",
+    required: formData.get("required") === "on",
+  });
+  if (!parsed.success || !parsed.data.id) return { ok: false, code: "invalid_input" };
+  const { id, productId, ...rest } = parsed.data;
+
+  const dup = await prisma.productInput.findFirst({
+    where: { productId, key: rest.key, NOT: { id } },
+  });
+  if (dup) return { ok: false, code: "key_taken" };
+
+  try {
+    await prisma.productInput.update({
+      where: { id },
+      data: {
+        key: rest.key,
+        labelEn: rest.labelEn,
+        labelAr: rest.labelAr,
+        placeholderEn: rest.placeholderEn ?? "",
+        placeholderAr: rest.placeholderAr ?? "",
+        kind: rest.kind,
+        required: rest.required,
+      },
+    });
+  } catch {
+    return { ok: false, code: "server_error" };
+  }
+  revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${productId}`);
+  updateTag("products");
+  return { ok: true, code: "saved" };
+}
+
+export async function deleteProductInput(formData: FormData) {
+  if (!(await requireAdminUser())) return;
+  const id = String(formData.get("id") ?? "");
+  const productId = String(formData.get("productId") ?? "");
+  await prisma.productInput.delete({ where: { id } });
+  revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${productId}`);
+  updateTag("products");
+}

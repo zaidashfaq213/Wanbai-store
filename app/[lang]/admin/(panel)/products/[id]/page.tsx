@@ -7,6 +7,7 @@ import { getAdminProduct, getAdminCategories } from "@/lib/data/catalog-db";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { ProductEditForm } from "@/components/admin/product-edit-form";
 import { PackageEditor, type PkgGroup } from "@/components/admin/package-editor";
+import { ProductInputsEditor, type ProductInputRow } from "@/components/admin/product-inputs-editor";
 
 export default async function AdminEditProductPage({
   params,
@@ -24,6 +25,17 @@ export default async function AdminEditProductPage({
     getAdminCategories(),
   ]);
   if (!product) notFound();
+
+  const inputRows: ProductInputRow[] = product.inputs.map((i) => ({
+    id: i.id,
+    key: i.key,
+    labelEn: i.labelEn,
+    labelAr: i.labelAr,
+    placeholderEn: i.placeholderEn,
+    placeholderAr: i.placeholderAr,
+    kind: i.kind,
+    required: i.required,
+  }));
 
   const groups: PkgGroup[] = product.variantGroups.map((g) => ({
     id: g.id,
@@ -78,6 +90,14 @@ export default async function AdminEditProductPage({
           }))}
         />
         <PackageEditor locale={locale} dict={p} confirm={dict.admin.confirm} productId={product.id} groups={groups} />
+        <ProductInputsEditor
+          locale={locale}
+          dict={p.inputs}
+          errors={dict.admin.catalog.errors}
+          confirm={dict.admin.confirm}
+          productId={product.id}
+          rows={inputRows}
+        />
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import type {
   ProductDetail,
   Fulfillment,
   VariantGroup,
+  InputField,
   Faq,
   Review,
 } from "./product-detail";
@@ -194,6 +195,7 @@ export function getAdminProduct(id: string) {
         orderBy: { sortOrder: "asc" },
         include: { packages: { orderBy: { sortOrder: "asc" } } },
       },
+      inputs: { orderBy: { sortOrder: "asc" } },
     },
   });
 }
@@ -215,6 +217,7 @@ export const getProductDetail = cache(
           },
           faqs: { orderBy: { sortOrder: "asc" } },
           reviews: { orderBy: { sortOrder: "asc" } },
+          inputs: { orderBy: { sortOrder: "asc" } },
         },
       });
       if (!p) return null;
@@ -237,7 +240,18 @@ export const getProductDetail = cache(
   // Input fields are derived from the product's category/slug (single source of
   // truth in catalog-generate), so the client's per-game requirements apply to
   // every product — including already-seeded ones — without a DB migration.
-  const inputs = inputsForProduct(p.slug, p.category.slug);
+  // Admin-added custom fields (ProductInput rows) are merged in on top, and
+  // take precedence over an automatic field with the same key.
+  const auto = inputsForProduct(p.slug, p.category.slug);
+  const customKeys = new Set(p.inputs.map((i) => i.key));
+  const custom: InputField[] = p.inputs.map((i) => ({
+    id: i.key,
+    label: { ar: i.labelAr, en: i.labelEn },
+    placeholder: { ar: i.placeholderAr, en: i.placeholderEn },
+    kind: i.kind === "number" ? "number" : "text",
+    required: i.required,
+  }));
+  const inputs = [...auto.filter((f) => !customKeys.has(f.id)), ...custom];
 
   const faqs: Faq[] = p.faqs.map((f) => ({
     q: { ar: f.qAr, en: f.qEn },

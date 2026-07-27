@@ -611,6 +611,9 @@ model StoreSettings {
   // Uploaded site logo as a base64 data URL (same storage model as payment
   // proofs). Falls back to /logo.svg when unset.
   logo         String?  @db.Text
+  // Uploaded browser-tab favicon as a base64 data URL. Falls back to the
+  // bundled app/icon.svg when unset.
+  favicon      String?  @db.Text
   whatsapp     String?
   telegram     String?
   supportEmail String?

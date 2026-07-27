@@ -265,6 +265,7 @@ export function FaqForm({
 
 export type SettingsRow = {
   logo: string | null;
+  favicon: string | null;
   whatsapp: string | null;
   telegram: string | null;
   supportEmail: string | null;
@@ -325,6 +326,34 @@ export function SettingsForm({
               <label className="flex items-center gap-2 text-xs font-semibold text-muted">
                 <input type="checkbox" name="removeLogo" />
                 {dict.removeLogo}
+              </label>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Favicon upload */}
+      <div className="flex flex-col gap-2 rounded-2xl border border-border bg-surface-2 p-4">
+        <span className="text-xs font-semibold text-muted">{dict.favicon}</span>
+        <div className="flex items-center gap-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={settings.favicon || "/icon.svg"}
+            alt={dict.currentFavicon}
+            className="size-14 shrink-0 rounded-xl border border-border bg-background object-contain p-1"
+          />
+          <div className="flex flex-1 flex-col gap-2">
+            <input
+              type="file"
+              name="favicon"
+              accept="image/png,image/jpeg,image/webp"
+              className="text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary/10 file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-primary"
+            />
+            <span className="text-[11px] text-muted">{dict.faviconHint}</span>
+            {settings.favicon && (
+              <label className="flex items-center gap-2 text-xs font-semibold text-muted">
+                <input type="checkbox" name="removeFavicon" />
+                {dict.removeFavicon}
               </label>
             )}
           </div>

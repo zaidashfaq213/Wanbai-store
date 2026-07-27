@@ -196,7 +196,7 @@ export async function saveSettings(
   });
   if (!parsed.success) return { ok: false, code: "invalid_input" };
 
-  // Logo: upload a new file, keep the current one, or clear it.
+  // Logo / favicon: upload a new file, keep the current one, or clear it.
   let logo: string | null | undefined; // undefined = leave unchanged
   if (formData.get("removeLogo") === "on") {
     logo = null;
@@ -209,7 +209,23 @@ export async function saveSettings(
     }
   }
 
-  const data = { ...parsed.data, ...(logo !== undefined ? { logo } : {}) };
+  let favicon: string | null | undefined;
+  if (formData.get("removeFavicon") === "on") {
+    favicon = null;
+  } else {
+    const file = formData.get("favicon");
+    if (file instanceof File && file.size > 0) {
+      const upload = await imageToDataUrl(file);
+      if (!upload.ok) return { ok: false, code: `favicon_${upload.error}` };
+      favicon = upload.dataUrl;
+    }
+  }
+
+  const data = {
+    ...parsed.data,
+    ...(logo !== undefined ? { logo } : {}),
+    ...(favicon !== undefined ? { favicon } : {}),
+  };
   await prisma.storeSettings.upsert({
     where: { id: "store" },
     update: data,
