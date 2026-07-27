@@ -6,10 +6,30 @@ import "server-only";
 export const PROOF_MAX_BYTES = 5 * 1024 * 1024; // 5 MB
 export const IMAGE_MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 const ALLOWED = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+// Favicons are commonly shipped as .ico or .svg — browsers/OSes report a few
+// different MIME types for .ico depending on how the file was saved.
+export const FAVICON_ALLOWED = [
+  ...ALLOWED,
+  "image/x-icon",
+  "image/vnd.microsoft.icon",
+  "image/svg+xml",
+];
 
 export type UploadResult =
   | { ok: true; dataUrl: string }
   | { ok: false; error: "too_large" | "bad_type" | "empty" };
+
+// Some browsers/OSes report no (or a generic) MIME type for .ico files. When
+// that happens, fall back to sniffing the file extension so a real .ico/.svg
+// favicon isn't rejected just because the browser didn't label it.
+const EXT_MIME: Record<string, string> = {
+  ico: "image/x-icon",
+  svg: "image/svg+xml",
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  webp: "image/webp",
+};
 
 /**
  * Validate an uploaded image and return it as a base64 data URL, stored
@@ -19,11 +39,19 @@ export type UploadResult =
 export async function imageToDataUrl(
   file: unknown,
   maxBytes: number = IMAGE_MAX_BYTES,
+  allowed: string[] = ALLOWED,
 ): Promise<UploadResult> {
   if (!(file instanceof File) || file.size === 0) return { ok: false, error: "empty" };
-  if (!ALLOWED.includes(file.type)) return { ok: false, error: "bad_type" };
+
+  let type = file.type;
+  if (!allowed.includes(type)) {
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+    const sniffed = EXT_MIME[ext];
+    if (sniffed && allowed.includes(sniffed)) type = sniffed;
+    else return { ok: false, error: "bad_type" };
+  }
   if (file.size > maxBytes) return { ok: false, error: "too_large" };
 
   const buffer = Buffer.from(await file.arrayBuffer());
-  return { ok: true, dataUrl: `data:${file.type};base64,${buffer.toString("base64")}` };
+  return { ok: true, dataUrl: `data:${type};base64,${buffer.toString("base64")}` };
 }

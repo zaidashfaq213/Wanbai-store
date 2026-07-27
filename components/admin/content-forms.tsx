@@ -346,7 +346,7 @@ export function SettingsForm({
             <input
               type="file"
               name="favicon"
-              accept="image/png,image/jpeg,image/webp"
+              accept="image/png,image/jpeg,image/webp,image/x-icon,image/vnd.microsoft.icon,image/svg+xml,.ico"
               className="text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-primary/10 file:px-3 file:py-1.5 file:text-sm file:font-bold file:text-primary"
             />
             <span className="text-[11px] text-muted">{dict.faviconHint}</span>

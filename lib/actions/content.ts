@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/session";
 import { hasPurchased, hasReviewed } from "@/lib/data/content";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
-import { imageToDataUrl } from "@/lib/upload";
+import { imageToDataUrl, FAVICON_ALLOWED, IMAGE_MAX_BYTES } from "@/lib/upload";
 
 function loc(v: string): Locale {
   return isLocale(v) ? v : defaultLocale;
@@ -215,7 +215,7 @@ export async function saveSettings(
   } else {
     const file = formData.get("favicon");
     if (file instanceof File && file.size > 0) {
-      const upload = await imageToDataUrl(file);
+      const upload = await imageToDataUrl(file, IMAGE_MAX_BYTES, FAVICON_ALLOWED);
       if (!upload.ok) return { ok: false, code: `favicon_${upload.error}` };
       favicon = upload.dataUrl;
     }
@@ -226,12 +226,16 @@ export async function saveSettings(
     ...(logo !== undefined ? { logo } : {}),
     ...(favicon !== undefined ? { favicon } : {}),
   };
-  await prisma.storeSettings.upsert({
-    where: { id: "store" },
-    update: data,
-    create: { id: "store", ...data },
-  });
-  // The logo shows in every storefront/admin layout, so refresh broadly.
+  try {
+    await prisma.storeSettings.upsert({
+      where: { id: "store" },
+      update: data,
+      create: { id: "store", ...data },
+    });
+  } catch {
+    return { ok: false, code: "server_error" };
+  }
+  // The logo/favicon show in every storefront/admin layout, so refresh broadly.
   revalidatePath("/", "layout");
   updateTag("settings");
   return { ok: true, code: "saved" };

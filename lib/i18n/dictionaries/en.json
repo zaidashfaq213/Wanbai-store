@@ -794,7 +794,7 @@
         "currentLogo": "Current logo",
         "removeLogo": "Remove logo (use default)",
         "favicon": "Browser-tab favicon",
-        "faviconHint": "PNG, JPG or WebP up to 5 MB. Leave empty to keep the current one.",
+        "faviconHint": "PNG, JPG, WebP, ICO or SVG up to 25 MB. Leave empty to keep the current one.",
         "currentFavicon": "Current favicon",
         "removeFavicon": "Remove favicon (use default)"
       },
@@ -838,7 +838,11 @@
         "requires_auth": "Not authorized.",
         "logo_too_large": "Logo is larger than 5 MB.",
         "logo_bad_type": "Logo must be PNG, JPG or WebP.",
-        "logo_empty": "Choose a logo image."
+        "logo_empty": "Choose a logo image.",
+        "favicon_too_large": "Favicon is larger than 25 MB.",
+        "favicon_bad_type": "Favicon must be PNG, JPG, WebP, ICO or SVG.",
+        "favicon_empty": "Choose a favicon image.",
+        "server_error": "Something went wrong saving this. Please try again."
       }
     },
     "confirm": {

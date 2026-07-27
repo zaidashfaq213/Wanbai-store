@@ -794,7 +794,7 @@
         "currentLogo": "الشعار الحالي",
         "removeLogo": "إزالة الشعار (استخدام الافتراضي)",
         "favicon": "أيقونة المتصفح (Favicon)",
-        "faviconHint": "PNG أو JPG أو WebP حتى 5 ميجابايت. اتركه فارغاً للإبقاء على الحالي.",
+        "faviconHint": "PNG أو JPG أو WebP أو ICO أو SVG حتى 25 ميجابايت. اتركه فارغاً للإبقاء على الحالي.",
         "currentFavicon": "الأيقونة الحالية",
         "removeFavicon": "إزالة الأيقونة (استخدام الافتراضي)"
       },
@@ -838,7 +838,11 @@
         "requires_auth": "غير مصرح.",
         "logo_too_large": "الشعار أكبر من 5 ميجابايت.",
         "logo_bad_type": "يجب أن يكون الشعار PNG أو JPG أو WebP.",
-        "logo_empty": "اختر صورة الشعار."
+        "logo_empty": "اختر صورة الشعار.",
+        "favicon_too_large": "الأيقونة أكبر من 25 ميجابايت.",
+        "favicon_bad_type": "يجب أن تكون الأيقونة PNG أو JPG أو WebP أو ICO أو SVG.",
+        "favicon_empty": "اختر صورة الأيقونة.",
+        "server_error": "حدث خطأ أثناء الحفظ. حاول مرة أخرى."
       }
     },
     "confirm": {
