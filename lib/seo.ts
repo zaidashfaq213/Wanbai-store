@@ -1,12 +1,11 @@
 import { locales, type Locale } from "@/lib/i18n/config";
 
 // Single source of truth for the public origin. Set APP_URL in .env to your
-// real domain (e.g. https://wanbai-store.com) — metadata, sitemap, robots and
-// all JSON-LD read from here.
+// real domain — metadata, sitemap, robots and all JSON-LD read from here.
 export const SITE_URL = (
   process.env.APP_URL ??
   process.env.AUTH_URL ??
-  "https://wanbai-store.tech"
+  "https://wanbai-stoer.com"
 ).replace(/\/$/, "");
 
 export function abs(path = ""): string {

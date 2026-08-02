@@ -19,8 +19,8 @@ const nextConfig: NextConfig = {
       // the Host. List the production domain(s) here so live actions aren't
       // rejected (this is what causes "A server error occurred" on every form).
       allowedOrigins: [
-        "wanbai-store.tech",
-        "www.wanbai-store.tech",
+        "wanbai-stoer.com",
+        "www.wanbai-stoer.com",
         "localhost:3000",
       ],
     },
