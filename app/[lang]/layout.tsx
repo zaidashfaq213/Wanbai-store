@@ -57,11 +57,11 @@ export async function generateMetadata({
       googleBot: { index: true, follow: true, "max-image-preview": "large" },
     },
     // Google Search Console ownership. Override via GOOGLE_SITE_VERIFICATION in
-    // .env; falls back to the token Google issued for this property.
+    // .env; falls back to the token Google issued for the wanbai-stoer.com property.
     verification: {
       google:
         process.env.GOOGLE_SITE_VERIFICATION ??
-        "7hgUrTE4u_MwurG3XSZnj9LbveMmGvIaeKkzfRepdNg",
+        "38uV-4_SiZIXBK44MJd8fG3tORSsiv31mw9GXMp8g4Q",
     },
     openGraph: {
       title: dict.meta.title,
