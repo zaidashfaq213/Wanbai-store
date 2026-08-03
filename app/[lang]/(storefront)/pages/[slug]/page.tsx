@@ -14,9 +14,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang, slug } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const page = await getPage(slug);
+  const [page, dict] = await Promise.all([getPage(slug), getDictionary(locale)]);
   if (!page) return {};
-  const dict = await getDictionary(locale);
   const title = locale === "ar" ? page.titleAr : page.titleEn;
   return {
     title: `${title} | ${dict.brand.name}`,
@@ -32,9 +31,8 @@ export default async function CmsPage({
 }) {
   const { lang, slug } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const page = await getPage(slug);
+  const [page, dict] = await Promise.all([getPage(slug), getDictionary(locale)]);
   if (!page) notFound();
-  const dict = await getDictionary(locale);
 
   const title = locale === "ar" ? page.titleAr : page.titleEn;
   const body = locale === "ar" ? page.bodyAr : page.bodyEn;

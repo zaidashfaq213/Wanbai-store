@@ -27,8 +27,8 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang, category: slug } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const dict = await getDictionary(locale);
-  const category = (await getCategories()).find((c) => c.slug === slug);
+  const [dict, categories] = await Promise.all([getDictionary(locale), getCategories()]);
+  const category = categories.find((c) => c.slug === slug);
   if (!category) return {};
   const name = category.name[locale];
   return {
@@ -58,10 +58,11 @@ export default async function CategoryPage({
   const category = categories.find((c) => c.slug === slug);
   if (!category) notFound();
 
-  const dict = await getDictionary(locale);
-  const currency = await getCurrency();
-
-  const all = await getProductsByCategory(slug);
+  const [dict, currency, all] = await Promise.all([
+    getDictionary(locale),
+    getCurrency(),
+    getProductsByCategory(slug),
+  ]);
   const view: "grid" | "list" = viewParam === "list" ? "list" : "grid";
   const totalPages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
   const page = Math.min(Math.max(1, Number(pageParam) || 1), totalPages);

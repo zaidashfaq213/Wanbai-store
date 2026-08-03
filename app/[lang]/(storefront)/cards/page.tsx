@@ -30,8 +30,8 @@ export default async function CardsPage({
 }) {
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const dict = await getDictionary(locale);
-  const [categories, products] = await Promise.all([
+  const [dict, categories, products] = await Promise.all([
+    getDictionary(locale),
     getCategories(),
     getAllProducts(),
   ]);

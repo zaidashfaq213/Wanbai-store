@@ -20,9 +20,11 @@ export default async function ProfilePage({
 }) {
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const user = await requireUser(locale);
-  const dict = await getDictionary(locale);
-  const currency = await getCurrency();
+  const [user, dict, currency] = await Promise.all([
+    requireUser(locale),
+    getDictionary(locale),
+    getCurrency(),
+  ]);
 
   const record = await prisma.user.findUnique({
     where: { id: user.id },

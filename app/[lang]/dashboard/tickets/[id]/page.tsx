@@ -21,8 +21,7 @@ export default async function TicketThreadPage({
 }) {
   const { lang, id } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const user = await requireUser(locale);
-  const dict = await getDictionary(locale);
+  const [user, dict] = await Promise.all([requireUser(locale), getDictionary(locale)]);
   const t = dict.dashboard.tickets;
   const statuses = t.statuses as Record<string, string>;
 

@@ -20,10 +20,13 @@ export default async function HomePage({
 }) {
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const dict = await getDictionary(locale);
-  const currency = await getCurrency();
-  const categories = await getCategories();
-  const settings = await getSettings();
+  // Independent fetches — run concurrently instead of stacking up latency.
+  const [dict, currency, categories, settings] = await Promise.all([
+    getDictionary(locale),
+    getCurrency(),
+    getCategories(),
+    getSettings(),
+  ]);
   const showcases = await Promise.all(
     categories.map(async (category) => ({
       category,

@@ -24,11 +24,13 @@ export default async function OrdersPage({
 }) {
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const user = await requireUser(locale);
-  const dict = await getDictionary(locale);
+  const [user, dict, currency] = await Promise.all([
+    requireUser(locale),
+    getDictionary(locale),
+    getCurrency(),
+  ]);
   const d = dict.dashboard.orders;
   const p = dict.payments;
-  const currency = await getCurrency();
   const [orders, unread] = await Promise.all([
     getOrders(user.id),
     getUnreadOrderReplies(user.id),

@@ -22,11 +22,13 @@ export default async function WalletPage({
 }) {
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const user = await requireUser(locale);
-  const dict = await getDictionary(locale);
+  const [user, dict, currency] = await Promise.all([
+    requireUser(locale),
+    getDictionary(locale),
+    getCurrency(),
+  ]);
   const d = dict.dashboard.wallet;
   const p = dict.payments;
-  const currency = await getCurrency();
 
   const [{ balance, transactions }, banksRaw, submissions] = await Promise.all([
     getWalletSummary(user.id),

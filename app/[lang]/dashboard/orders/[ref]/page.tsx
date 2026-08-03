@@ -34,19 +34,22 @@ export default async function OrderDetailPage({
 }) {
   const { lang, ref } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const user = await requireUser(locale);
-  const dict = await getDictionary(locale);
+  const [user, dict, currency] = await Promise.all([
+    requireUser(locale),
+    getDictionary(locale),
+    getCurrency(),
+  ]);
   const d = dict.dashboard.orders;
   const p = dict.payments;
   const statuses = d.statuses as Record<string, string>;
   const methods = d.methods as Record<string, string>;
   const proofStatuses = p.statuses as Record<string, string>;
-  const currency = await getCurrency();
 
-  const order = await getOrderDetail(ref, user.id);
+  const [order, banksRaw] = await Promise.all([
+    getOrderDetail(ref, user.id),
+    getActiveBankAccounts(),
+  ]);
   if (!order) notFound();
-
-  const banksRaw = await getActiveBankAccounts();
   const banks: BankOption[] = banksRaw.map((b) => ({
     id: b.id,
     key: b.key,

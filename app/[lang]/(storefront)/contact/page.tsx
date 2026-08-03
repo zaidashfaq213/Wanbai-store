@@ -35,9 +35,8 @@ export default async function ContactPage({
 }) {
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const dict = await getDictionary(locale);
+  const [dict, s] = await Promise.all([getDictionary(locale), getSettings()]);
   const c = dict.contact;
-  const s = await getSettings();
 
   const wa = s.whatsapp?.trim();
   const tg = s.telegram?.trim();

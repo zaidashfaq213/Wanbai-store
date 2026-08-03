@@ -21,11 +21,14 @@ export default async function StorefrontLayout({
 }) {
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const dict = await getDictionary(locale);
-  const currency = await getCurrency();
-  const categories = await getCategories();
-  const settings = await getSettings();
-  const sessionUser = await getSessionUser();
+  // Independent fetches — run concurrently instead of stacking up latency.
+  const [dict, currency, categories, settings, sessionUser] = await Promise.all([
+    getDictionary(locale),
+    getCurrency(),
+    getCategories(),
+    getSettings(),
+    getSessionUser(),
+  ]);
   const accountName = sessionUser
     ? sessionUser.name ?? sessionUser.email ?? null
     : null;

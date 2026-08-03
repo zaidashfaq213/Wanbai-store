@@ -15,8 +15,7 @@ export default async function NotificationsPage({
 }) {
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const user = await requireUser(locale);
-  const dict = await getDictionary(locale);
+  const [user, dict] = await Promise.all([requireUser(locale), getDictionary(locale)]);
   const d = dict.dashboard.notifications;
   const notifications = await getNotifications(user.id);
   const hasUnread = notifications.some((n) => !n.read);

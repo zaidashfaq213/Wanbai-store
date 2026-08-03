@@ -33,10 +33,12 @@ export default async function HelpPage({
   const { lang } = await params;
   const { q = "" } = await searchParams;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const dict = await getDictionary(locale);
+  const [dict, faqs, settings] = await Promise.all([
+    getDictionary(locale),
+    getHelpFaqs(),
+    getSettings(),
+  ]);
   const h = dict.help;
-
-  const [faqs, settings] = await Promise.all([getHelpFaqs(), getSettings()]);
   const query = q.trim().toLowerCase();
 
   const matches = faqs.filter((f) => {

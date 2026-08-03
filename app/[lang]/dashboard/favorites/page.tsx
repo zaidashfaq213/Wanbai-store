@@ -17,10 +17,12 @@ export default async function FavoritesPage({
 }) {
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const user = await requireUser(locale);
-  const dict = await getDictionary(locale);
+  const [user, dict, currency] = await Promise.all([
+    requireUser(locale),
+    getDictionary(locale),
+    getCurrency(),
+  ]);
   const d = dict.dashboard.favorites;
-  const currency = await getCurrency();
 
   const [favorites, allProducts] = await Promise.all([
     getFavorites(user.id),

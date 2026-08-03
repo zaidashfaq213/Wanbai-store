@@ -29,9 +29,8 @@ export default async function BlogPage({
 }) {
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const dict = await getDictionary(locale);
+  const [dict, posts] = await Promise.all([getDictionary(locale), getPosts()]);
   const b = dict.blog;
-  const posts = await getPosts();
 
   return (
     <Container className="py-6 sm:py-8">

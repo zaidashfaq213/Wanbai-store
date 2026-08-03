@@ -30,8 +30,7 @@ export default async function SearchPage({
   const { lang } = await params;
   const { q = "" } = await searchParams;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const dict = await getDictionary(locale);
-  const currency = await getCurrency();
+  const [dict, currency] = await Promise.all([getDictionary(locale), getCurrency()]);
 
   const query = q.trim();
   const results = query ? await searchProducts(query) : [];

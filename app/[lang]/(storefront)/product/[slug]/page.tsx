@@ -32,10 +32,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang, slug } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const product = await getProductBySlug(slug);
+  const [product, dict, detail] = await Promise.all([
+    getProductBySlug(slug),
+    getDictionary(locale),
+    getProductDetail(slug),
+  ]);
   if (!product) return {};
-  const dict = await getDictionary(locale);
-  const detail = await getProductDetail(slug);
   const name = product.name[locale];
   const description = detail?.overview[locale] ?? dict.meta.description;
   const image = product.image ?? `/products/${product.slug}.svg`;
@@ -60,30 +62,46 @@ export default async function ProductPage({
 }) {
   const { lang, slug } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const product = await getProductBySlug(slug);
+
+  // These are all independent of each other — fetch them concurrently instead
+  // of one-by-one, which otherwise stacks up real latency on every page load.
+  const [product, dict, currency, detail, categories, user, productId] =
+    await Promise.all([
+      getProductBySlug(slug),
+      getDictionary(locale),
+      getCurrency(),
+      getProductDetail(slug),
+      getCategories(),
+      getSessionUser(),
+      getProductId(slug),
+    ]);
   if (!product) notFound();
-
-  const dict = await getDictionary(locale);
-  const currency = await getCurrency();
-  const detail = await getProductDetail(slug);
   if (!detail) notFound();
-  const category = (await getCategories()).find((c) => c.slug === product.category);
-
-  const user = await getSessionUser();
+  const category = categories.find((c) => c.slug === product.category);
   const isAuthed = Boolean(user);
-  const productId = await getProductId(slug);
+
   let initialSaved = false;
   let walletBalanceCents = 0;
   let canReview = false;
+  const [related, favoriteState, purchaseState] = await Promise.all([
+    getRelatedProducts(product),
+    user ? isFavorited(user.id, product.slug) : Promise.resolve(false),
+    user
+      ? Promise.all([
+          getWalletSummary(user.id),
+          hasPurchased(user.id, product.slug),
+          productId ? hasReviewed(user.id, productId) : Promise.resolve(false),
+        ])
+      : Promise.resolve(null),
+  ]);
   if (user) {
-    initialSaved = await isFavorited(user.id, product.slug);
-    walletBalanceCents = (await getWalletSummary(user.id)).balance;
-    canReview =
-      Boolean(productId) &&
-      (await hasPurchased(user.id, product.slug)) &&
-      !(await hasReviewed(user.id, productId!));
+    initialSaved = favoriteState;
+    if (purchaseState) {
+      const [wallet, purchased, reviewed] = purchaseState;
+      walletBalanceCents = wallet.balance;
+      canReview = Boolean(productId) && purchased && !reviewed;
+    }
   }
-  const related = await getRelatedProducts(product);
   const totalReviews = detail.ratingBreakdown.reduce((a, b) => a + b, 0);
   const p = dict.product;
 

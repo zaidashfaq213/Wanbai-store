@@ -13,8 +13,10 @@ export default async function DashboardLayout({
 }) {
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const user = await requireUser(locale, `/${locale}/dashboard`);
-  const dict = await getDictionary(locale);
+  const [user, dict] = await Promise.all([
+    requireUser(locale, `/${locale}/dashboard`),
+    getDictionary(locale),
+  ]);
   const unread = await getUnreadNotificationCount(user.id);
 
   const name = user.name ?? user.email ?? "";
