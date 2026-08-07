@@ -11,7 +11,9 @@ export async function POST(req: Request) {
   if (!form) return fail("invalid_input");
 
   const amountUsd = Number(form.get("amountUsd"));
-  if (!Number.isFinite(amountUsd) || amountUsd < 1 || amountUsd > 5000) {
+  // Ceiling matches the web top-up action (lib/actions/payments.ts) — amounts
+  // are in SDG now, not USD, so a low cap like 5000 rejects routine top-ups.
+  if (!Number.isFinite(amountUsd) || amountUsd < 1 || amountUsd > 10_000_000) {
     return fail("invalid_input");
   }
 
