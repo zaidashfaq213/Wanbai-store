@@ -61,3 +61,18 @@ export function formatCents(
 ): string {
   return formatPrice(cents / 100, symbol, rate, locale);
 }
+
+/**
+ * Resolve a product's image `src`. Admin-uploaded images are stored as base64
+ * data URLs — embedding those directly means Next.js's RSC flight
+ * serialization ships the same blob twice in every page's HTML (once
+ * rendered, once in the hydration payload). Routing through
+ * /api/product-image/[slug] instead makes it a single real, cacheable
+ * request. A path/URL typed in manually (the other way to set an image)
+ * passes through unchanged — it's already just a reference, not inline data.
+ */
+export function productImageSrc(product: { slug: string; image?: string | null }): string {
+  if (!product.image) return `/products/${product.slug}.svg`;
+  if (product.image.startsWith("data:")) return `/api/product-image/${product.slug}`;
+  return product.image;
+}

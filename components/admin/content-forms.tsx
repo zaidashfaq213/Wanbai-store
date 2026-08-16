@@ -11,6 +11,7 @@ import {
   saveFaq,
   deleteFaq,
   saveSettings,
+  saveApiSettings,
   type ContentState,
 } from "@/lib/actions/content";
 import { ConfirmButton } from "@/components/ui/confirm-button";
@@ -368,6 +369,83 @@ export function SettingsForm({
           </label>
         ))}
       </div>
+      <button type="submit" disabled={pending} className={`self-start ${BTN}`}>{dict.save}</button>
+    </form>
+  );
+}
+
+// --- Game/product API integration (staged) ----------------------------------
+
+export type ApiSettingsRow = {
+  gameApiEnabled: boolean;
+  gameApiBaseUrl: string | null;
+  gameApiKey: string | null;
+  hasSecret: boolean;
+};
+
+export function ApiSettingsForm({
+  dict,
+  errors,
+  settings,
+}: {
+  dict: Dictionary["admin"]["content"]["apiSettings"];
+  errors: Errors;
+  settings: ApiSettingsRow;
+}) {
+  const [state, action, pending] = useActionState<ContentState, FormData>(saveApiSettings, {
+    ok: false,
+  });
+
+  return (
+    <form action={action} className="flex max-w-2xl flex-col gap-3 rounded-2xl border border-border bg-surface p-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="font-extrabold">{dict.title}</h3>
+          <p className="mt-0.5 text-xs text-muted">{dict.subtitle}</p>
+        </div>
+        <Status state={state} saved={dict.saved} errors={errors} />
+      </div>
+
+      <label className="flex items-center gap-2 text-sm font-semibold">
+        <input type="checkbox" name="gameApiEnabled" defaultChecked={settings.gameApiEnabled} />
+        {dict.enabled}
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-semibold text-muted">{dict.baseUrl}</span>
+        <input
+          name="gameApiBaseUrl"
+          defaultValue={settings.gameApiBaseUrl ?? ""}
+          placeholder="https://api.provider.com"
+          dir="ltr"
+          className={FIELD}
+        />
+        <span className="text-[11px] text-muted">{dict.baseUrlHint}</span>
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-semibold text-muted">{dict.apiKey}</span>
+        <input
+          name="gameApiKey"
+          defaultValue={settings.gameApiKey ?? ""}
+          dir="ltr"
+          className={FIELD}
+        />
+      </label>
+
+      <label className="flex flex-col gap-1">
+        <span className="text-xs font-semibold text-muted">{dict.secret}</span>
+        <input
+          name="gameApiSecret"
+          type="password"
+          placeholder={settings.hasSecret ? dict.secretSet : ""}
+          dir="ltr"
+          className={FIELD}
+          autoComplete="new-password"
+        />
+        <span className="text-[11px] text-muted">{dict.secretHint}</span>
+      </label>
+
       <button type="submit" disabled={pending} className={`self-start ${BTN}`}>{dict.save}</button>
     </form>
   );

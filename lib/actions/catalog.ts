@@ -7,7 +7,7 @@ import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/session";
 import { buildDetail, FULFILLMENT } from "@/lib/data/catalog-generate";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
-import { imageToDataUrl } from "@/lib/upload";
+import { imageToDataUrl, PRODUCT_IMAGE_MAX_BYTES } from "@/lib/upload";
 
 function loc(v: string): Locale {
   return isLocale(v) ? v : defaultLocale;
@@ -101,7 +101,7 @@ async function resolveUploadedImage(
 ): Promise<{ ok: true; value?: string } | { ok: false; error: string }> {
   const file = formData.get("imageFile");
   if (file instanceof File && file.size > 0) {
-    const up = await imageToDataUrl(file);
+    const up = await imageToDataUrl(file, PRODUCT_IMAGE_MAX_BYTES);
     if (!up.ok) return { ok: false, error: `image_${up.error}` };
     return { ok: true, value: up.dataUrl };
   }

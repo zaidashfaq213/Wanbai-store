@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Locale } from "@/lib/i18n/config";
 import type { Product, Currency } from "@/lib/data/catalog";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
-import { cn } from "@/lib/utils";
+import { cn, productImageSrc } from "@/lib/utils";
 import { BoltIcon, StarIcon } from "./icons";
 
 export function ProductArt({
@@ -53,7 +53,7 @@ export function ProductCard({
         )}
       >
         <ProductArt
-          src={product.image ?? `/products/${product.slug}.svg`}
+          src={productImageSrc(product)}
           cover={Boolean(product.image)}
           name={product.name[locale]}
           className="h-full w-full transition-transform duration-200 group-hover:scale-105"

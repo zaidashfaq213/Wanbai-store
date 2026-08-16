@@ -14,9 +14,9 @@ export default async function AdminLayout({
 }) {
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const user = await requireStaff(locale);
-  const dict = await getDictionary(locale);
-  const [pending, openTickets, settings] = await Promise.all([
+  const [user, dict, pending, openTickets, settings] = await Promise.all([
+    requireStaff(locale),
+    getDictionary(locale),
     getPendingSubmissionCount(),
     getOpenTicketCount(),
     getSettings(),
@@ -28,7 +28,7 @@ export default async function AdminLayout({
     <AdminChrome
       locale={locale}
       brandName={dict.brand.name}
-      logo={settings.logo}
+      logo={settings.logo ? "/api/logo" : null}
       dict={dict.admin}
       themeLabel={dict.header.theme}
       role={user.role}

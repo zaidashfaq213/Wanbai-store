@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSessionUser, getAdminUser, isStaff } from "@/lib/auth/session";
-import { imageToDataUrl, PROOF_MAX_BYTES } from "@/lib/upload";
+import { imageToDataUrl, PROOF_MAX_BYTES, BRANDING_MAX_BYTES } from "@/lib/upload";
 import { sendMail } from "@/lib/mail";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 
@@ -375,7 +375,7 @@ export async function updateBankAccount(
   } else {
     const file = formData.get("logo");
     if (file instanceof File && file.size > 0) {
-      const upload = await imageToDataUrl(file);
+      const upload = await imageToDataUrl(file, BRANDING_MAX_BYTES);
       if (!upload.ok) return { ok: false, code: `logo_${upload.error}` };
       logo = upload.dataUrl;
     }

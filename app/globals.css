@@ -5,7 +5,9 @@
 
 /* ------------------------------------------------------------------ */
 /* Design tokens — Wanbai Store                                        */
-/* Brand: violet -> fuchsia primary, cyan accent. Light + dark.        */
+/* Brand: navy -> gold, sampled from the WB mark (navy #052451,        */
+/* gold #e2a025). Dark mode brightens the navy so it still reads as    */
+/* an accent against a near-black surface. Light + dark.               */
 /* ------------------------------------------------------------------ */
 :root {
   --background: #f6f7fb;
@@ -16,45 +18,45 @@
   --muted: #65627a;
   --border: #e3e2ee;
 
-  --primary: #7c3aed;
-  --primary-strong: #6d28d9;
+  --primary: #0f3f8a;
+  --primary-strong: #0a2e5c;
   --primary-foreground: #ffffff;
-  --accent: #06b6d4;
-  --accent-foreground: #052e30;
+  --accent: #d99a1a;
+  --accent-foreground: #3a2a05;
 
-  --brand-from: #7c3aed;
-  --brand-via: #a21caf;
-  --brand-to: #db2777;
+  --brand-from: #0a2e5c;
+  --brand-via: #1e63b8;
+  --brand-to: #d99a1a;
 
   --success: #16a34a;
   --warning: #f59e0b;
-  --ring: #7c3aed;
+  --ring: #0f3f8a;
 
-  --shadow-color: 250 30% 30%;
+  --shadow-color: 220 40% 25%;
 }
 
 .dark {
-  --background: #0a0912;
-  --surface: #131125;
-  --surface-2: #1b1830;
-  --surface-3: #262240;
+  --background: #0a0e16;
+  --surface: #121a2b;
+  --surface-2: #1a2438;
+  --surface-3: #232f47;
   --foreground: #f4f3fb;
-  --muted: #a29fbb;
-  --border: #2a2640;
+  --muted: #9aa5b8;
+  --border: #2e3d5c;
 
-  --primary: #8b5cf6;
-  --primary-strong: #7c3aed;
+  --primary: #3d7fff;
+  --primary-strong: #2563eb;
   --primary-foreground: #ffffff;
-  --accent: #22d3ee;
-  --accent-foreground: #04181a;
+  --accent: #ffc229;
+  --accent-foreground: #3a2a05;
 
-  --brand-from: #8b5cf6;
-  --brand-via: #c026d3;
-  --brand-to: #f43f7e;
+  --brand-from: #0a2e5c;
+  --brand-via: #3d7fff;
+  --brand-to: #ffc229;
 
-  --ring: #8b5cf6;
+  --ring: #3d7fff;
 
-  --shadow-color: 260 60% 3%;
+  --shadow-color: 220 60% 4%;
 }
 
 @theme inline {

@@ -31,14 +31,16 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const dict = await getDictionary(locale);
-  const settings = await getSettings();
+  const [dict, settings] = await Promise.all([getDictionary(locale), getSettings()]);
   return {
     metadataBase: new URL(SITE_URL),
     // public/icon.svg (a plain static asset, not the app/ file-based icon
     // convention — that convention silently wins over metadata.icons, which
     // is exactly why a favicon uploaded in Settings wasn't showing up).
-    icons: { icon: settings.favicon || "/icon.svg" },
+    // /favicon-image serves the uploaded favicon as a real cacheable
+    // response instead of inlining its base64 data URL into every page's
+    // <head> (same reasoning as the site logo below).
+    icons: { icon: settings.favicon ? "/api/favicon-image" : "/icon.svg" },
     title: {
       default: dict.meta.title,
       // Every page gets "<page> | <brand>" automatically.

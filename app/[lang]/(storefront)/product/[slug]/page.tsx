@@ -24,6 +24,7 @@ import { PurchasePanel, ShareSaveButtons } from "@/components/product/purchase-p
 import { BoltIcon, MailIcon, ShieldIcon } from "@/components/ui/icons";
 import { JsonLd } from "@/components/seo/json-ld";
 import { abs, breadcrumbLd, productLd } from "@/lib/seo";
+import { productImageSrc } from "@/lib/utils";
 
 export async function generateMetadata({
   params,
@@ -40,7 +41,7 @@ export async function generateMetadata({
   if (!product) return {};
   const name = product.name[locale];
   const description = detail?.overview[locale] ?? dict.meta.description;
-  const image = product.image ?? `/products/${product.slug}.svg`;
+  const image = productImageSrc(product);
   return {
     title: name,
     description,
@@ -50,7 +51,7 @@ export async function generateMetadata({
       description,
       type: "website",
       url: abs(`/${locale}/product/${slug}`),
-      images: [{ url: image.startsWith("data:") ? abs("/og.png") : abs(image) }],
+      images: [{ url: abs(image) }],
     },
   };
 }
@@ -121,7 +122,7 @@ export default async function ProductPage({
             description: detail.overview[locale],
             slug: product.slug,
             locale,
-            image: product.image ?? `/products/${product.slug}.svg`,
+            image: productImageSrc(product),
             priceUsd: product.priceFrom,
             brandName: dict.brand.name,
             rating: product.rating,
@@ -153,7 +154,7 @@ export default async function ProductPage({
         <div className="lg:sticky lg:top-24 lg:self-start">
           <div className="overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-surface-2 to-surface-3 p-6 shadow-[var(--shadow-card)]">
             <ProductArt
-              src={product.image ?? `/products/${product.slug}.svg`}
+              src={productImageSrc(product)}
               cover={Boolean(product.image)}
               name={product.name[locale]}
               className="mx-auto aspect-square w-full max-w-72 rounded-2xl"

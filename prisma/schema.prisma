@@ -607,19 +607,27 @@ model TicketMessage {
 
 // Singleton row (id = "store") holding contact channels shown across the site.
 model StoreSettings {
-  id           String   @id @default("store")
+  id             String   @id @default("store")
   // Uploaded site logo as a base64 data URL (same storage model as payment
   // proofs). Falls back to /logo.svg when unset.
-  logo         String?  @db.Text
+  logo           String?  @db.Text
   // Uploaded browser-tab favicon as a base64 data URL. Falls back to the
   // bundled app/icon.svg when unset.
-  favicon      String?  @db.Text
-  whatsapp     String?
-  telegram     String?
-  supportEmail String?
-  facebook     String?
-  instagram    String?
-  youtube      String?
-  tiktok       String?
-  updatedAt    DateTime @updatedAt
+  favicon        String?  @db.Text
+  whatsapp       String?
+  telegram       String?
+  supportEmail   String?
+  facebook       String?
+  instagram      String?
+  youtube        String?
+  tiktok         String?
+  // Third-party game/product top-up API — staged for whenever a provider is
+  // chosen. Not wired into any live flow yet; the store still fulfils orders
+  // manually until this is enabled and an actual integration is written
+  // against it.
+  gameApiEnabled Boolean  @default(false)
+  gameApiBaseUrl String?
+  gameApiKey     String?
+  gameApiSecret  String?  @db.Text
+  updatedAt      DateTime @updatedAt
 }

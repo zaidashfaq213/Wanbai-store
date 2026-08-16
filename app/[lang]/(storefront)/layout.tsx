@@ -40,6 +40,12 @@ export default async function StorefrontLayout({
     settings.tiktok,
   ].filter((v): v is string => Boolean(v));
 
+  // Serve the logo through /logo (a real, cacheable response) instead of
+  // inlining the base64 data URL — it renders 2-3x per page (header
+  // desktop/mobile + footer), so inlining it meant shipping the same
+  // 300KB+ blob repeatedly and uncacheable across page navigations.
+  const logoSrc = settings.logo ? "/api/logo" : null;
+
   return (
     <div className="flex min-h-screen flex-col">
       <JsonLd
@@ -54,14 +60,14 @@ export default async function StorefrontLayout({
         currencyCode={currency.code}
         accountName={accountName}
         categories={categories}
-        logo={settings.logo}
+        logo={logoSrc}
       />
       <main className="flex-1 pb-20 md:pb-0">{children}</main>
       <Footer
         dict={dict}
         locale={locale}
         categories={categories}
-        logo={settings.logo}
+        logo={logoSrc}
         socials={{
           whatsapp: settings.whatsapp,
           telegram: settings.telegram,

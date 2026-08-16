@@ -9,6 +9,13 @@ export const IMAGE_MAX_BYTES = 25 * 1024 * 1024; // 25 MB
 // single page (header + <link rel="icon">), so they stay small — this also
 // keeps them well clear of Next's ~2MB unstable_cache item limit elsewhere.
 export const BRANDING_MAX_BYTES = 2 * 1024 * 1024; // 2 MB
+// Product images ride inside getProductBySlug/getProductDetail, which ARE
+// unstable_cache-wrapped (unlike settings). Base64 inflates a file by ~4/3,
+// so this stays comfortably under the 2MB cache-item ceiling even after
+// encoding, instead of silently losing caching (or worse, shipping a multi-MB
+// data URL inline in that product's page HTML) the way the old unlimited
+// logo/favicon upload once did.
+export const PRODUCT_IMAGE_MAX_BYTES = 1 * 1024 * 1024; // 1 MB
 const ALLOWED = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
 // Favicons are commonly shipped as .ico or .svg — browsers/OSes report a few
 // different MIME types for .ico depending on how the file was saved.

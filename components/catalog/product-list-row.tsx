@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Locale } from "@/lib/i18n/config";
 import type { Product, Currency } from "@/lib/data/catalog";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
-import { cn } from "@/lib/utils";
+import { cn, productImageSrc } from "@/lib/utils";
 import { ProductArt } from "@/components/ui/product-card";
 import { StarRating } from "@/components/ui/star-rating";
 import { ArrowIcon, BoltIcon } from "@/components/ui/icons";
@@ -30,7 +30,7 @@ export function ProductListRow({
         )}
       >
         <ProductArt
-          src={product.image ?? `/products/${product.slug}.svg`}
+          src={productImageSrc(product)}
           cover={Boolean(product.image)}
           name={product.name[locale]}
           className="h-full w-full"

@@ -70,6 +70,11 @@ export function BankEditForm({
             {dict.saved}
           </span>
         )}
+        {!state.ok && state.code && (
+          <span className="text-sm font-bold text-red-500 ltr:ml-auto rtl:mr-auto">
+            {dict.invalid}
+          </span>
+        )}
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">

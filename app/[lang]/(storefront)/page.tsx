@@ -57,7 +57,7 @@ export default async function HomePage({
         />
       ))}
 
-      <AppDownload dict={dict} logo={settings.logo} />
+      <AppDownload dict={dict} logo={settings.logo ? "/api/logo" : null} />
 
       <Testimonials dict={dict} locale={locale} />
       <Partners dict={dict} />
