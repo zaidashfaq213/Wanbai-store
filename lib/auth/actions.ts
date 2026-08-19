@@ -256,9 +256,9 @@ export async function requestPasswordResetAction(
     const link = `${base}/${locale}/reset-password?token=${rawToken}`;
     await sendMail({
       to: user.email,
-      subject: "WANBAI-STORE — Reset your password",
+      subject: "WANBI STOER — Reset your password",
       text: `Reset your password using this link (valid for 1 hour): ${link}`,
-      html: `<p>We received a request to reset your WANBAI-STORE password.</p>
+      html: `<p>We received a request to reset your WANBI STOER password.</p>
 <p><a href="${link}">Click here to reset your password</a> (valid for 1 hour).</p>
 <p>If you didn't request this, you can safely ignore this email.</p>`,
     });

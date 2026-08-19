@@ -4,7 +4,7 @@
 // branded HTML shell, in whichever locale the recipient prefers.
 import { SITE_URL } from "@/lib/seo";
 
-const BRAND = "WANBAI STOER";
+const BRAND = "WANBI STOER";
 const NAVY = "#0a2e5c";
 const GOLD = "#e2a025";
 

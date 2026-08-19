@@ -3,7 +3,7 @@
 // transactional subject noticeably improve inbox placement (vs. thin, all-caps
 // snippets which spam filters penalise).
 
-const BRAND = "Wanbai Store";
+const BRAND = "Wanbi Stoer";
 const SUPPORT = "wanbaistoer.tech@gmail.com";
 
 export function verificationEmail(code: string): {

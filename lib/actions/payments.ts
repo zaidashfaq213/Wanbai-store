@@ -267,9 +267,9 @@ export async function fulfillOrder(formData: FormData) {
     : "<p>Your top-up / service has been completed.</p>";
   await sendMail({
     to: order.email,
-    subject: `WANBAI-STORE — Order ${order.ref} delivered`,
+    subject: `WANBI STOER — Order ${order.ref} delivered`,
     text: `Your order ${order.ref} (${item?.productName ?? ""}) has been delivered.${code ? ` Code: ${code}` : ""}`,
-    html: `<p>Your order <strong>${order.ref}</strong>${item ? ` — ${item.productName} · ${item.packageLabel}` : ""} has been delivered.</p>${codeLine}<p>Thank you for shopping with WANBAI-STORE.</p>`,
+    html: `<p>Your order <strong>${order.ref}</strong>${item ? ` — ${item.productName} · ${item.packageLabel}` : ""} has been delivered.</p>${codeLine}<p>Thank you for shopping with WANBI STOER.</p>`,
   });
 
   revalidatePath(`/${locale}/admin/orders`, "layout");

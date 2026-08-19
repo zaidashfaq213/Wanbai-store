@@ -204,8 +204,8 @@ function buildVariantGroups(product: Product): VariantGroup[] {
 
 function buildOverview(product: Product): Localized {
   return L(
-    `اشحن ${product.name.ar} بسرعة وأمان من وانباي ستور. اختر الباقة المناسبة، أكمل عملية الدفع، وسيصلك المنتج فوراً عبر البريد الإلكتروني وداخل حسابك. جميع المنتجات أصلية 100% ومضمونة.`,
-    `Top up ${product.name.en} quickly and securely with Wanbai Store. Pick the package that suits you, complete checkout, and receive it instantly by email and inside your account. All products are 100% genuine and guaranteed.`,
+    `اشحن ${product.name.ar} بسرعة وأمان من وانبي ستور. اختر الباقة المناسبة، أكمل عملية الدفع، وسيصلك المنتج فوراً عبر البريد الإلكتروني وداخل حسابك. جميع المنتجات أصلية 100% ومضمونة.`,
+    `Top up ${product.name.en} quickly and securely with Wanbi Stoer. Pick the package that suits you, complete checkout, and receive it instantly by email and inside your account. All products are 100% genuine and guaranteed.`,
   );
 }
 function buildHowToUse(fulfillment: Fulfillment): Localized {
@@ -238,7 +238,7 @@ const REVIEW_POOL: Review[] = [
   { name: "Khalid", rating: 5, date: "2026-06-21", comment: L("سريع جداً، وصلني خلال ثانية. ممتاز!", "Super fast, arrived within a second. Excellent!") },
   { name: "Sara", rating: 5, date: "2026-06-18", comment: L("أفضل أسعار ودعم محترم، أنصح به.", "Best prices and great support. Recommended.") },
   { name: "Ahmed", rating: 4, date: "2026-06-15", comment: L("كل شيء تمام، بس الدفع أخذ وقت بسيط.", "All good, payment took a little while.") },
-  { name: "Layla", rating: 5, date: "2026-06-12", comment: L("تجربة سلسة وآمنة، شكراً وانباي.", "Smooth, secure experience. Thanks Wanbai.") },
+  { name: "Layla", rating: 5, date: "2026-06-12", comment: L("تجربة سلسة وآمنة، شكراً وانبي.", "Smooth, secure experience. Thanks Wanbi.") },
   { name: "Omar", rating: 5, date: "2026-06-08", comment: L("ثاني مرة أشتري، نفس الجودة والسرعة.", "Second time buying — same quality and speed.") },
   { name: "Noor", rating: 4, date: "2026-06-03", comment: L("منتج أصلي ووصل فوراً.", "Genuine product, delivered instantly.") },
 ];

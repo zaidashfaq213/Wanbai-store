@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     const link = `${base}/ar/reset-password?token=${raw}`;
     await sendMail({
       to: user.email,
-      subject: "WANBAI-STORE — Reset your password",
+      subject: "WANBI STOER — Reset your password",
       text: `Reset your password (valid 1 hour): ${link}`,
       html: `<p><a href="${link}">Reset your password</a> (valid for 1 hour).</p>`,
     });

@@ -140,7 +140,7 @@ async function main() {
       notifications: {
         create: {
           type: "SYSTEM",
-          title: "Welcome to WANBAI-STORE 🎉",
+          title: "Welcome to WANBI STOER 🎉",
           body: "Your demo account is ready. Explore the store!",
           href: "/dashboard",
         },
@@ -173,7 +173,7 @@ async function main() {
       key: "o-cash",
       nameEn: "O-Cash",
       nameAr: "اوو-كاش",
-      accountName: "WANBAI STORE",
+      accountName: "WANBI STOER",
       accountNumber: "0000 0000 0000",
       color: "#1c8a5a",
       sortOrder: 1,
@@ -182,7 +182,7 @@ async function main() {
       key: "mycashi",
       nameEn: "MyCashi",
       nameAr: "ماي كاشي",
-      accountName: "WANBAI STORE",
+      accountName: "WANBI STOER",
       accountNumber: "0000 0000 0000",
       color: "#5b3fd1",
       sortOrder: 2,
@@ -191,7 +191,7 @@ async function main() {
       key: "bok",
       nameEn: "Bankak (BOK)",
       nameAr: "بنكك",
-      accountName: "WANBAI STORE",
+      accountName: "WANBI STOER",
       accountNumber: "0000 0000 0000",
       color: "#d81f26",
       sortOrder: 3,
@@ -218,9 +218,9 @@ async function seedContent() {
       titleEn: "About Us",
       titleAr: "من نحن",
       bodyEn:
-        "WANBAI-STORE is a digital goods marketplace for game top-ups, gift cards, e-payment services, activation keys, telecom recharge and app subscriptions.\n\nEvery order is handled by our team and delivered to your email and your account. We focus on fair prices, genuine products and fast, human support.",
+        "WANBI STOER is a digital goods marketplace for game top-ups, gift cards, e-payment services, activation keys, telecom recharge and app subscriptions.\n\nEvery order is handled by our team and delivered to your email and your account. We focus on fair prices, genuine products and fast, human support.",
       bodyAr:
-        "وانباي ستور هو متجر للمنتجات الرقمية: شحن الألعاب، البطاقات الرقمية، الدفع الإلكتروني، مفاتيح التفعيل، بطاقات الاتصالات واشتراكات التطبيقات.\n\nيتم تنفيذ كل طلب من قِبل فريقنا وتسليمه إلى بريدك الإلكتروني وحسابك. نركّز على الأسعار العادلة والمنتجات الأصلية والدعم السريع.",
+        "وانبي ستور هو متجر للمنتجات الرقمية: شحن الألعاب، البطاقات الرقمية، الدفع الإلكتروني، مفاتيح التفعيل، بطاقات الاتصالات واشتراكات التطبيقات.\n\nيتم تنفيذ كل طلب من قِبل فريقنا وتسليمه إلى بريدك الإلكتروني وحسابك. نركّز على الأسعار العادلة والمنتجات الأصلية والدعم السريع.",
       sortOrder: 1,
     },
     {
@@ -228,9 +228,9 @@ async function seedContent() {
       titleEn: "Terms of Service",
       titleAr: "شروط الخدمة",
       bodyEn:
-        "By using WANBAI-STORE you agree to these terms.\n\n1. Accounts — you are responsible for the accuracy of the details you provide (such as a Player ID). Orders fulfilled with incorrect details cannot be reversed.\n2. Pricing — prices are shown in your selected currency and are converted from USD.\n3. Payments — payments are made by bank transfer and confirmed manually after review, or from your in-app wallet balance.\n4. Delivery — digital products are delivered by email and inside your account after payment is confirmed.\n5. Abuse — fraudulent payment proofs or chargebacks will result in account suspension.",
+        "By using WANBI STOER you agree to these terms.\n\n1. Accounts — you are responsible for the accuracy of the details you provide (such as a Player ID). Orders fulfilled with incorrect details cannot be reversed.\n2. Pricing — prices are shown in your selected currency and are converted from USD.\n3. Payments — payments are made by bank transfer and confirmed manually after review, or from your in-app wallet balance.\n4. Delivery — digital products are delivered by email and inside your account after payment is confirmed.\n5. Abuse — fraudulent payment proofs or chargebacks will result in account suspension.",
       bodyAr:
-        "باستخدامك وانباي ستور فإنك توافق على هذه الشروط.\n\n١. الحسابات — أنت مسؤول عن صحة البيانات التي تدخلها (مثل معرّف اللاعب). الطلبات التي تُنفّذ ببيانات خاطئة لا يمكن التراجع عنها.\n٢. الأسعار — تُعرض بالعملة التي تختارها وتُحوّل من الدولار.\n٣. المدفوعات — تتم عبر التحويل البنكي وتُعتمد يدوياً بعد المراجعة، أو من رصيد محفظتك.\n٤. التسليم — تُسلَّم المنتجات الرقمية عبر البريد وداخل حسابك بعد تأكيد الدفع.\n٥. إساءة الاستخدام — تقديم إثباتات دفع مزوّرة يؤدي إلى إيقاف الحساب.",
+        "باستخدامك وانبي ستور فإنك توافق على هذه الشروط.\n\n١. الحسابات — أنت مسؤول عن صحة البيانات التي تدخلها (مثل معرّف اللاعب). الطلبات التي تُنفّذ ببيانات خاطئة لا يمكن التراجع عنها.\n٢. الأسعار — تُعرض بالعملة التي تختارها وتُحوّل من الدولار.\n٣. المدفوعات — تتم عبر التحويل البنكي وتُعتمد يدوياً بعد المراجعة، أو من رصيد محفظتك.\n٤. التسليم — تُسلَّم المنتجات الرقمية عبر البريد وداخل حسابك بعد تأكيد الدفع.\n٥. إساءة الاستخدام — تقديم إثباتات دفع مزوّرة يؤدي إلى إيقاف الحساب.",
       sortOrder: 2,
     },
     {

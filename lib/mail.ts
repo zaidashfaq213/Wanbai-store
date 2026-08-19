@@ -45,7 +45,7 @@ export async function sendMail({ to, subject, html, text, replyTo }: MailInput) 
   }
   try {
     await tx.sendMail({
-      from: SMTP_FROM ?? "WANBAI-STORE <no-reply@wanbai.store>",
+      from: SMTP_FROM ?? "WANBI STOER <no-reply@wanbai.store>",
       // A valid Reply-To (a real inbox) improves inbox placement.
       replyTo: replyTo ?? SMTP_USER,
       to,
