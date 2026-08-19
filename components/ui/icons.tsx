@@ -113,6 +113,14 @@ export const WalletIcon = (p: IconProps) => (
   </svg>
 );
 
+export const LockIcon = (p: IconProps) => (
+  <svg {...base} {...p}>
+    <rect x="5" y="11" width="14" height="9" rx="2" />
+    <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    <path d="M12 15v2" />
+  </svg>
+);
+
 export const ShieldIcon = (p: IconProps) => (
   <svg {...base} {...p}>
     <path d="M12 3l7 3v5c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V6l7-3Z" />

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/session";
@@ -120,4 +121,57 @@ export async function updateProfile(
   const locale = loc(String(formData.get("locale") ?? ""));
   revalidatePath(`/${locale}/dashboard/profile`);
   return { ok: true, code: "profile_saved" };
+}
+
+// --- Change password --------------------------------------------------------
+// Used by both the dashboard profile page and the admin "My account" page —
+// any logged-in user (customer, Manager or Supervisor) can set their own new
+// password here, as long as they can prove the current one.
+
+const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1),
+    newPassword: z.string().min(8).max(100),
+    confirmPassword: z.string().min(1),
+  })
+  .refine((v) => v.newPassword === v.confirmPassword, {
+    path: ["confirmPassword"],
+  });
+
+export async function changePassword(
+  _prev: FormState,
+  formData: FormData,
+): Promise<FormState> {
+  const user = await getSessionUser();
+  if (!user) return { ok: false, code: "requires_auth" };
+
+  const parsed = changePasswordSchema.safeParse({
+    currentPassword: formData.get("currentPassword"),
+    newPassword: formData.get("newPassword"),
+    confirmPassword: formData.get("confirmPassword"),
+  });
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0]?.path[0];
+    if (issue === "confirmPassword") return { ok: false, code: "mismatch" };
+    if (issue === "newPassword") return { ok: false, code: "weak_password" };
+    return { ok: false, code: "invalid_input" };
+  }
+
+  const record = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { passwordHash: true },
+  });
+  if (!record) return { ok: false, code: "requires_auth" };
+
+  // OAuth-only accounts have no password to check against — block here
+  // rather than silently letting anyone set one without proving identity.
+  if (!record.passwordHash) return { ok: false, code: "no_password" };
+
+  const match = await bcrypt.compare(parsed.data.currentPassword, record.passwordHash);
+  if (!match) return { ok: false, code: "wrong_current" };
+
+  const passwordHash = await bcrypt.hash(parsed.data.newPassword, 12);
+  await prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
+
+  return { ok: true, code: "password_changed" };
 }

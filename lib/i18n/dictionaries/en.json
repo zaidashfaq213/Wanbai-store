@@ -478,7 +478,8 @@
       "logoutConfirm": "Log out",
       "logoutCancel": "Cancel",
       "staff": "Staff",
-      "reengagement": "Re-engagement"
+      "reengagement": "Re-engagement",
+      "profile": "My Account"
     },
     "overview": {
       "subtitle": "Store operations at a glance",
@@ -913,6 +914,25 @@
       "cronNote": "This runs on a daily schedule set up on the server (not from this page). Ask your developer to confirm the CRON_SECRET is set and the daily job is scheduled.",
       "save": "Save",
       "saved": "Saved"
+    },
+    "profile": {
+      "title": "My Account",
+      "subtitle": "Manage your own admin login",
+      "formTitle": "Change password",
+      "formSubtitle": "You can set any password you like — it only affects your own login.",
+      "current": "Current password",
+      "next": "New password",
+      "confirm": "Confirm new password",
+      "save": "Update password",
+      "saved": "Password updated.",
+      "errors": {
+        "requires_auth": "Please sign in again.",
+        "invalid_input": "Please check the form and try again.",
+        "weak_password": "New password must be at least 8 characters.",
+        "mismatch": "The new password and confirmation don't match.",
+        "wrong_current": "Current password is incorrect.",
+        "no_password": "This account has no password set — contact a Supervisor."
+      }
     }
   },
   "help": {

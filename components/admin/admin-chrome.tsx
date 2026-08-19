@@ -22,6 +22,7 @@ import {
   MailIcon,
   GlobeIcon,
   BellIcon,
+  LockIcon,
 } from "@/components/ui/icons";
 
 type NavKey = keyof Dictionary["admin"]["nav"];
@@ -42,6 +43,7 @@ const ICONS: Record<string, typeof GridIcon> = {
   faqs: SupportIcon,
   settings: GlobeIcon,
   reengagement: BellIcon,
+  profile: LockIcon,
 };
 
 export function AdminChrome({
@@ -87,13 +89,14 @@ export function AdminChrome({
     { key: "staff", href: `${base}/staff` },
     { key: "reengagement", href: `${base}/reengagement` },
     { key: "settings", href: `${base}/settings` },
+    { key: "profile", href: `${base}/profile` },
   ];
 
-  // A Manager only handles Orders (requests) + Payments (deposits); a
-  // Supervisor (ADMIN) sees everything.
+  // A Manager only handles Orders (requests) + Payments (deposits), plus
+  // their own account (password change); a Supervisor (ADMIN) sees everything.
   const items =
     role === "MANAGER"
-      ? allItems.filter((i) => i.key === "payments" || i.key === "orders")
+      ? allItems.filter((i) => i.key === "payments" || i.key === "orders" || i.key === "profile")
       : allItems;
 
   const isActive = (href: string) =>
