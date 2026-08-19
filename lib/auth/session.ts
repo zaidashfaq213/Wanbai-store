@@ -19,16 +19,27 @@ import type { Locale } from "@/lib/i18n/config";
  * requireStaff, which all call this) commonly run more than once per request
  * — cache() collapses the auth() call + existence check to a single lookup.
  */
+// Only touch lastActiveAt if it's stale — avoids a write on every single
+// page navigation while still tracking activity closely enough for the
+// re-engagement email job (which only cares about day-level inactivity).
+const ACTIVITY_THROTTLE_MS = 60 * 60 * 1000; // 1 hour
+
 export const getSessionUser = cache(async () => {
   const session = await auth();
   const user = session?.user;
   if (!user?.id) return null;
   try {
-    const exists = await prisma.user.findUnique({
+    const existing = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { id: true },
+      select: { id: true, lastActiveAt: true },
     });
-    if (!exists) return null;
+    if (!existing) return null;
+    if (!existing.lastActiveAt || Date.now() - existing.lastActiveAt.getTime() > ACTIVITY_THROTTLE_MS) {
+      // Fire-and-forget — never let this add latency to a page load.
+      prisma.user
+        .update({ where: { id: user.id }, data: { lastActiveAt: new Date() } })
+        .catch(() => {});
+    }
   } catch {
     // DB unreachable — don't block; fall back to the token.
   }

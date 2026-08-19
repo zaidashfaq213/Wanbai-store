@@ -23,7 +23,7 @@ import { ReviewsSection } from "@/components/product/reviews-section";
 import { PurchasePanel, ShareSaveButtons } from "@/components/product/purchase-panel";
 import { BoltIcon, MailIcon, ShieldIcon } from "@/components/ui/icons";
 import { JsonLd } from "@/components/seo/json-ld";
-import { abs, breadcrumbLd, productLd } from "@/lib/seo";
+import { abs, breadcrumbLd, productLd, faqLd } from "@/lib/seo";
 import { productImageSrc } from "@/lib/utils";
 
 export async function generateMetadata({
@@ -136,6 +136,9 @@ export default async function ProductPage({
               : []),
             { name: product.name[locale], url: abs(`/${locale}/product/${product.slug}`) },
           ]),
+          ...(detail.faqs.length > 0
+            ? [faqLd(detail.faqs.map((f) => ({ q: f.q[locale], a: f.a[locale] })))]
+            : []),
         ]}
       />
       <Breadcrumbs
@@ -158,6 +161,7 @@ export default async function ProductPage({
               cover={Boolean(product.image)}
               name={product.name[locale]}
               className="mx-auto aspect-square w-full max-w-72 rounded-2xl"
+              priority
             />
           </div>
           <div className="mt-4 grid grid-cols-3 gap-2">

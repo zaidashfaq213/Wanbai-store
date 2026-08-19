@@ -49,6 +49,13 @@ model User {
   preferredLocale   String? // "ar" | "en"
   preferredCurrency String? // e.g. "USD"
 
+  // Re-engagement email tracking (see ReEngagementSettings). Updated
+  // (throttled) whenever the user is seen on web or mobile; the cron job
+  // reads these to decide who's inactive and who's already been emailed.
+  lastActiveAt       DateTime?
+  reEngageSentCount  Int       @default(0)
+  reEngageLastSentAt DateTime?
+
   accounts            Account[]
   sessions            Session[]
   orders              Order[]
@@ -630,4 +637,20 @@ model StoreSettings {
   gameApiKey     String?
   gameApiSecret  String?  @db.Text
   updatedAt      DateTime @updatedAt
+}
+
+// "Come back" email — sent to customers inactive for `inactiveDays`, capped
+// at `maxSends` total and spaced at least `intervalDays` apart. Read by the
+// cron endpoint at app/api/cron/re-engagement.
+model ReEngagementSettings {
+  id           String   @id @default("reengagement")
+  enabled      Boolean  @default(false)
+  inactiveDays Int      @default(7)
+  maxSends     Int      @default(3)
+  intervalDays Int      @default(7)
+  subjectEn    String   @default("We miss you! ❤️")
+  subjectAr    String   @default("اشتقنا ليك ❤️")
+  bodyEn       String   @default("Come back now and top up your favorite games with WANBAI STOER 🎮🔥")
+  bodyAr       String   @default("تعال الآن واشحن ألعابك المفضلة مع وانباي ستور 🎮🔥")
+  updatedAt    DateTime @updatedAt
 }

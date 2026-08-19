@@ -7,6 +7,8 @@ import { Container } from "@/components/ui/container";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Accordion } from "@/components/ui/accordion";
 import { SupportIcon, WhatsappIcon } from "@/components/ui/icons";
+import { JsonLd } from "@/components/seo/json-ld";
+import { faqLd } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -59,6 +61,16 @@ export default async function HelpPage({
 
   return (
     <Container className="py-6 sm:py-8">
+      {matches.length > 0 && (
+        <JsonLd
+          data={faqLd(
+            matches.map((f) => ({
+              q: locale === "ar" ? f.qAr : f.qEn,
+              a: locale === "ar" ? f.aAr : f.aEn,
+            })),
+          )}
+        />
+      )}
       <Breadcrumbs
         items={[{ label: dict.header.home, href: `/${locale}` }, { label: h.title }]}
       />

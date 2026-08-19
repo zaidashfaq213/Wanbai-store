@@ -21,6 +21,7 @@ import {
   SupportIcon,
   MailIcon,
   GlobeIcon,
+  BellIcon,
 } from "@/components/ui/icons";
 
 type NavKey = keyof Dictionary["admin"]["nav"];
@@ -40,6 +41,7 @@ const ICONS: Record<string, typeof GridIcon> = {
   blog: MailIcon,
   faqs: SupportIcon,
   settings: GlobeIcon,
+  reengagement: BellIcon,
 };
 
 export function AdminChrome({
@@ -83,6 +85,7 @@ export function AdminChrome({
     { key: "banks", href: `${base}/banks` },
     { key: "users", href: `${base}/users` },
     { key: "staff", href: `${base}/staff` },
+    { key: "reengagement", href: `${base}/reengagement` },
     { key: "settings", href: `${base}/settings` },
   ];
 

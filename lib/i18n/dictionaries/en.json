@@ -10,7 +10,7 @@
       "PUBG UC",
       "digital cards",
       "game recharge",
-      "PayPal",
+      "wallet top-up",
       "subscriptions",
       "Sudan",
       "Egypt"
@@ -477,7 +477,8 @@
       "logoutBody": "You'll need to sign in again to access your account.",
       "logoutConfirm": "Log out",
       "logoutCancel": "Cancel",
-      "staff": "Staff"
+      "staff": "Staff",
+      "reengagement": "Re-engagement"
     },
     "overview": {
       "subtitle": "Store operations at a glance",
@@ -891,6 +892,27 @@
       "revoke": "Remove access",
       "confirmRevokeTitle": "Remove staff access?",
       "confirmRevokeBody": "This account becomes a normal user and loses admin panel access."
+    },
+    "reengagement": {
+      "title": "Re-engagement email",
+      "subtitle": "Automatically email customers who've gone quiet, so they come back and top up.",
+      "enabled": "Enabled — send these emails automatically",
+      "inactiveDays": "Days inactive before sending",
+      "inactiveDaysHint": "How long since a customer last opened the site or app.",
+      "maxSends": "Maximum sends per customer",
+      "maxSendsHint": "Stop emailing someone after this many attempts.",
+      "intervalDays": "Days between sends",
+      "intervalDaysHint": "Minimum gap between one reminder and the next, per customer.",
+      "messageEn": "Message (English)",
+      "messageAr": "Message (Arabic)",
+      "subjectEn": "Subject (English)",
+      "subjectAr": "Subject (Arabic)",
+      "bodyEn": "Body (English)",
+      "bodyAr": "Body (Arabic)",
+      "note": "Customers who purchased or topped up recently, or who already opened the app recently, are automatically skipped — even if they'd otherwise be due.",
+      "cronNote": "This runs on a daily schedule set up on the server (not from this page). Ask your developer to confirm the CRON_SECRET is set and the daily job is scheduled.",
+      "save": "Save",
+      "saved": "Saved"
     }
   },
   "help": {

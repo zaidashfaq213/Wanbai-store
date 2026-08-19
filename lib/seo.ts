@@ -62,6 +62,50 @@ export function websiteLd(brand: Brand, locale: Locale) {
   };
 }
 
+/**
+ * FAQPage schema — the single highest-leverage addition here: Google can show
+ * these Q&As directly in search results ("rich results"), which means more
+ * screen real estate and more clicks without ranking any higher. Used on the
+ * Help Center and on every product page (each product already has its own
+ * FAQ list).
+ */
+export function faqLd(items: { q: string; a: string }[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((it) => ({
+      "@type": "Question",
+      name: it.q,
+      acceptedAnswer: { "@type": "Answer", text: it.a },
+    })),
+  };
+}
+
+/** BlogPosting schema — lets Google show the publish date and author in
+ * search results, and is a baseline requirement for blog content to be
+ * eligible for Google Discover/News-adjacent surfaces. */
+export function articleLd(input: {
+  title: string;
+  description: string;
+  url: string;
+  image?: string;
+  publishedAt: string;
+  brandName: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: input.title,
+    description: input.description,
+    url: input.url,
+    datePublished: input.publishedAt,
+    ...(input.image ? { image: input.image } : {}),
+    author: { "@type": "Organization", name: input.brandName },
+    publisher: { "@type": "Organization", name: input.brandName },
+    mainEntityOfPage: input.url,
+  };
+}
+
 export function breadcrumbLd(items: { name: string; url: string }[]) {
   return {
     "@context": "https://schema.org",

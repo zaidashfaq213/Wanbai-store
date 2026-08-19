@@ -1,9 +1,17 @@
+import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { requireStaff } from "@/lib/auth/session";
 import { getPendingSubmissionCount } from "@/lib/data/payments";
 import { getOpenTicketCount, getSettings } from "@/lib/data/content";
 import { AdminChrome } from "@/components/admin/admin-chrome";
+
+// Belt-and-suspenders alongside robots.txt's disallow — a disallowed URL can
+// still get indexed (with no snippet) if Google finds a link to it from
+// somewhere else, but a real noindex tag prevents that outright.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function AdminLayout({
   children,

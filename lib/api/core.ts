@@ -15,6 +15,10 @@ const secret = new TextEncoder().encode(
 );
 const ISSUER = "wanbai-store";
 const TOKEN_TTL = "30d";
+// Only touch lastActiveAt if it's stale — avoids a write on nearly every
+// mobile request while still tracking activity closely enough for the
+// re-engagement email job (which only cares about day-level inactivity).
+const ACTIVITY_THROTTLE_MS = 60 * 60 * 1000; // 1 hour
 
 export type TokenPayload = { sub: string; role: string };
 
@@ -71,9 +75,21 @@ export async function getApiUser(req: Request): Promise<ApiUser | null> {
       walletBalance: true,
       preferredLocale: true,
       preferredCurrency: true,
+      lastActiveAt: true,
     },
   });
-  return user;
+  if (!user) return null;
+
+  // Throttled — the app calls this on nearly every request; only write when
+  // the existing timestamp is stale, matching the web session check.
+  if (!user.lastActiveAt || Date.now() - user.lastActiveAt.getTime() > ACTIVITY_THROTTLE_MS) {
+    prisma.user
+      .update({ where: { id: user.id }, data: { lastActiveAt: new Date() } })
+      .catch(() => {});
+  }
+  const { lastActiveAt, ...apiUser } = user;
+  void lastActiveAt;
+  return apiUser;
 }
 
 // --- responses -------------------------------------------------------------

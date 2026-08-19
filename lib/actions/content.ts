@@ -366,3 +366,45 @@ export async function toggleReviewApproval(formData: FormData) {
   });
   revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/reviews`);
 }
+
+// --- Re-engagement ("come back") email settings -----------------------------
+
+const reEngagementSchema = z.object({
+  enabled: z.boolean(),
+  inactiveDays: z.coerce.number().int().min(1).max(365),
+  maxSends: z.coerce.number().int().min(1).max(20),
+  intervalDays: z.coerce.number().int().min(1).max(365),
+  subjectEn: z.string().trim().min(1).max(150),
+  subjectAr: z.string().trim().min(1).max(150),
+  bodyEn: z.string().trim().min(1).max(500),
+  bodyAr: z.string().trim().min(1).max(500),
+});
+
+export async function saveReEngagementSettings(
+  _prev: ContentState,
+  formData: FormData,
+): Promise<ContentState> {
+  if (!(await requireAdminUser())) return { ok: false, code: "requires_auth" };
+  const parsed = reEngagementSchema.safeParse({
+    enabled: formData.get("enabled") === "on",
+    inactiveDays: formData.get("inactiveDays"),
+    maxSends: formData.get("maxSends"),
+    intervalDays: formData.get("intervalDays"),
+    subjectEn: formData.get("subjectEn"),
+    subjectAr: formData.get("subjectAr"),
+    bodyEn: formData.get("bodyEn"),
+    bodyAr: formData.get("bodyAr"),
+  });
+  if (!parsed.success) return { ok: false, code: "invalid_input" };
+
+  try {
+    await prisma.reEngagementSettings.upsert({
+      where: { id: "reengagement" },
+      update: parsed.data,
+      create: { id: "reengagement", ...parsed.data },
+    });
+  } catch {
+    return { ok: false, code: "server_error" };
+  }
+  return { ok: true, code: "saved" };
+}

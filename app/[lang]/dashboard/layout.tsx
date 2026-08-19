@@ -1,8 +1,15 @@
+import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { requireUser } from "@/lib/auth/session";
 import { getUnreadNotificationCount } from "@/lib/data/account";
 import { DashboardChrome } from "@/components/dashboard/dashboard-chrome";
+
+// Belt-and-suspenders alongside robots.txt's disallow — private, per-user
+// account pages have no business appearing in search results.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function DashboardLayout({
   children,

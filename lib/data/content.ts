@@ -62,6 +62,16 @@ export const getSettings = cache(async () => {
   return prisma.storeSettings.create({ data: { id: "store" } });
 });
 
+// --- Re-engagement ("come back") email settings -----------------------------
+
+export const getReEngagementSettings = cache(async () => {
+  const existing = await prisma.reEngagementSettings.findUnique({
+    where: { id: "reengagement" },
+  });
+  if (existing) return existing;
+  return prisma.reEngagementSettings.create({ data: { id: "reengagement" } });
+});
+
 // --- Support tickets -------------------------------------------------------
 
 export function getUserTickets(userId: string) {

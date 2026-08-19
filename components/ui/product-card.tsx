@@ -10,20 +10,27 @@ export function ProductArt({
   name,
   cover = false,
   className = "",
+  priority = false,
 }: {
   src: string;
   name: string;
   cover?: boolean;
   className?: string;
+  /** The one hero image on a product page — skip lazy-loading so it doesn't
+   * delay the largest-contentful-paint. Card grids stay lazy (default). */
+  priority?: boolean;
 }) {
   return (
-    <div
-      role="img"
-      aria-label={name}
-      style={{ backgroundImage: `url(${src})` }}
+    // A real <img> (not a CSS background) so Google can index product photos
+    // via Image Search — a background-image is invisible to it.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={name}
+      loading={priority ? "eager" : "lazy"}
       className={cn(
-        "bg-center bg-no-repeat",
-        cover ? "bg-cover" : "bg-contain",
+        "object-center",
+        cover ? "object-cover" : "object-contain",
         className,
       )}
     />

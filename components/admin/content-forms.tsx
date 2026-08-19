@@ -12,6 +12,7 @@ import {
   deleteFaq,
   saveSettings,
   saveApiSettings,
+  saveReEngagementSettings,
   type ContentState,
 } from "@/lib/actions/content";
 import { ConfirmButton } from "@/components/ui/confirm-button";
@@ -445,6 +446,119 @@ export function ApiSettingsForm({
         />
         <span className="text-[11px] text-muted">{dict.secretHint}</span>
       </label>
+
+      <button type="submit" disabled={pending} className={`self-start ${BTN}`}>{dict.save}</button>
+    </form>
+  );
+}
+
+// --- Re-engagement ("come back") email settings ------------------------------
+
+export type ReEngagementRow = {
+  enabled: boolean;
+  inactiveDays: number;
+  maxSends: number;
+  intervalDays: number;
+  subjectEn: string;
+  subjectAr: string;
+  bodyEn: string;
+  bodyAr: string;
+};
+
+export function ReEngagementForm({
+  dict,
+  errors,
+  settings,
+}: {
+  dict: Dictionary["admin"]["reengagement"];
+  errors: Errors;
+  settings: ReEngagementRow;
+}) {
+  const [state, action, pending] = useActionState<ContentState, FormData>(
+    saveReEngagementSettings,
+    { ok: false },
+  );
+
+  return (
+    <form action={action} className="flex max-w-2xl flex-col gap-4 rounded-2xl border border-border bg-surface p-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="font-extrabold">{dict.title}</h3>
+          <p className="mt-0.5 text-xs text-muted">{dict.subtitle}</p>
+        </div>
+        <Status state={state} saved={dict.saved} errors={errors} />
+      </div>
+
+      <label className="flex items-center gap-2 text-sm font-semibold">
+        <input type="checkbox" name="enabled" defaultChecked={settings.enabled} />
+        {dict.enabled}
+      </label>
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <label className="flex flex-col gap-1">
+          <span className="text-xs font-semibold text-muted">{dict.inactiveDays}</span>
+          <input
+            name="inactiveDays"
+            type="number"
+            min={1}
+            max={365}
+            defaultValue={settings.inactiveDays}
+            className={FIELD}
+          />
+          <span className="text-[11px] text-muted">{dict.inactiveDaysHint}</span>
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-xs font-semibold text-muted">{dict.maxSends}</span>
+          <input
+            name="maxSends"
+            type="number"
+            min={1}
+            max={20}
+            defaultValue={settings.maxSends}
+            className={FIELD}
+          />
+          <span className="text-[11px] text-muted">{dict.maxSendsHint}</span>
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-xs font-semibold text-muted">{dict.intervalDays}</span>
+          <input
+            name="intervalDays"
+            type="number"
+            min={1}
+            max={365}
+            defaultValue={settings.intervalDays}
+            className={FIELD}
+          />
+          <span className="text-[11px] text-muted">{dict.intervalDaysHint}</span>
+        </label>
+      </div>
+
+      <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface-2 p-3">
+        <span className="text-xs font-semibold text-muted">{dict.messageEn}</span>
+        <label className="flex flex-col gap-1">
+          <span className="text-[11px] font-semibold text-muted">{dict.subjectEn}</span>
+          <input name="subjectEn" defaultValue={settings.subjectEn} className={FIELD} />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-[11px] font-semibold text-muted">{dict.bodyEn}</span>
+          <textarea name="bodyEn" rows={2} defaultValue={settings.bodyEn} className={AREA} />
+        </label>
+      </div>
+
+      <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface-2 p-3">
+        <span className="text-xs font-semibold text-muted">{dict.messageAr}</span>
+        <label className="flex flex-col gap-1">
+          <span className="text-[11px] font-semibold text-muted">{dict.subjectAr}</span>
+          <input name="subjectAr" defaultValue={settings.subjectAr} dir="rtl" className={FIELD} />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-[11px] font-semibold text-muted">{dict.bodyAr}</span>
+          <textarea name="bodyAr" rows={2} dir="rtl" defaultValue={settings.bodyAr} className={AREA} />
+        </label>
+      </div>
+
+      <p className="text-xs text-muted">{dict.note}</p>
+      <p className="rounded-xl bg-surface-2 p-3 text-xs text-muted">{dict.cronNote}</p>
 
       <button type="submit" disabled={pending} className={`self-start ${BTN}`}>{dict.save}</button>
     </form>

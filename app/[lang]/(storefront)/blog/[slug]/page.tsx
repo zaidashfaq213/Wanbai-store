@@ -7,6 +7,8 @@ import { getPost } from "@/lib/data/content";
 import { Container } from "@/components/ui/container";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Prose } from "@/components/ui/prose";
+import { JsonLd } from "@/components/seo/json-ld";
+import { abs, articleLd } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
@@ -43,6 +45,16 @@ export default async function BlogPostPage({
 
   return (
     <Container className="py-6 sm:py-8">
+      <JsonLd
+        data={articleLd({
+          title,
+          description: locale === "ar" ? post.excerptAr : post.excerptEn,
+          url: abs(`/${locale}/blog/${slug}`),
+          image: post.coverImage ?? undefined,
+          publishedAt: post.publishedAt.toISOString(),
+          brandName: dict.brand.name,
+        })}
+      />
       <Breadcrumbs
         items={[
           { label: dict.header.home, href: `/${locale}` },
