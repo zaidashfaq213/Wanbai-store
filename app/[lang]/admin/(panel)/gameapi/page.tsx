@@ -44,6 +44,7 @@ export default async function AdminGameApiPage({
       <GameApiOverview
         locale={locale}
         dict={d}
+        confirm={dict.admin.confirm}
         enabled={settings.gameApiEnabled}
         configured={isConfigured()}
         connection={connection}

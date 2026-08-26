@@ -170,6 +170,68 @@ export async function createAllProductsAction(
   return created > 0 ? { ok: true, code: "synced", count: created } : { ok: false, code: "sync_failed" };
 }
 
+// A fixed, client-approved shortlist — the games actually confirmed as
+// available on G2Bulk out of the requested set (Football, Clash of Clans,
+// Brawl Stars and New State Mobile aren't offered by this provider at all).
+const CURATED_GAME_CODES = [
+  "freefire_me", // Freefire Middle East
+  "pubgm", // PUBG Mobile
+  "mlbb", // Mobile Legends
+  "codm_sgmy", // Call of Duty Mobile — Garena SGMY (only CoD variant G2Bulk offers)
+  "genshin", // Genshin Impact
+  "bloodstrike", // Blood Strike
+  "8_ball_pool", // 8 Ball Pool
+];
+
+// Removes every product this integration created/linked — lets an admin wipe
+// the auto-generated catalog clean and rebuild it (e.g. with "Add curated
+// games" below) without hunting each one down manually.
+export async function removeAllApiProductsAction(formData: FormData) {
+  if (!(await requireAdminUser())) return;
+  const locale = loc(String(formData.get("locale") ?? ""));
+
+  const games = await prisma.gameApiGame.findMany({
+    where: { productId: { not: null } },
+    select: { productId: true },
+  });
+  const productIds = games.map((g) => g.productId).filter((id): id is string => Boolean(id));
+  if (productIds.length > 0) {
+    await prisma.product.deleteMany({ where: { id: { in: productIds } } });
+  }
+
+  updateTag("products");
+  revalidatePath(path(locale));
+  revalidatePath(`/${locale}/admin/products`);
+}
+
+// Creates products for exactly the CURATED_GAME_CODES list (skipping any
+// already linked), instead of every synced game.
+export async function addCuratedProductsAction(
+  _prev: GameApiState,
+  formData: FormData,
+): Promise<GameApiState> {
+  if (!(await requireAdminUser())) return { ok: false, code: "requires_auth" };
+  const categoryId = String(formData.get("categoryId") ?? "");
+  const locale = loc(String(formData.get("locale") ?? ""));
+  if (!categoryId) return { ok: false, code: "invalid_input" };
+
+  const games = await prisma.gameApiGame.findMany({
+    where: { code: { in: CURATED_GAME_CODES }, productId: null },
+    select: { id: true, code: true },
+  });
+
+  let created = 0;
+  for (const g of games) {
+    const result = await createProductForGame(g.id, categoryId);
+    if (result.ok) created++;
+    else console.error(`[addCuratedProductsAction] skipped ${g.code}:`, result.reason);
+  }
+
+  updateTag("products");
+  revalidatePath(path(locale));
+  return created > 0 ? { ok: true, code: "synced", count: created } : { ok: false, code: "sync_failed" };
+}
+
 // --- Auto-create the checkout fields a game needs (Player ID / Server /
 // Character name) as custom ProductInput rows, using G2Bulk's own
 // /v1/games/fields + /v1/games/servers for that game. Reuses the "playerId"

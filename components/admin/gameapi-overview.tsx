@@ -12,8 +12,11 @@ import {
   syncCatalogueAction,
   createProductFromGame,
   createAllProductsAction,
+  removeAllApiProductsAction,
+  addCuratedProductsAction,
   type GameApiState,
 } from "@/lib/actions/gameapi";
+import { ConfirmButton } from "@/components/ui/confirm-button";
 
 const FIELD =
   "h-9 rounded-lg border border-border bg-surface-2 px-2.5 text-xs outline-none focus:border-primary/50";
@@ -37,6 +40,7 @@ type Connection =
 export function GameApiOverview({
   locale,
   dict,
+  confirm,
   enabled,
   configured,
   connection,
@@ -46,6 +50,7 @@ export function GameApiOverview({
 }: {
   locale: Locale;
   dict: Dictionary["admin"]["gameapi"];
+  confirm: Dictionary["admin"]["confirm"];
   enabled: boolean;
   configured: boolean;
   connection: Connection;
@@ -60,6 +65,10 @@ export function GameApiOverview({
       <div className="flex flex-wrap items-center gap-4">
         <SyncGamesButton locale={locale} dict={dict} />
         <CreateAllButton locale={locale} dict={dict} categories={categories} />
+      </div>
+      <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-dashed border-border bg-surface p-4">
+        <AddCuratedButton locale={locale} dict={dict} categories={categories} />
+        <RemoveAllButton locale={locale} dict={dict} confirm={confirm} />
       </div>
       <GamesTable locale={locale} dict={dict} games={games} products={products} categories={categories} />
     </div>
@@ -204,6 +213,74 @@ function CreateAllButton({
         <span className="text-sm font-bold text-red-500">{dict.syncFailed}</span>
       )}
     </form>
+  );
+}
+
+function AddCuratedButton({
+  locale,
+  dict,
+  categories,
+}: {
+  locale: Locale;
+  dict: Dictionary["admin"]["gameapi"];
+  categories: CategoryOption[];
+}) {
+  const [state, action, pending] = useActionState<GameApiState, FormData>(
+    addCuratedProductsAction,
+    { ok: false },
+  );
+  if (categories.length === 0) return null;
+  return (
+    <form action={action} className="flex items-center gap-2">
+      <input type="hidden" name="locale" value={locale} />
+      <span className="text-xs font-semibold text-muted">{dict.addCuratedInto}</span>
+      <select name="categoryId" defaultValue={categories[0].id} className={FIELD}>
+        {categories.map((c) => (
+          <option key={c.id} value={c.id}>
+            {c.name}
+          </option>
+        ))}
+      </select>
+      <button
+        type="submit"
+        disabled={pending}
+        className="rounded-xl brand-gradient px-4 py-2 text-sm font-bold text-white disabled:opacity-60"
+      >
+        {pending ? dict.creatingAll : dict.addCurated}
+      </button>
+      {state.ok && state.code === "synced" && (
+        <span className="text-sm font-bold text-emerald-500">
+          {dict.createdCount.replace("{count}", String(state.count ?? 0))}
+        </span>
+      )}
+      {!state.ok && state.code && (
+        <span className="text-sm font-bold text-red-500">{dict.syncFailed}</span>
+      )}
+    </form>
+  );
+}
+
+function RemoveAllButton({
+  locale,
+  dict,
+  confirm,
+}: {
+  locale: Locale;
+  dict: Dictionary["admin"]["gameapi"];
+  confirm: Dictionary["admin"]["confirm"];
+}) {
+  return (
+    <ConfirmButton
+      action={removeAllApiProductsAction}
+      hidden={{ locale }}
+      title={dict.removeAllTitle}
+      body={dict.removeAllBody}
+      confirmText={confirm.yes}
+      cancelText={confirm.no}
+      className="rounded-xl border border-red-500/40 px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-500/10"
+    >
+      {dict.removeAll}
+    </ConfirmButton>
   );
 }
 
