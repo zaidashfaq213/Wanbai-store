@@ -233,6 +233,13 @@ export const getProductDetail = cache(
           ? { ar: pk.sublabelAr ?? "", en: pk.sublabelEn ?? "" }
           : undefined,
       price: pk.price / 100,
+      // Only surface it when enabled AND actually higher than the current
+      // price — an admin-entered mistake shouldn't render a "discount" that
+      // makes the price look like it went up.
+      compareAtPrice:
+        pk.compareAtEnabled && pk.compareAtPrice != null && pk.compareAtPrice > pk.price
+          ? pk.compareAtPrice / 100
+          : undefined,
       popular: pk.popular,
     })),
   }));

@@ -46,6 +46,8 @@ export default async function AdminEditProductPage({
       labelEn: pk.labelEn,
       labelAr: pk.labelAr,
       priceUsd: pk.price / 100,
+      compareAtPriceUsd: pk.compareAtPrice != null ? pk.compareAtPrice / 100 : null,
+      compareAtEnabled: pk.compareAtEnabled,
       popular: pk.popular,
     })),
   }));

@@ -62,7 +62,7 @@ export default async function AdminOrderDetailPage({
       <PageHeader
         title={order.ref}
         subtitle={`${o.placedOn}: ${new Date(order.createdAt).toLocaleString(
-          locale === "ar" ? "ar-EG" : "en-US",
+          locale === "ar" ? "ar-EG-u-nu-latn" : "en-US",
           { dateStyle: "medium", timeStyle: "short" },
         )}`}
         action={

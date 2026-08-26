@@ -9,6 +9,10 @@ export type Package = {
   label: Localized;
   sublabel?: Localized;
   price: number; // base USD
+  // Set only when the admin has enabled the strikethrough sale display for
+  // this package — never present otherwise, so callers can just check
+  // truthiness rather than also checking a separate "enabled" flag.
+  compareAtPrice?: number; // base USD
   popular?: boolean;
 };
 export type VariantGroup = { id: string; name: Localized; packages: Package[] };

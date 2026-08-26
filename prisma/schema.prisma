@@ -200,8 +200,12 @@ model Order {
   userId String?
   email  String
 
-  status        OrderStatus   @default(PENDING)
-  paymentMethod PaymentMethod @default(GATEWAY)
+  status         OrderStatus   @default(PENDING)
+  paymentMethod  PaymentMethod @default(GATEWAY)
+  // The last status a "your order is now ..." email was sent for. Lets
+  // notifyOrderStatus() skip re-sending when the same status is set again
+  // (an admin re-click, a webhook retry, a redundant status update).
+  notifiedStatus OrderStatus?
 
   // Money snapshot in USD cents at time of purchase.
   subtotal Int
@@ -271,7 +275,9 @@ model OrderItem {
   deliveredCode String?
   deliveredAt   DateTime?
 
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  order        Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  // Present only while a provider fulfilment attempt exists for this item.
+  gameApiOrder GameApiOrder?
 
   @@index([orderId])
   @@index([productSlug])
@@ -441,6 +447,9 @@ model Product {
   inputs        ProductInput[]
   faqs          ProductFaq[]
   reviews       ProductReview[]
+  // Set when this product auto-fulfils through a provider game (see
+  // GameApiGame.productId, which owns the actual unique constraint).
+  gameApiGame   GameApiGame?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -461,16 +470,25 @@ model VariantGroup {
 }
 
 model Package {
-  id             String       @id @default(cuid())
-  variantGroupId String
-  labelEn        String
-  labelAr        String
-  sublabelEn     String?
-  sublabelAr     String?
-  price          Int // USD cents
-  popular        Boolean      @default(false)
-  sortOrder      Int          @default(0)
-  variantGroup   VariantGroup @relation(fields: [variantGroupId], references: [id], onDelete: Cascade)
+  id               String            @id @default(cuid())
+  variantGroupId   String
+  labelEn          String
+  labelAr          String
+  sublabelEn       String?
+  sublabelAr       String?
+  price            Int // USD cents
+  // "Was" price for a strikethrough sale display, e.g. /6,250/ 6,000. Kept
+  // separate from an "enabled" flag so an admin can pause the sale (hide the
+  // strikethrough) without losing the old price they'd typed in.
+  compareAtPrice   Int? // USD cents
+  compareAtEnabled Boolean           @default(false)
+  popular          Boolean           @default(false)
+  sortOrder        Int               @default(0)
+  variantGroup     VariantGroup      @relation(fields: [variantGroupId], references: [id], onDelete: Cascade)
+  // Set when this exact denomination auto-fulfils through a provider
+  // catalogue entry (see GameApiCatalogue.packageId, which owns the
+  // unique constraint).
+  gameApiCatalogue GameApiCatalogue?
 
   @@index([variantGroupId])
 }
@@ -628,14 +646,10 @@ model StoreSettings {
   instagram      String?
   youtube        String?
   tiktok         String?
-  // Third-party game/product top-up API — staged for whenever a provider is
-  // chosen. Not wired into any live flow yet; the store still fulfils orders
-  // manually until this is enabled and an actual integration is written
-  // against it.
+  // Master switch for the G2Bulk game top-up integration (lib/gameapi/). The
+  // actual API key lives in the G2BULK_API_KEY env var, never in the DB —
+  // this only turns auto-fulfilment on/off. See the Game API admin page.
   gameApiEnabled Boolean  @default(false)
-  gameApiBaseUrl String?
-  gameApiKey     String?
-  gameApiSecret  String?  @db.Text
   updatedAt      DateTime @updatedAt
 }
 
@@ -650,7 +664,69 @@ model ReEngagementSettings {
   intervalDays Int      @default(7)
   subjectEn    String   @default("We miss you! ❤️")
   subjectAr    String   @default("اشتقنا ليك ❤️")
-  bodyEn       String   @default("Come back now and top up your favorite games with WANBAI STOER 🎮🔥")
-  bodyAr       String   @default("تعال الآن واشحن ألعابك المفضلة مع وانباي ستور 🎮🔥")
+  bodyEn       String   @default("Come back now and top up your favorite games with WANBI STOER 🎮🔥")
+  bodyAr       String   @default("تعال الآن واشحن ألعابك المفضلة مع وانبي ستور 🎮🔥")
   updatedAt    DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Game top-up provider integration (G2Bulk) — auto-fulfils TOPUP orders
+// instead of requiring an admin to deliver them by hand. See lib/gameapi/.
+// ---------------------------------------------------------------------------
+
+// A game as listed by the provider (synced from GET /v1/games). Optionally
+// linked to one of our own Products — that's what turns "just a synced game"
+// into "actually sells and auto-delivers on this store".
+model GameApiGame {
+  id           String             @id @default(cuid())
+  code         String             @unique // provider's game code, e.g. "pubgm"
+  nameEn       String
+  imageUrl     String?
+  // Admin can pause auto-fulfilment for a game without unlinking it.
+  active       Boolean            @default(true)
+  productId    String?            @unique
+  product      Product?           @relation(fields: [productId], references: [id], onDelete: SetNull)
+  catalogues   GameApiCatalogue[]
+  lastSyncedAt DateTime?
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+}
+
+// A single denomination under a provider game (synced from GET
+// /v1/games/{code}/catalogue). Optionally linked to one of our own Packages —
+// that's the mapping used to auto-place a provider order at checkout.
+model GameApiCatalogue {
+  id                  String   @id @default(cuid())
+  gameApiGameId       String
+  providerCatalogueId Int // provider's catalogue "id"
+  name                String // e.g. "60 UC" — sent back verbatim as catalogue_name
+  amount              Float // provider's current cost price in USD
+  packageId           String?  @unique
+  lastSyncedAt        DateTime @default(now())
+
+  game    GameApiGame @relation(fields: [gameApiGameId], references: [id], onDelete: Cascade)
+  package Package?    @relation(fields: [packageId], references: [id], onDelete: SetNull)
+
+  @@unique([gameApiGameId, providerCatalogueId])
+}
+
+// One attempt to fulfil an OrderItem through the provider. Created the moment
+// we call their order-create endpoint; updated by the webhook as the top-up
+// progresses. webhookToken is our own unguessable secret (the provider has no
+// signature mechanism) embedded in the callback_url we give them, so we can
+// trust a callback actually belongs to this order.
+model GameApiOrder {
+  id              String   @id @default(cuid())
+  orderItemId     String   @unique
+  providerOrderId Int?
+  gameCode        String
+  catalogueName   String
+  status          String   @default("PENDING") // PENDING | PROCESSING | COMPLETED | FAILED
+  webhookToken    String   @unique
+  errorMessage    String?  @db.Text
+  raw             Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
 }

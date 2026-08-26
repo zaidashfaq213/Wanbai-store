@@ -95,7 +95,7 @@ export default async function AdminOrdersPage({
                     <p className="text-xs text-muted">
                       {order.user?.name ?? order.email} ·{" "}
                       {new Date(order.createdAt).toLocaleDateString(
-                        locale === "ar" ? "ar-EG" : "en-US",
+                        locale === "ar" ? "ar-EG-u-nu-latn" : "en-US",
                       )}
                     </p>
                   </div>

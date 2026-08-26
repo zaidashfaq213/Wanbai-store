@@ -80,7 +80,7 @@ export default async function AdminTicketThreadPage({
                 {m.isStaff ? d.you : (m.author?.name ?? d.customer)}
               </span>
               <span className="text-xs text-muted">
-                {new Date(m.createdAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
+                {new Date(m.createdAt).toLocaleString(locale === "ar" ? "ar-EG-u-nu-latn" : "en-US")}
               </span>
             </div>
             <p className="whitespace-pre-line text-sm">{m.body}</p>

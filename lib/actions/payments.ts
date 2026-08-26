@@ -7,6 +7,7 @@ import { getSessionUser, getAdminUser, isStaff } from "@/lib/auth/session";
 import { imageToDataUrl, PROOF_MAX_BYTES, BRANDING_MAX_BYTES } from "@/lib/upload";
 import { sendMail } from "@/lib/mail";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
+import { notifyOrderStatus } from "@/lib/orders/notify";
 
 function loc(v: string): Locale {
   return isLocale(v) ? v : defaultLocale;
@@ -186,6 +187,10 @@ export async function approveSubmission(formData: FormData) {
     }
   });
 
+  if (sub.purpose !== "WALLET_TOPUP" && sub.orderId) {
+    await notifyOrderStatus(sub.orderId, "PAID");
+  }
+
   revalidatePath(`/${locale}/admin`);
   revalidatePath(`/${locale}/admin/payments`);
 }
@@ -245,7 +250,10 @@ export async function fulfillOrder(formData: FormData) {
     }
     await tx.order.update({
       where: { id: orderId },
-      data: { status: "DELIVERED" },
+      // notifiedStatus set here too — the email a few lines below already
+      // covers "completed" (with the code attached), so this stops the
+      // generic notifyOrderStatus() from also sending a second, plainer one.
+      data: { status: "DELIVERED", notifiedStatus: "DELIVERED" },
     });
     if (order.userId) {
       await tx.notification.create({
@@ -313,6 +321,7 @@ export async function refundOrder(formData: FormData) {
     }
   });
 
+  await notifyOrderStatus(orderId, "REFUNDED");
   revalidatePath(`/${locale}/admin/orders`, "layout");
 }
 
@@ -337,6 +346,7 @@ export async function updateOrderStatus(formData: FormData) {
     where: { id: orderId },
     data: { status: parsed.data },
   });
+  await notifyOrderStatus(orderId, parsed.data);
   revalidatePath(`/${locale}/admin/orders`, "layout");
 }
 

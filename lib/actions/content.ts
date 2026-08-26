@@ -240,50 +240,6 @@ export async function saveSettings(
   return { ok: true, code: "saved" };
 }
 
-// --- Game/product API integration (staged — not wired into any live flow
-// yet; a provider hasn't been chosen). Kept separate from saveSettings above
-// so editing credentials never touches the contact/social fields.
-// -----------------------------------------------------------------------
-
-const apiSettingsSchema = z.object({
-  gameApiEnabled: z.boolean(),
-  gameApiBaseUrl: z.string().trim().max(300).optional(),
-  gameApiKey: z.string().trim().max(300).optional(),
-  gameApiSecret: z.string().trim().max(2000).optional(),
-});
-
-export async function saveApiSettings(
-  _prev: ContentState,
-  formData: FormData,
-): Promise<ContentState> {
-  if (!(await requireAdminUser())) return { ok: false, code: "requires_auth" };
-  const parsed = apiSettingsSchema.safeParse({
-    gameApiEnabled: formData.get("gameApiEnabled") === "on",
-    gameApiBaseUrl: formData.get("gameApiBaseUrl") || undefined,
-    gameApiKey: formData.get("gameApiKey") || undefined,
-    gameApiSecret: formData.get("gameApiSecret") || undefined,
-  });
-  if (!parsed.success) return { ok: false, code: "invalid_input" };
-
-  // Leave the secret untouched if the field was left blank on save (so the
-  // admin doesn't have to re-paste it every time they tweak the base URL).
-  const { gameApiSecret, ...rest } = parsed.data;
-  const data = {
-    ...rest,
-    ...(gameApiSecret ? { gameApiSecret } : {}),
-  };
-  try {
-    await prisma.storeSettings.upsert({
-      where: { id: "store" },
-      update: data,
-      create: { id: "store", ...data },
-    });
-  } catch {
-    return { ok: false, code: "server_error" };
-  }
-  return { ok: true, code: "saved" };
-}
-
 // --- Product reviews -------------------------------------------------------
 
 const reviewSchema = z.object({

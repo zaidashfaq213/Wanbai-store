@@ -80,7 +80,7 @@ export function PaymentReviewCard({
           </p>
           <p>
             {dict.submittedAt}:{" "}
-            {new Date(s.createdAt).toLocaleString(locale === "ar" ? "ar-EG" : "en-US")}
+            {new Date(s.createdAt).toLocaleString(locale === "ar" ? "ar-EG-u-nu-latn" : "en-US")}
           </p>
           {s.senderName && (
             <p>

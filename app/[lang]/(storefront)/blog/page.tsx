@@ -57,7 +57,7 @@ export default async function BlogPage({
             >
               <p className="text-xs text-muted">
                 {new Date(post.publishedAt).toLocaleDateString(
-                  locale === "ar" ? "ar-EG" : "en-US",
+                  locale === "ar" ? "ar-EG-u-nu-latn" : "en-US",
                 )}
               </p>
               <h2 className="mt-1 text-lg font-extrabold leading-snug">

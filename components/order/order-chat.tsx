@@ -57,7 +57,7 @@ export function OrderChat({
     endRef.current?.scrollIntoView({ block: "nearest" });
   }, [messages.length]);
 
-  const dateFmt = locale === "ar" ? "ar-EG" : "en-US";
+  const dateFmt = locale === "ar" ? "ar-EG-u-nu-latn" : "en-US";
 
   return (
     <section className="rounded-2xl border border-border bg-surface p-4 sm:p-5">

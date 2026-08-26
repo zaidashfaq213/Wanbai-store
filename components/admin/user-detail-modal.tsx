@@ -66,7 +66,7 @@ export function UserDetailModal({
   const d = dict.detail;
   const money = (c: number) => formatCents(c, currency.symbol, currency.rate, locale);
   const fmtDate = (iso: string) =>
-    new Date(iso).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US");
+    new Date(iso).toLocaleDateString(locale === "ar" ? "ar-EG-u-nu-latn" : "en-US");
 
   function view() {
     setOpen(true);

@@ -23,6 +23,7 @@ import {
   GlobeIcon,
   BellIcon,
   LockIcon,
+  BoltIcon,
 } from "@/components/ui/icons";
 
 type NavKey = keyof Dictionary["admin"]["nav"];
@@ -44,6 +45,7 @@ const ICONS: Record<string, typeof GridIcon> = {
   settings: GlobeIcon,
   reengagement: BellIcon,
   profile: LockIcon,
+  gameapi: BoltIcon,
 };
 
 export function AdminChrome({
@@ -88,6 +90,7 @@ export function AdminChrome({
     { key: "users", href: `${base}/users` },
     { key: "staff", href: `${base}/staff` },
     { key: "reengagement", href: `${base}/reengagement` },
+    { key: "gameapi", href: `${base}/gameapi` },
     { key: "settings", href: `${base}/settings` },
     { key: "profile", href: `${base}/profile` },
   ];

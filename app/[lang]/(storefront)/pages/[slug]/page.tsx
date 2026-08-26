@@ -45,7 +45,7 @@ export default async function CmsPage({
       <article className="mx-auto max-w-3xl">
         <h1 className="text-2xl font-black sm:text-3xl">{title}</h1>
         <p className="mt-1 text-xs text-muted">
-          {new Date(page.updatedAt).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US")}
+          {new Date(page.updatedAt).toLocaleDateString(locale === "ar" ? "ar-EG-u-nu-latn" : "en-US")}
         </p>
         <Prose text={body} className="mt-6" />
       </article>

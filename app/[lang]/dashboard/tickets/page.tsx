@@ -54,7 +54,7 @@ export default async function TicketsPage({
                   <p className="text-xs text-muted">
                     {ticket.ref} · {ticket._count.messages} ·{" "}
                     {new Date(ticket.updatedAt).toLocaleDateString(
-                      locale === "ar" ? "ar-EG" : "en-US",
+                      locale === "ar" ? "ar-EG-u-nu-latn" : "en-US",
                     )}
                   </p>
                 </div>

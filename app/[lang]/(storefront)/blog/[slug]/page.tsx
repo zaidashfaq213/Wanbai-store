@@ -65,7 +65,7 @@ export default async function BlogPostPage({
       <article className="mx-auto max-w-3xl">
         <p className="text-xs text-muted">
           {new Date(post.publishedAt).toLocaleDateString(
-            locale === "ar" ? "ar-EG" : "en-US",
+            locale === "ar" ? "ar-EG-u-nu-latn" : "en-US",
           )}
         </p>
         <h1 className="mt-1 text-2xl font-black sm:text-3xl">{title}</h1>

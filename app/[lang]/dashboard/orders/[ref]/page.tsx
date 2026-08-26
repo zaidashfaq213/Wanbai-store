@@ -81,7 +81,7 @@ export default async function OrderDetailPage({
       <PageHeader
         title={order.ref}
         subtitle={`${d.placedOn}: ${new Date(order.createdAt).toLocaleString(
-          locale === "ar" ? "ar-EG" : "en-US",
+          locale === "ar" ? "ar-EG-u-nu-latn" : "en-US",
           { dateStyle: "medium", timeStyle: "short" },
         )}`}
         action={
@@ -183,7 +183,7 @@ export default async function OrderDetailPage({
                       </p>
                       <p className="text-xs text-muted">
                         {new Date(s.createdAt).toLocaleString(
-                          locale === "ar" ? "ar-EG" : "en-US",
+                          locale === "ar" ? "ar-EG-u-nu-latn" : "en-US",
                           { dateStyle: "short", timeStyle: "short" },
                         )}
                         {s.reference ? ` · ${s.reference}` : ""}

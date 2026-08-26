@@ -111,7 +111,9 @@ function serviceGroups(product: Product): VariantGroup[] {
     name: svc.name,
     packages: SOCIAL_TIERS.map((q, i) => ({
       id: `${svc.id}-${i}`,
-      label: L(q.toLocaleString("ar-EG"), q.toLocaleString("en-US")),
+      // Western digits in both locales — "ar-EG" alone renders Eastern
+      // Arabic numerals (١٢٣...), which we don't want.
+      label: L(q.toLocaleString("ar-EG-u-nu-latn"), q.toLocaleString("en-US")),
       sublabel: svc.sublabel,
       price: r2(product.priceFrom * (q / 1000) * svc.mult),
       popular: i === 1,

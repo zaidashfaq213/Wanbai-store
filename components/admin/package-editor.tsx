@@ -23,7 +23,15 @@ export type PkgGroup = {
   id: string;
   nameEn: string;
   nameAr: string;
-  packages: Array<{ id: string; labelEn: string; labelAr: string; priceUsd: number; popular: boolean }>;
+  packages: Array<{
+    id: string;
+    labelEn: string;
+    labelAr: string;
+    priceUsd: number;
+    compareAtPriceUsd: number | null;
+    compareAtEnabled: boolean;
+    popular: boolean;
+  }>;
 };
 
 function PackageRow({
@@ -56,6 +64,27 @@ function PackageRow({
         <label className="flex flex-col gap-0.5">
           <span className="text-[10px] font-semibold text-muted">{dict.pkgPrice}</span>
           <input name="priceUsd" type="number" step="0.01" min="0" defaultValue={pkg.priceUsd} className={`${FIELD} w-24`} />
+        </label>
+        <label className="flex flex-col gap-0.5">
+          <span className="text-[10px] font-semibold text-muted">{dict.compareAtPrice}</span>
+          <input
+            name="compareAtPriceUsd"
+            type="number"
+            step="0.01"
+            min="0"
+            defaultValue={pkg.compareAtPriceUsd ?? ""}
+            placeholder="—"
+            className={`${FIELD} w-24`}
+          />
+        </label>
+        <label className="flex items-center gap-1.5 pb-1.5 text-xs font-semibold">
+          <input
+            type="checkbox"
+            name="compareAtEnabled"
+            defaultChecked={pkg.compareAtEnabled}
+            className="size-3.5 accent-[var(--color-primary)]"
+          />
+          {dict.compareAtEnabled}
         </label>
         <label className="flex items-center gap-1.5 pb-1.5 text-xs font-semibold">
           <input type="checkbox" name="popular" defaultChecked={pkg.popular} className="size-3.5 accent-[var(--color-primary)]" />

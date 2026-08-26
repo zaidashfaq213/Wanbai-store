@@ -65,7 +65,7 @@ export default async function NotificationsPage({
                   {n.body && <p className="text-sm text-muted">{n.body}</p>}
                   <p className="mt-1 text-xs text-muted">
                     {new Date(n.createdAt).toLocaleString(
-                      locale === "ar" ? "ar-EG" : "en-US",
+                      locale === "ar" ? "ar-EG-u-nu-latn" : "en-US",
                     )}
                   </p>
                 </div>

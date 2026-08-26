@@ -37,6 +37,14 @@ export function setCookie(name: string, value: string): void {
   document.cookie = `${name}=${value}; path=/; max-age=31536000; samesite=lax`;
 }
 
+// "ar-EG" formats digits in Eastern Arabic numerals (٠١٢٣...) by default —
+// always force Western/Latin digits (0123...) for money, regardless of
+// locale, via the -u-nu-latn Unicode extension.
+const PRICE_LOCALE: Record<string, string> = {
+  ar: "ar-EG-u-nu-latn",
+  en: "en-US",
+};
+
 /** Format a base-USD price into the selected currency for display. */
 export function formatPrice(
   amountUsd: number,
@@ -45,7 +53,7 @@ export function formatPrice(
   locale: string,
 ): string {
   const value = amountUsd * rate;
-  const formatted = new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-US", {
+  const formatted = new Intl.NumberFormat(PRICE_LOCALE[locale] ?? PRICE_LOCALE.en, {
     minimumFractionDigits: value % 1 === 0 ? 0 : 2,
     maximumFractionDigits: 2,
   }).format(value);

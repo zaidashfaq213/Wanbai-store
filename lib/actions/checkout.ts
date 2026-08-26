@@ -4,6 +4,9 @@ import { randomBytes } from "crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/session";
+import { attemptAutoTopUp } from "@/lib/gameapi/order";
+import { refundFailedTopUp } from "@/lib/gameapi/refund";
+import { notifyOrderStatus } from "@/lib/orders/notify";
 
 // One purchasable line coming from the product purchase panel. Prices arrive in
 // USD dollars and are stored as integer cents.
@@ -24,6 +27,10 @@ const checkoutSchema = z.object({
     unitPriceUsd: z.number().nonnegative(),
     deliveryType: z.enum(["TOPUP", "CODE", "SERVICE"]),
     inputs: z.record(z.string(), z.string()).optional(),
+    // The live Package id — used only to look up a Game API auto-fulfilment
+    // mapping (lib/gameapi/order.ts). Never stored on the order itself, which
+    // stays a label/price snapshot so catalog edits don't rewrite history.
+    packageId: z.string().optional(),
   }),
 });
 
@@ -88,6 +95,7 @@ export async function createOrder(input: CheckoutInput): Promise<CheckoutResult>
           },
         },
       },
+      include: { items: true },
     });
 
     await tx.user.update({
@@ -114,6 +122,31 @@ export async function createOrder(input: CheckoutInput): Promise<CheckoutResult>
     });
     return created;
   });
+
+  // "Your order has been received" — sent for every order the moment it's
+  // created, before any fulfilment (manual or automatic) happens. Awaited
+  // (like every other order email in this codebase) so the notifiedStatus
+  // write can't race with the auto-fulfilment attempt just below.
+  await notifyOrderStatus(order.id, "PAID");
+
+  // Auto-fulfilment: only kicks in when this exact package is mapped to a
+  // Game API catalogue entry (Admin → Game API). Every other product falls
+  // through untouched, exactly as before — an admin delivers it by hand.
+  if (item.deliveryType === "TOPUP" && item.packageId) {
+    const orderItem = order.items[0];
+    const attempt = await attemptAutoTopUp({
+      orderItemId: orderItem.id,
+      packageId: item.packageId,
+      orderRef: order.ref,
+      playerId: item.inputs?.playerId,
+      serverId: item.inputs?.server,
+      charname: item.inputs?.charname,
+    });
+    if (attempt.attempted && !attempt.ok) {
+      await refundFailedTopUp(order.id, attempt.reason);
+      return { ok: false, code: "topup_failed", orderRef: order.ref };
+    }
+  }
 
   return { ok: true, code: "order_paid", orderRef: order.ref };
 }

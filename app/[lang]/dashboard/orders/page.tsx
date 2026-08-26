@@ -77,7 +77,7 @@ export default async function OrdersPage({
                   </p>
                   <p className="text-xs text-muted">
                     {new Date(order.createdAt).toLocaleDateString(
-                      locale === "ar" ? "ar-EG" : "en-US",
+                      locale === "ar" ? "ar-EG-u-nu-latn" : "en-US",
                     )}
                   </p>
                 </div>

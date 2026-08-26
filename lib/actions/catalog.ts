@@ -329,6 +329,9 @@ const packageSchema = z.object({
   labelEn: z.string().trim().min(1).max(80),
   labelAr: z.string().trim().min(1).max(80),
   priceUsd: z.coerce.number().min(0).max(10_000_000),
+  // Optional "was" price for a strikethrough sale display. Blank/0 = none.
+  compareAtPriceUsd: z.coerce.number().min(0).max(10_000_000).optional(),
+  compareAtEnabled: z.boolean(),
   popular: z.boolean(),
 });
 
@@ -342,12 +345,21 @@ export async function updatePackage(
     labelEn: formData.get("labelEn"),
     labelAr: formData.get("labelAr"),
     priceUsd: formData.get("priceUsd"),
+    compareAtPriceUsd: formData.get("compareAtPriceUsd") || undefined,
+    compareAtEnabled: formData.get("compareAtEnabled") === "on",
     popular: formData.get("popular") === "on",
   });
   if (!parsed.success) return { ok: false, code: "invalid_input" };
 
-  const { id, priceUsd, ...rest } = parsed.data;
-  await prisma.package.update({ where: { id }, data: { ...rest, price: cents(priceUsd) } });
+  const { id, priceUsd, compareAtPriceUsd, ...rest } = parsed.data;
+  await prisma.package.update({
+    where: { id },
+    data: {
+      ...rest,
+      price: cents(priceUsd),
+      compareAtPrice: compareAtPriceUsd ? cents(compareAtPriceUsd) : null,
+    },
+  });
   revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products`);
   updateTag("products");
   return { ok: true, code: "saved" };

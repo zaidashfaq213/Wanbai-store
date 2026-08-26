@@ -72,7 +72,7 @@ export default async function AdminUsersPage({
                   </td>
                   <td className="p-3 text-muted">
                     {new Date(user.createdAt).toLocaleDateString(
-                      locale === "ar" ? "ar-EG" : "en-US",
+                      locale === "ar" ? "ar-EG-u-nu-latn" : "en-US",
                     )}
                   </td>
                   <td className="p-3 text-end">

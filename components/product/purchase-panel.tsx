@@ -83,6 +83,7 @@ export function PurchasePanel({
       insufficient_funds: c.errors.insufficientFunds,
       requires_auth: c.errors.requiresAuth,
       invalid_input: c.errors.invalidInput,
+      topup_failed: c.errors.topupFailed,
     };
     return (code && map[code]) || c.errors.generic;
   }
@@ -111,6 +112,7 @@ export function PurchasePanel({
           unitPriceUsd: pkg.price,
           deliveryType: DELIVERY_MAP[fulfillment],
           inputs: Object.keys(values).length ? values : undefined,
+          packageId: pkg.id,
         },
       });
 
@@ -202,8 +204,15 @@ export function PurchasePanel({
                 {option.sublabel && (
                   <span className="text-[11px] text-muted">{option.sublabel[locale]}</span>
                 )}
-                <span className="text-sm font-extrabold text-primary">
-                  {formatPrice(option.price, currency.symbol, currency.rate, locale)}
+                <span className="flex items-baseline gap-1.5">
+                  {option.compareAtPrice && (
+                    <span className="text-xs text-muted line-through">
+                      {formatPrice(option.compareAtPrice, currency.symbol, currency.rate, locale)}
+                    </span>
+                  )}
+                  <span className="text-sm font-extrabold text-primary">
+                    {formatPrice(option.price, currency.symbol, currency.rate, locale)}
+                  </span>
                 </span>
               </button>
             );
@@ -262,8 +271,15 @@ export function PurchasePanel({
       <div className="rounded-2xl border border-border bg-surface p-4">
         <div className="mb-3 flex items-center justify-between">
           <span className="text-sm text-muted">{p.total}</span>
-          <span className="text-2xl font-black text-primary">
-            {pkg ? formatPrice(pkg.price, currency.symbol, currency.rate, locale) : "—"}
+          <span className="flex items-baseline gap-2">
+            {pkg?.compareAtPrice && (
+              <span className="text-sm text-muted line-through">
+                {formatPrice(pkg.compareAtPrice, currency.symbol, currency.rate, locale)}
+              </span>
+            )}
+            <span className="text-2xl font-black text-primary">
+              {pkg ? formatPrice(pkg.price, currency.symbol, currency.rate, locale) : "—"}
+            </span>
           </span>
         </div>
         {isAuthed ? (

@@ -396,6 +396,7 @@
       "emailRequired": "Please enter your email for delivery.",
       "requiresAuth": "Please sign in to continue.",
       "invalidInput": "Please check your details and try again.",
+      "topupFailed": "The top-up couldn't be completed — your balance was refunded. Please double-check your Player ID and try again.",
       "generic": "Couldn't complete your order. Please try again."
     },
     "success": {
@@ -479,6 +480,7 @@
       "logoutCancel": "Cancel",
       "staff": "Staff",
       "reengagement": "Re-engagement",
+      "gameapi": "Game API",
       "profile": "My Account"
     },
     "overview": {
@@ -681,6 +683,8 @@
         "labelEn": "Label (English)",
         "labelAr": "Label (Arabic)",
         "pkgPrice": "Price (SDG)",
+        "compareAtPrice": "Old price (SDG)",
+        "compareAtEnabled": "Show old price (strikethrough)",
         "newProduct": "New product",
         "createHint": "Default packages are generated automatically — edit their prices after creating.",
         "createSubmit": "Create product",
@@ -799,19 +803,6 @@
         "faviconHint": "PNG, JPG, WebP, ICO or SVG up to 2 MB. Leave empty to keep the current one.",
         "currentFavicon": "Current favicon",
         "removeFavicon": "Remove favicon (use default)"
-      },
-      "apiSettings": {
-        "title": "Game/product API integration",
-        "subtitle": "Staged for later — paste your provider's credentials here whenever you have them. Nothing is called yet; orders are still fulfilled manually until this is wired up.",
-        "enabled": "Enabled",
-        "baseUrl": "API base URL",
-        "baseUrlHint": "The provider's API root, e.g. https://api.provider.com",
-        "apiKey": "API key",
-        "secret": "API secret",
-        "secretHint": "Leave blank to keep the currently saved secret.",
-        "secretSet": "•••••••• (saved — leave blank to keep)",
-        "save": "Save",
-        "saved": "Saved"
       },
       "reviews": {
         "title": "Reviews",
@@ -933,6 +924,45 @@
         "wrong_current": "Current password is incorrect.",
         "no_password": "This account has no password set — contact a Supervisor."
       }
+    },
+    "gameapi": {
+      "title": "Game API",
+      "subtitle": "Auto-fulfil game top-ups through G2Bulk instead of delivering them by hand.",
+      "back": "Back",
+      "notConfigured": "G2BULK_API_KEY isn't set on the server yet — add it to .env, then restart the app.",
+      "connectionFailed": "Couldn't reach G2Bulk with the configured key. Check the key and try again.",
+      "connected": "Connected",
+      "balance": "Balance",
+      "enabled": "Enabled — auto-fulfil mapped top-ups",
+      "enabledHint": "Off by default. Products aren't affected until you map them below.",
+      "syncGames": "Sync games now",
+      "syncing": "Syncing…",
+      "syncedCount": "Synced {count} games",
+      "syncFailed": "Sync failed — check the connection above.",
+      "createAllInto": "Create all unlinked games as products, into:",
+      "createAll": "Create all products",
+      "creatingAll": "Creating… this can take a while for many games",
+      "createdCount": "Created {count} products",
+      "noGames": "No games synced yet. Click \"Sync games now\".",
+      "game": "Game",
+      "linkedProduct": "Linked product",
+      "catalogueCount": "Packages",
+      "active": "Active",
+      "manage": "Manage →",
+      "noneOption": "— none —",
+      "orCreate": "or create new:",
+      "createProduct": "Create product",
+      "save": "Save",
+      "syncCatalogue": "Sync packages",
+      "linkFirst": "Link this game to one of your products on the previous page first.",
+      "noCatalogue": "No packages synced yet — go back and click \"Sync packages\".",
+      "catalogueName": "Provider package",
+      "providerCost": "Provider cost",
+      "mappedPackage": "Maps to your package",
+      "sellPrice": "Your sell price",
+      "belowCost": "⚠ selling below cost",
+      "syncFields": "Sync required fields (Player ID / Server)",
+      "fieldsSynced": "Fields synced"
     }
   },
   "help": {
