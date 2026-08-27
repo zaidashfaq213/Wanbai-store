@@ -18,6 +18,16 @@ async function requireAdminUser() {
 }
 const cents = (usd: number) => Math.round(usd * 100);
 
+// updateTag("products") busts the server Data Cache, but a browser that
+// already rendered a product page keeps serving it from the client Router
+// Cache until something explicitly revalidates that route — so every
+// mutation that can change what a product page shows (packages, variant
+// groups, custom checkout fields, not just the product's own fields) needs
+// this too, or a removed field/package can keep appearing on the storefront.
+function revalidateStorefront(locale: Locale) {
+  revalidatePath(`/${locale}/product`, "layout");
+}
+
 export type CatalogState = { ok: boolean; code?: string };
 
 // --- Categories ------------------------------------------------------------
@@ -360,7 +370,9 @@ export async function updatePackage(
       compareAtPrice: compareAtPriceUsd ? cents(compareAtPriceUsd) : null,
     },
   });
-  revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products`);
+  const packageLocale = loc(String(formData.get("locale") ?? ""));
+  revalidatePath(`/${packageLocale}/admin/products`);
+  revalidateStorefront(packageLocale);
   updateTag("products");
   return { ok: true, code: "saved" };
 }
@@ -382,7 +394,9 @@ export async function addPackage(formData: FormData) {
       sortOrder: group.packages.length,
     },
   });
-  revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${group.productId}`);
+  const addPkgLocale = loc(String(formData.get("locale") ?? ""));
+  revalidatePath(`/${addPkgLocale}/admin/products/${group.productId}`);
+  revalidateStorefront(addPkgLocale);
   updateTag("products");
 }
 
@@ -391,7 +405,9 @@ export async function deletePackage(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const productId = String(formData.get("productId") ?? "");
   await prisma.package.delete({ where: { id } });
-  revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${productId}`);
+  const deletePkgLocale = loc(String(formData.get("locale") ?? ""));
+  revalidatePath(`/${deletePkgLocale}/admin/products/${productId}`);
+  revalidateStorefront(deletePkgLocale);
   updateTag("products");
 }
 
@@ -425,7 +441,9 @@ export async function addVariantGroup(formData: FormData) {
       packages: { create: { labelEn: "New package", labelAr: "باقة جديدة", price: 100, sortOrder: 0 } },
     },
   });
-  revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${productId}`);
+  const addGroupLocale = loc(String(formData.get("locale") ?? ""));
+  revalidatePath(`/${addGroupLocale}/admin/products/${productId}`);
+  revalidateStorefront(addGroupLocale);
   updateTag("products");
 }
 
@@ -442,7 +460,9 @@ export async function updateVariantGroup(
   if (!parsed.success) return { ok: false, code: "invalid_input" };
   const { id, ...rest } = parsed.data;
   const g = await prisma.variantGroup.update({ where: { id }, data: rest });
-  revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${g.productId}`);
+  const updateGroupLocale = loc(String(formData.get("locale") ?? ""));
+  revalidatePath(`/${updateGroupLocale}/admin/products/${g.productId}`);
+  revalidateStorefront(updateGroupLocale);
   updateTag("products");
   return { ok: true, code: "saved" };
 }
@@ -452,7 +472,9 @@ export async function deleteVariantGroup(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const productId = String(formData.get("productId") ?? "");
   await prisma.variantGroup.delete({ where: { id } });
-  revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${productId}`);
+  const deleteGroupLocale = loc(String(formData.get("locale") ?? ""));
+  revalidatePath(`/${deleteGroupLocale}/admin/products/${productId}`);
+  revalidateStorefront(deleteGroupLocale);
   updateTag("products");
 }
 
@@ -512,7 +534,9 @@ export async function addProductInput(
   } catch {
     return { ok: false, code: "server_error" };
   }
-  revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${productId}`);
+  const addInputLocale = loc(String(formData.get("locale") ?? ""));
+  revalidatePath(`/${addInputLocale}/admin/products/${productId}`);
+  revalidateStorefront(addInputLocale);
   updateTag("products");
   return { ok: true, code: "saved" };
 }
@@ -557,7 +581,9 @@ export async function updateProductInput(
   } catch {
     return { ok: false, code: "server_error" };
   }
-  revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${productId}`);
+  const updateInputLocale = loc(String(formData.get("locale") ?? ""));
+  revalidatePath(`/${updateInputLocale}/admin/products/${productId}`);
+  revalidateStorefront(updateInputLocale);
   updateTag("products");
   return { ok: true, code: "saved" };
 }
@@ -567,6 +593,8 @@ export async function deleteProductInput(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const productId = String(formData.get("productId") ?? "");
   await prisma.productInput.delete({ where: { id } });
-  revalidatePath(`/${loc(String(formData.get("locale") ?? ""))}/admin/products/${productId}`);
+  const deleteInputLocale = loc(String(formData.get("locale") ?? ""));
+  revalidatePath(`/${deleteInputLocale}/admin/products/${productId}`);
+  revalidateStorefront(deleteInputLocale);
   updateTag("products");
 }
