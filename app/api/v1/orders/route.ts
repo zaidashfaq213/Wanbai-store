@@ -1,7 +1,7 @@
-import { randomBytes } from "crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { ok, fail, withAuth } from "@/lib/api/core";
+import { createOrderForUser } from "@/lib/orders/create";
 
 // GET /api/v1/orders — the caller's orders
 export const GET = withAuth(async (_req, user) => {
@@ -24,10 +24,9 @@ export const GET = withAuth(async (_req, user) => {
   return ok({ orders });
 });
 
-// Buying a service is wallet-only — bank transfer per order was removed so
-// every purchase settles instantly against a balance already verified via the
-// wallet top-up review. Bank transfer still exists only to FUND the wallet
-// (POST /wallet/topup), not to pay for an order directly.
+// Buying is wallet-only (see lib/orders/create.ts for the full flow — order
+// creation, the "received" email, and Game API auto-fulfilment when the
+// package is mapped).
 const createSchema = z.object({
   currency: z.string().default("USD"),
   locale: z.string().default("ar"),
@@ -40,6 +39,9 @@ const createSchema = z.object({
     unitPriceUsd: z.number().nonnegative(),
     deliveryType: z.enum(["TOPUP", "CODE", "SERVICE"]),
     inputs: z.record(z.string(), z.string()).optional(),
+    // The live Package id — used only to look up a Game API auto-fulfilment
+    // mapping. Never stored on the order itself.
+    packageId: z.string().optional(),
   }),
 });
 
@@ -49,67 +51,21 @@ export const POST = withAuth(async (req, user) => {
   if (!parsed.success) return fail("invalid_input");
   const { currency, locale, item } = parsed.data;
 
-  const unitPrice = Math.round(item.unitPriceUsd * 100);
-  const total = unitPrice;
-  const ref = `WB-${randomBytes(4).toString("hex").toUpperCase()}`;
+  const result = await createOrderForUser(
+    { id: user.id, email: user.email },
+    { locale, currency, item },
+  );
+  if (!result.ok) {
+    return fail(
+      result.code,
+      result.code === "insufficient_funds" ? 402 : 400,
+      result.orderRef ? { orderRef: result.orderRef } : undefined,
+    );
+  }
 
-  const itemData = {
-    productSlug: item.productSlug,
-    productName: item.productName,
-    categorySlug: item.categorySlug,
-    variantLabel: item.variantLabel,
-    packageLabel: item.packageLabel,
-    unitPrice,
-    quantity: 1,
-    deliveryType: item.deliveryType,
-    inputs: item.inputs ?? undefined,
-  };
-
-  const fresh = await prisma.user.findUnique({
-    where: { id: user.id },
-    select: { walletBalance: true },
+  const order = await prisma.order.findUnique({
+    where: { ref: result.orderRef },
+    include: { items: true },
   });
-  if (!fresh || fresh.walletBalance < total) return fail("insufficient_funds", 402);
-
-  const order = await prisma.$transaction(async (tx) => {
-    const created = await tx.order.create({
-      data: {
-        ref,
-        userId: user.id,
-        email: user.email,
-        status: "PAID",
-        paymentMethod: "WALLET",
-        subtotal: total,
-        total,
-        currency,
-        locale,
-        items: { create: itemData },
-      },
-      include: { items: true },
-    });
-    await tx.user.update({
-      where: { id: user.id },
-      data: { walletBalance: { decrement: total } },
-    });
-    await tx.walletTransaction.create({
-      data: {
-        userId: user.id,
-        amount: -total,
-        type: "PURCHASE",
-        description: `Order ${ref}`,
-        orderId: created.id,
-      },
-    });
-    await tx.notification.create({
-      data: {
-        userId: user.id,
-        type: "ORDER",
-        title: `Order ${ref} paid`,
-        body: `${item.productName} — ${item.packageLabel}. We're preparing it now.`,
-        href: "/dashboard/orders",
-      },
-    });
-    return created;
-  });
-  return ok({ order, status: "order_paid" }, 201);
+  return ok({ order, status: result.code }, 201);
 });
