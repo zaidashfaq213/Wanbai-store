@@ -7,6 +7,7 @@ import {
   addProductInput,
   updateProductInput,
   deleteProductInput,
+  hideAutoInput,
   type CatalogState,
 } from "@/lib/actions/catalog";
 import { ConfirmButton } from "@/components/ui/confirm-button";
@@ -19,7 +20,9 @@ const FIELD =
   "h-9 rounded-lg border border-border bg-surface-2 px-2.5 text-sm outline-none focus:border-primary/50";
 
 export type ProductInputRow = {
-  id: string;
+  // null = a purely automatic per-category field with no ProductInput row —
+  // it can only be "hidden" (see hideAutoInput), not edited or deleted.
+  id: string | null;
   key: string;
   labelEn: string;
   labelAr: string;
@@ -27,6 +30,11 @@ export type ProductInputRow = {
   placeholderAr: string;
   kind: string;
   required: boolean;
+  hidden: boolean;
+  // True when this key also has an automatic default — deleting a custom
+  // row for one of these reverts to the default instead of removing the
+  // field, which is why the "Hidden" checkbox exists.
+  isAuto: boolean;
 };
 
 function StateBadge({ state, errors }: { state: CatalogState; errors: Errors }) {
@@ -41,6 +49,45 @@ function StateBadge({ state, errors }: { state: CatalogState; errors: Errors }) 
     );
   }
   return null;
+}
+
+// A purely automatic field (no ProductInput row) — read-only info plus a
+// one-click "Hide" button, since there's nothing here to edit or delete.
+function AutoInputRow({
+  locale,
+  dict,
+  productId,
+  row,
+}: {
+  locale: Locale;
+  dict: Dict;
+  productId: string;
+  row: ProductInputRow;
+}) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-dashed border-border bg-surface-2 p-2.5">
+      <div className="flex flex-col gap-0.5">
+        <span className="text-sm font-bold">
+          {row.labelEn} <span className="font-normal text-muted">/ {row.labelAr}</span>
+        </span>
+        <span className="text-[11px] text-muted">
+          {dict.autoField} · {row.key}
+          {row.required ? ` · ${dict.required}` : ""}
+        </span>
+      </div>
+      <form action={hideAutoInput}>
+        <input type="hidden" name="locale" value={locale} />
+        <input type="hidden" name="productId" value={productId} />
+        <input type="hidden" name="key" value={row.key} />
+        <button
+          type="submit"
+          className="h-9 rounded-lg border border-border px-3 text-xs font-bold hover:bg-surface"
+        >
+          {dict.hide}
+        </button>
+      </form>
+    </div>
+  );
 }
 
 function InputRow({
@@ -59,11 +106,15 @@ function InputRow({
   row: ProductInputRow;
 }) {
   const [state, action, pending] = useActionState<CatalogState, FormData>(updateProductInput, { ok: false });
+  if (row.id === null) {
+    return <AutoInputRow locale={locale} dict={dict} productId={productId} row={row} />;
+  }
+  const id = row.id;
   return (
     <div className="flex flex-wrap items-end gap-2 rounded-xl border border-border bg-surface p-2.5">
       <form action={action} className="flex flex-1 flex-wrap items-end gap-2">
         <input type="hidden" name="locale" value={locale} />
-        <input type="hidden" name="id" value={row.id} />
+        <input type="hidden" name="id" value={id} />
         <input type="hidden" name="productId" value={productId} />
         <label className="flex flex-col gap-0.5">
           <span className="text-[10px] font-semibold text-muted">{dict.key}</span>
@@ -96,6 +147,10 @@ function InputRow({
           <input type="checkbox" name="required" defaultChecked={row.required} className="size-3.5 accent-[var(--color-primary)]" />
           {dict.required}
         </label>
+        <label className="flex items-center gap-1.5 pb-1.5 text-xs font-semibold" title={row.isAuto ? dict.hiddenAutoHint : undefined}>
+          <input type="checkbox" name="hidden" defaultChecked={row.hidden} className="size-3.5 accent-[var(--color-primary)]" />
+          {dict.hidden}
+        </label>
         <button type="submit" disabled={pending} className="h-9 rounded-lg brand-gradient px-3 text-xs font-bold text-white disabled:opacity-60">
           {dict.save}
         </button>
@@ -103,9 +158,9 @@ function InputRow({
       </form>
       <ConfirmButton
         action={deleteProductInput}
-        hidden={{ locale, id: row.id, productId }}
+        hidden={{ locale, id, productId }}
         title={confirm.deleteTitle}
-        body={confirm.deleteBody}
+        body={row.isAuto ? dict.deleteAutoHint : confirm.deleteBody}
         confirmText={confirm.yes}
         cancelText={confirm.no}
         className="h-9 rounded-lg border border-border px-2.5 text-xs font-bold text-red-500 hover:bg-red-500/10"

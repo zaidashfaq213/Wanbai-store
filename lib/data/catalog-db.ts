@@ -248,16 +248,21 @@ export const getProductDetail = cache(
   // truth in catalog-generate), so the client's per-game requirements apply to
   // every product — including already-seeded ones — without a DB migration.
   // Admin-added custom fields (ProductInput rows) are merged in on top, and
-  // take precedence over an automatic field with the same key.
+  // take precedence over an automatic field with the same key. A row with
+  // hidden:true still claims its key (so it blocks the automatic default
+  // too) but never renders — that's the only way to fully remove a field
+  // that has no ProductInput row of its own to delete.
   const auto = inputsForProduct(p.slug, p.category.slug);
   const customKeys = new Set(p.inputs.map((i) => i.key));
-  const custom: InputField[] = p.inputs.map((i) => ({
-    id: i.key,
-    label: { ar: i.labelAr, en: i.labelEn },
-    placeholder: { ar: i.placeholderAr, en: i.placeholderEn },
-    kind: i.kind === "number" ? "number" : "text",
-    required: i.required,
-  }));
+  const custom: InputField[] = p.inputs
+    .filter((i) => !i.hidden)
+    .map((i) => ({
+      id: i.key,
+      label: { ar: i.labelAr, en: i.labelEn },
+      placeholder: { ar: i.placeholderAr, en: i.placeholderEn },
+      kind: i.kind === "number" ? "number" : "text",
+      required: i.required,
+    }));
   const inputs = [...auto.filter((f) => !customKeys.has(f.id)), ...custom];
 
   const faqs: Faq[] = p.faqs.map((f) => ({

@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/session";
-import { buildDetail, FULFILLMENT } from "@/lib/data/catalog-generate";
+import { buildDetail, FULFILLMENT, inputsForProduct } from "@/lib/data/catalog-generate";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { imageToDataUrl, PRODUCT_IMAGE_MAX_BYTES } from "@/lib/upload";
 
@@ -494,6 +494,7 @@ const productInputSchema = z.object({
   placeholderAr: z.string().trim().max(120).optional(),
   kind: z.enum(["text", "number"]).default("text"),
   required: z.boolean(),
+  hidden: z.boolean().default(false),
 });
 
 export async function addProductInput(
@@ -510,6 +511,7 @@ export async function addProductInput(
     placeholderAr: formData.get("placeholderAr") || undefined,
     kind: formData.get("kind") || "text",
     required: formData.get("required") === "on",
+    hidden: formData.get("hidden") === "on",
   });
   if (!parsed.success) return { ok: false, code: "invalid_input" };
   const { productId, ...rest } = parsed.data;
@@ -528,6 +530,7 @@ export async function addProductInput(
         placeholderAr: rest.placeholderAr ?? "",
         kind: rest.kind,
         required: rest.required,
+        hidden: rest.hidden,
         sortOrder: existing.length,
       },
     });
@@ -556,6 +559,7 @@ export async function updateProductInput(
     placeholderAr: formData.get("placeholderAr") || undefined,
     kind: formData.get("kind") || "text",
     required: formData.get("required") === "on",
+    hidden: formData.get("hidden") === "on",
   });
   if (!parsed.success || !parsed.data.id) return { ok: false, code: "invalid_input" };
   const { id, productId, ...rest } = parsed.data;
@@ -576,6 +580,7 @@ export async function updateProductInput(
         placeholderAr: rest.placeholderAr ?? "",
         kind: rest.kind,
         required: rest.required,
+        hidden: rest.hidden,
       },
     });
   } catch {
@@ -596,5 +601,50 @@ export async function deleteProductInput(formData: FormData) {
   const deleteInputLocale = loc(String(formData.get("locale") ?? ""));
   revalidatePath(`/${deleteInputLocale}/admin/products/${productId}`);
   revalidateStorefront(deleteInputLocale);
+  updateTag("products");
+}
+
+// Suppresses a purely automatic per-category field (Player ID, Server, etc.)
+// that has no ProductInput row of its own — the only way to remove one of
+// these, since there's nothing to delete. Creates a hidden marker row that
+// carries the automatic field's own text along (so un-hiding it later via
+// the normal edit form starts from sensible content, not blank fields).
+export async function hideAutoInput(formData: FormData) {
+  if (!(await requireAdminUser())) return;
+  const productId = String(formData.get("productId") ?? "");
+  const key = String(formData.get("key") ?? "");
+  if (!productId || !key) return;
+
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    include: { category: { select: { slug: true } } },
+  });
+  if (!product) return;
+
+  const already = await prisma.productInput.findFirst({ where: { productId, key } });
+  if (already) {
+    await prisma.productInput.update({ where: { id: already.id }, data: { hidden: true } });
+  } else {
+    const auto = inputsForProduct(product.slug, product.category.slug).find((f) => f.id === key);
+    const count = await prisma.productInput.count({ where: { productId } });
+    await prisma.productInput.create({
+      data: {
+        productId,
+        key,
+        labelEn: auto?.label.en ?? key,
+        labelAr: auto?.label.ar ?? key,
+        placeholderEn: auto?.placeholder.en ?? "",
+        placeholderAr: auto?.placeholder.ar ?? "",
+        kind: auto?.kind === "number" ? "number" : "text",
+        required: auto?.required ?? false,
+        hidden: true,
+        sortOrder: count,
+      },
+    });
+  }
+
+  const hideLocale = loc(String(formData.get("locale") ?? ""));
+  revalidatePath(`/${hideLocale}/admin/products/${productId}`);
+  revalidateStorefront(hideLocale);
   updateTag("products");
 }

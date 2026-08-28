@@ -714,6 +714,11 @@
           "kindText": "Text",
           "kindNumber": "Number",
           "required": "Required",
+          "hidden": "Hidden (don't ask at checkout)",
+          "hiddenAutoHint": "This field also has a default — check this to remove it from checkout entirely instead of just changing its text.",
+          "deleteAutoHint": "This key has a default field behind it — deleting your override reverts to that default rather than removing the field. Use \"Hidden\" instead if you want it gone entirely.",
+          "autoField": "Automatic field",
+          "hide": "Hide",
           "save": "Save",
           "delete": "Delete"
         }
