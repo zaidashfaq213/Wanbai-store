@@ -3,6 +3,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { hashToken } from "@/lib/auth/codes";
 import { sendMail } from "@/lib/mail";
+import { resetPasswordEmail } from "@/lib/emails/reset-password";
 import { ok, fail } from "@/lib/api/core";
 
 const schema = z.object({ email: z.string().trim().toLowerCase().email() });
@@ -21,14 +22,10 @@ export async function POST(req: Request) {
         expires: new Date(Date.now() + 1000 * 60 * 60),
       },
     });
+    const locale = user.preferredLocale === "en" ? "en" : "ar";
     const base = process.env.AUTH_URL ?? "http://localhost:3000";
-    const link = `${base}/ar/reset-password?token=${raw}`;
-    await sendMail({
-      to: user.email,
-      subject: "WANBI STOER — Reset your password",
-      text: `Reset your password (valid 1 hour): ${link}`,
-      html: `<p><a href="${link}">Reset your password</a> (valid for 1 hour).</p>`,
-    });
+    const link = `${base}/${locale}/reset-password?token=${raw}`;
+    await sendMail({ to: user.email, ...resetPasswordEmail(locale, link) });
   }
   // Always success — never leak which emails exist.
   return ok({ sent: true });

@@ -11,6 +11,8 @@ export async function POST(req: Request) {
 
   const user = await prisma.user.findUnique({ where: { email: parsed.data.email } });
   // Don't reveal whether the account exists.
-  if (user && !user.emailVerified) await issueVerificationCode(parsed.data.email);
+  if (user && !user.emailVerified) {
+    await issueVerificationCode(parsed.data.email, user.preferredLocale === "en" ? "en" : "ar");
+  }
   return ok({ sent: true });
 }

@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/db";
 import { sendMail } from "@/lib/mail";
+import { orderDeliveredEmail } from "@/lib/emails/order-delivered";
 import { refundFailedTopUp } from "@/lib/gameapi/refund";
 
 // G2Bulk POSTs here when a top-up reaches a terminal state (COMPLETED or
@@ -78,9 +79,12 @@ export async function POST(req: NextRequest) {
 
     await sendMail({
       to: order.email,
-      subject: `WANBI STOER — Order ${order.ref} delivered`,
-      text: `Your order ${order.ref} (${orderItem.productName} — ${orderItem.packageLabel}) has been delivered.`,
-      html: `<p>Your order <strong>${order.ref}</strong> — ${orderItem.productName} · ${orderItem.packageLabel} has been delivered.</p><p>Thank you for shopping with WANBI STOER.</p>`,
+      ...orderDeliveredEmail({
+        locale: order.locale,
+        ref: order.ref,
+        productName: orderItem.productName,
+        packageLabel: orderItem.packageLabel,
+      }),
     }).catch(() => {});
   } else if (status === "FAILED") {
     const reason = typeof payload.message === "string" ? payload.message : "Top-up failed";

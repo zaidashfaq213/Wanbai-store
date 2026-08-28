@@ -19,7 +19,7 @@ function generateCode() {
 }
 
 /** Replace any previous code for this email with a fresh one and email it. */
-export async function issueVerificationCode(email: string) {
+export async function issueVerificationCode(email: string, locale: "ar" | "en" = "ar") {
   const code = generateCode();
   await prisma.emailVerificationCode.deleteMany({ where: { email } });
   await prisma.emailVerificationCode.create({
@@ -29,7 +29,7 @@ export async function issueVerificationCode(email: string) {
       expires: new Date(Date.now() + CODE_TTL_MS),
     },
   });
-  await sendMail({ to: email, ...verificationEmail(code) });
+  await sendMail({ to: email, ...verificationEmail(code, locale) });
 }
 
 export type CodeResult = { ok: true } | { ok: false; code: string };

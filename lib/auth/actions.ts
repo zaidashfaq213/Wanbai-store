@@ -9,6 +9,7 @@ import { prisma } from "@/lib/db";
 import { signIn, signOut, enabledOAuth } from "@/auth";
 import { sendMail } from "@/lib/mail";
 import { verificationEmail } from "@/lib/emails/verification";
+import { resetPasswordEmail } from "@/lib/emails/reset-password";
 import { isLocale, defaultLocale } from "@/lib/i18n/config";
 
 // Result codes are mapped to localized strings on the client (dict.auth.errors).
@@ -31,7 +32,7 @@ function generateCode() {
 }
 
 // Create (replacing any previous) a 6-digit code for an email and send it.
-async function issueVerificationCode(email: string) {
+async function issueVerificationCode(email: string, locale: "ar" | "en" = "ar") {
   const code = generateCode();
   await prisma.emailVerificationCode.deleteMany({ where: { email } });
   await prisma.emailVerificationCode.create({
@@ -41,7 +42,7 @@ async function issueVerificationCode(email: string) {
       expires: new Date(Date.now() + CODE_TTL_MS),
     },
   });
-  await sendMail({ to: email, ...verificationEmail(code) });
+  await sendMail({ to: email, ...verificationEmail(code, locale) });
 }
 
 const signupSchema = z.object({
@@ -89,7 +90,7 @@ export async function signupAction(
   await prisma.user.create({
     data: { name, username, email, passwordHash, preferredLocale: locale },
   });
-  await issueVerificationCode(email);
+  await issueVerificationCode(email, locale);
 
   // redirect() throws NEXT_REDIRECT which propagates out of the action.
   redirect(`/${locale}/verify-email?email=${encodeURIComponent(email)}`);
@@ -152,7 +153,7 @@ export async function resendCodeAction(
   // Only (re)send for existing, still-unverified accounts. Report success either
   // way to avoid leaking which emails exist.
   if (user && !user.emailVerified) {
-    await issueVerificationCode(parsed.data.email);
+    await issueVerificationCode(parsed.data.email, user.preferredLocale === "en" ? "en" : "ar");
   }
   return { ok: true, code: "code_sent" };
 }
@@ -182,7 +183,7 @@ export async function loginAction(
     const match = await bcrypt.compare(parsed.data.password, account.passwordHash);
     if (match) {
       // Re-issue a code and send them to the verify page (redirect throws).
-      await issueVerificationCode(parsed.data.email);
+      await issueVerificationCode(parsed.data.email, locale);
       redirect(
         `/${locale}/verify-email?email=${encodeURIComponent(parsed.data.email)}&notice=unverified`,
       );
@@ -254,14 +255,7 @@ export async function requestPasswordResetAction(
 
     const base = process.env.AUTH_URL ?? "http://localhost:3000";
     const link = `${base}/${locale}/reset-password?token=${rawToken}`;
-    await sendMail({
-      to: user.email,
-      subject: "WANBI STOER — Reset your password",
-      text: `Reset your password using this link (valid for 1 hour): ${link}`,
-      html: `<p>We received a request to reset your WANBI STOER password.</p>
-<p><a href="${link}">Click here to reset your password</a> (valid for 1 hour).</p>
-<p>If you didn't request this, you can safely ignore this email.</p>`,
-    });
+    await sendMail({ to: user.email, ...resetPasswordEmail(locale, link) });
   }
 
   return { ok: true, code: "reset_sent" };

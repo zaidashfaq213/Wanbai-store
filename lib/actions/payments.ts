@@ -6,6 +6,7 @@ import { prisma } from "@/lib/db";
 import { getSessionUser, getAdminUser, isStaff } from "@/lib/auth/session";
 import { imageToDataUrl, PROOF_MAX_BYTES, BRANDING_MAX_BYTES } from "@/lib/upload";
 import { sendMail } from "@/lib/mail";
+import { orderDeliveredEmail } from "@/lib/emails/order-delivered";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { notifyOrderStatus } from "@/lib/orders/notify";
 
@@ -270,14 +271,15 @@ export async function fulfillOrder(formData: FormData) {
 
   // Email the delivery (code for gift-card products, or a fulfilment note).
   const item = order.items[0];
-  const codeLine = code
-    ? `<p>Your code / details:</p><p style="font-size:20px;font-weight:800;font-family:monospace">${code}</p>`
-    : "<p>Your top-up / service has been completed.</p>";
   await sendMail({
     to: order.email,
-    subject: `WANBI STOER — Order ${order.ref} delivered`,
-    text: `Your order ${order.ref} (${item?.productName ?? ""}) has been delivered.${code ? ` Code: ${code}` : ""}`,
-    html: `<p>Your order <strong>${order.ref}</strong>${item ? ` — ${item.productName} · ${item.packageLabel}` : ""} has been delivered.</p>${codeLine}<p>Thank you for shopping with WANBI STOER.</p>`,
+    ...orderDeliveredEmail({
+      locale: order.locale,
+      ref: order.ref,
+      productName: item?.productName ?? "",
+      packageLabel: item?.packageLabel ?? "",
+      code,
+    }),
   });
 
   revalidatePath(`/${locale}/admin/orders`, "layout");
