@@ -22,6 +22,7 @@ export type BankRow = {
   color: string | null;
   logo: string | null;
   active: boolean;
+  forGsm: boolean;
 };
 
 export function BankEditForm({
@@ -115,11 +116,17 @@ export function BankEditForm({
         </label>
       </div>
 
-      <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 text-sm font-semibold">
-          <input type="checkbox" name="active" defaultChecked={bank.active} className="size-4 accent-[var(--color-primary)]" />
-          {dict.active}
-        </label>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-4">
+          <label className="flex items-center gap-2 text-sm font-semibold">
+            <input type="checkbox" name="active" defaultChecked={bank.active} className="size-4 accent-[var(--color-primary)]" />
+            {dict.active}
+          </label>
+          <label className="flex items-center gap-2 text-sm font-semibold">
+            <input type="checkbox" name="forGsm" defaultChecked={bank.forGsm} className="size-4 accent-[var(--color-primary)]" />
+            {dict.forGsm}
+          </label>
+        </div>
         <div className="flex items-center gap-2">
           <button
             type="submit"

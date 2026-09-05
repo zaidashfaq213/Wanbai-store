@@ -19,7 +19,7 @@ export const PATCH = withAuth(async (req, user) => {
     data: parsed.data,
     select: {
       id: true, email: true, name: true, username: true, role: true,
-      walletBalance: true, preferredLocale: true, preferredCurrency: true,
+      walletBalance: true, gsmWalletBalance: true, preferredLocale: true, preferredCurrency: true,
     },
   });
   return ok({ user: updated });

@@ -3,9 +3,8 @@ import { notFound } from "next/navigation";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { requireUser } from "@/lib/auth/session";
-import { getCurrency } from "@/lib/data/currency";
 import { getGsmOrderDetail } from "@/lib/data/gsm";
-import { formatCents } from "@/lib/utils";
+import { formatUsd } from "@/lib/utils";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { GsmOrderDetailView } from "@/components/dashboard/gsm-order-detail-view";
 
@@ -16,7 +15,7 @@ export default async function GsmOrderDetailPage({
 }) {
   const { lang, ref } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const [user, dict, currency] = await Promise.all([requireUser(locale), getDictionary(locale), getCurrency()]);
+  const [user, dict] = await Promise.all([requireUser(locale), getDictionary(locale)]);
   const d = dict.dashboard.gsmOrders;
   const order = await getGsmOrderDetail(ref, user.id);
   if (!order) notFound();
@@ -47,7 +46,7 @@ export default async function GsmOrderDetailPage({
           ref: order.ref,
           status: order.status,
           serviceName: order.serviceName,
-          price: formatCents(order.price, currency.symbol, currency.rate, locale),
+          price: formatUsd(order.price, locale),
           createdAt: new Date(order.createdAt).toLocaleString(locale === "ar" ? "ar-EG-u-nu-latn" : "en-US"),
           fieldAnswers,
           files: order.files.map((f) => ({ id: f.id, filename: f.filename, data: f.data, source: f.source })),

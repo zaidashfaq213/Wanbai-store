@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db";
 import { sendMail } from "@/lib/mail";
 import { orderDeliveredEmail } from "@/lib/emails/order-delivered";
 import { refundFailedTopUp } from "@/lib/gameapi/refund";
+import { notifyUser } from "@/lib/notify";
 
 // G2Bulk POSTs here when a top-up reaches a terminal state (COMPLETED or
 // FAILED). No signature mechanism exists on their side (confirmed against
@@ -76,6 +77,13 @@ export async function POST(req: NextRequest) {
         });
       }
     });
+    if (order.userId) {
+      void notifyUser(order.userId, {
+        title: `Order ${order.ref} delivered`,
+        body: "Your top-up has been completed.",
+        href: "/dashboard/orders",
+      });
+    }
 
     await sendMail({
       to: order.email,

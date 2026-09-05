@@ -5,6 +5,7 @@ import { attemptAutoTopUp } from "@/lib/gameapi/order";
 import { refundFailedTopUp } from "@/lib/gameapi/refund";
 import { notifyOrderStatus } from "./notify";
 import { notifyNewOrder } from "@/lib/telegram";
+import { notifyUser } from "@/lib/notify";
 
 // Single source of truth for "buy with wallet balance" — used by BOTH the
 // web checkout (lib/actions/checkout.ts) and the mobile REST API
@@ -141,6 +142,11 @@ export async function createOrderForUser(
     packageLabel: item.packageLabel,
     totalCents: total,
     email: user.email,
+  });
+  void notifyUser(user.id, {
+    title: `Order ${order.ref} paid`,
+    body: `${item.productName} — ${item.packageLabel}. We're preparing it now.`,
+    href: "/dashboard/orders",
   });
 
   // Auto-fulfilment: only kicks in when this exact package is mapped to a

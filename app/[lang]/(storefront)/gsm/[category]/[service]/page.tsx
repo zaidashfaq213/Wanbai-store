@@ -3,10 +3,9 @@ import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { getGsmServiceBySlug } from "@/lib/data/gsm";
-import { getCurrency } from "@/lib/data/currency";
 import { getSessionUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
-import { formatCents } from "@/lib/utils";
+import { formatUsd } from "@/lib/utils";
 import { Container } from "@/components/ui/container";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Accordion } from "@/components/ui/accordion";
@@ -39,16 +38,15 @@ export default async function GsmServicePage({
 }) {
   const { lang, category, service } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const [dict, svc, currency, user] = await Promise.all([
+  const [dict, svc, user] = await Promise.all([
     getDictionary(locale),
     getGsmServiceBySlug(service),
-    getCurrency(),
     getSessionUser(),
   ]);
   if (!svc || svc.category.slug !== category) notFound();
 
   const walletBalanceCents = user
-    ? ((await prisma.user.findUnique({ where: { id: user.id }, select: { walletBalance: true } }))?.walletBalance ?? 0)
+    ? ((await prisma.user.findUnique({ where: { id: user.id }, select: { gsmWalletBalance: true } }))?.gsmWalletBalance ?? 0)
     : 0;
 
   const g = dict.gsm;
@@ -104,7 +102,7 @@ export default async function GsmServicePage({
             </span>
             <h1 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">{name}</h1>
             <p className="mt-3 text-3xl font-black text-primary">
-              {formatCents(svc.price, currency.symbol, currency.rate, locale)}
+              {formatUsd(svc.price, locale)}
             </p>
           </header>
 
@@ -133,7 +131,6 @@ export default async function GsmServicePage({
             dict={dict}
             serviceId={svc.id}
             priceCents={svc.price}
-            currency={currency}
             isAuthed={Boolean(user)}
             walletBalanceCents={walletBalanceCents}
             fields={svc.fields.map((f) => ({

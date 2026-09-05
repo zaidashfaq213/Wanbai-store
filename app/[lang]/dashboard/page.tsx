@@ -5,10 +5,11 @@ import { requireUser } from "@/lib/auth/session";
 import { getCurrency } from "@/lib/data/currency";
 import {
   getWalletSummary,
+  getGsmWalletSummary,
   getDashboardCounts,
   getOrders,
 } from "@/lib/data/account";
-import { formatCents, cn } from "@/lib/utils";
+import { formatCents, formatUsd, cn } from "@/lib/utils";
 import { CurrencySelector } from "@/components/ui/currency-selector";
 import {
   BagIcon,
@@ -59,8 +60,9 @@ export default async function DashboardOverview({
   ]);
   const d = dict.dashboard;
 
-  const [{ balance }, counts, orders] = await Promise.all([
+  const [{ balance }, { balance: gsmBalance }, counts, orders] = await Promise.all([
     getWalletSummary(user.id),
+    getGsmWalletSummary(user.id),
     getDashboardCounts(user.id),
     getOrders(user.id),
   ]);
@@ -74,6 +76,7 @@ export default async function DashboardOverview({
     { Icon: HeartIcon, label: d.nav.favorites, value: counts.favorites, href: `/${locale}/dashboard/favorites`, tint: "text-rose-500", bar: "bg-rose-500" },
     { Icon: BellIcon, label: d.overview.unread, value: counts.unread, href: `/${locale}/dashboard/notifications`, tint: "text-amber-500", bar: "bg-amber-500" },
     { Icon: WalletIcon, label: d.nav.wallet, value: formatCents(balance, currency.symbol, currency.rate, locale), href: `/${locale}/dashboard/wallet`, tint: "text-emerald-500", bar: "bg-emerald-500" },
+    { Icon: WalletIcon, label: d.nav.gsmWallet, value: formatUsd(gsmBalance, locale), href: `/${locale}/dashboard/gsm-wallet`, tint: "text-violet-500", bar: "bg-violet-500" },
   ];
 
   return (

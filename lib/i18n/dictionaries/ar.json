@@ -265,6 +265,7 @@
       "favorites": "المفضلة",
       "notifications": "الإشعارات",
       "wallet": "المحفظة",
+      "gsmWallet": "محفظة GSM",
       "profile": "الملف الشخصي",
       "logout": "تسجيل الخروج",
       "tickets": "الدعم",
@@ -362,6 +363,12 @@
       "topUpError": "تعذّرت إضافة الرصيد. حاول مرة أخرى.",
       "mockNote": "شحن تجريبي — بوابة الدفع الحقيقية تأتي في مرحلة لاحقة.",
       "subtitle": "أدر رصيدك واعرض المعاملات"
+    },
+    "gsmWallet": {
+      "balance": "رصيد محفظة GSM",
+      "history": "سجل المعاملات",
+      "empty": "لا توجد معاملات بعد.",
+      "subtitle": "رصيد منفصل بالدولار الأمريكي يُستخدم فقط لخدمات GSM"
     },
     "profile": {
       "title": "إعدادات الملف الشخصي",
@@ -470,8 +477,11 @@
   },
   "payments": {
     "topUpTitle": "إضافة رصيد عبر التحويل البنكي",
+    "gsmTopUpTitle": "إضافة رصيد GSM عبر التحويل البنكي",
     "chooseBank": "اختر بنكاً",
     "amount": "المبلغ (ج.س)",
+    "gsmAmount": "المبلغ (دولار)",
+    "noGsmBanks": "لا توجد طرق شحن متاحة لمحفظة GSM بعد.",
     "transferTo": "حوّل إلى",
     "accountName": "اسم الحساب",
     "accountNumber": "رقم الحساب",
@@ -561,6 +571,7 @@
       "user": "العميل",
       "order": "الطلب",
       "topup": "شحن المحفظة",
+      "gsmTopup": "شحن GSM",
       "sender": "المُرسِل",
       "reference": "المرجع",
       "viewProof": "عرض الصورة",
@@ -641,7 +652,8 @@
       "logo": "الشعار",
       "uploadLogo": "رفع الشعار",
       "removeLogo": "إزالة الشعار",
-      "logoHint": "PNG أو JPG أو WebP حتى 2 ميجابايت."
+      "logoHint": "PNG أو JPG أو WebP حتى 2 ميجابايت.",
+      "forGsm": "متاح لشحن رصيد GSM"
     },
     "users": {
       "title": "المستخدمون",
@@ -650,6 +662,7 @@
       "contact": "التواصل",
       "role": "الدور",
       "wallet": "المحفظة",
+      "gsmWallet": "محفظة GSM",
       "joined": "انضم",
       "none": "لا يوجد مستخدمون.",
       "actions": "إجراءات",
@@ -669,6 +682,8 @@
         "favorites": "المفضلة",
         "wallet": "المحفظة",
         "amount": "± ج.س",
+        "gsmWallet": "محفظة GSM",
+        "amountUsd": "± دولار",
         "orders": "الطلبات",
         "noOrders": "لا توجد طلبات.",
         "submissions": "المدفوعات",

@@ -265,6 +265,7 @@
       "favorites": "Favorites",
       "notifications": "Notifications",
       "wallet": "Wallet",
+      "gsmWallet": "GSM Wallet",
       "profile": "Profile",
       "logout": "Log out",
       "tickets": "Support",
@@ -362,6 +363,12 @@
       "topUpError": "Couldn't add funds. Please try again.",
       "mockNote": "Demo top-up — real payment gateway arrives in a later milestone.",
       "subtitle": "Manage your balance and view transactions"
+    },
+    "gsmWallet": {
+      "balance": "GSM Wallet balance",
+      "history": "Transaction history",
+      "empty": "No transactions yet.",
+      "subtitle": "A separate USD balance used only for GSM Services"
     },
     "profile": {
       "title": "Profile settings",
@@ -470,8 +477,11 @@
   },
   "payments": {
     "topUpTitle": "Add funds by bank transfer",
+    "gsmTopUpTitle": "Add GSM balance by bank transfer",
     "chooseBank": "Choose a bank",
     "amount": "Amount (SDG)",
+    "gsmAmount": "Amount (USD)",
+    "noGsmBanks": "No top-up methods are available for the GSM wallet yet.",
     "transferTo": "Transfer to",
     "accountName": "Account name",
     "accountNumber": "Account number",
@@ -561,6 +571,7 @@
       "user": "Customer",
       "order": "Order",
       "topup": "Wallet top-up",
+      "gsmTopup": "GSM top-up",
       "sender": "Sender",
       "reference": "Reference",
       "viewProof": "View screenshot",
@@ -641,7 +652,8 @@
       "logo": "Logo",
       "uploadLogo": "Upload logo",
       "removeLogo": "Remove logo",
-      "logoHint": "PNG, JPG or WebP up to 2 MB."
+      "logoHint": "PNG, JPG or WebP up to 2 MB.",
+      "forGsm": "Available for GSM top-up"
     },
     "users": {
       "title": "Users",
@@ -650,6 +662,7 @@
       "contact": "Contact",
       "role": "Role",
       "wallet": "Wallet",
+      "gsmWallet": "GSM Wallet",
       "joined": "Joined",
       "none": "No users.",
       "actions": "Actions",
@@ -669,6 +682,8 @@
         "favorites": "Favorites",
         "wallet": "Wallet",
         "amount": "± SDG",
+        "gsmWallet": "GSM Wallet",
+        "amountUsd": "± USD",
         "orders": "Orders",
         "noOrders": "No orders.",
         "submissions": "Payments",

@@ -31,11 +31,13 @@ export default async function AdminPaymentsPage({
   const active = (TABS as readonly string[]).includes(status ?? "")
     ? (status as (typeof TABS)[number])
     : "PENDING";
-  const purpose = type === "WALLET_TOPUP" || type === "ORDER" ? type : undefined;
+  const purpose =
+    type === "WALLET_TOPUP" || type === "ORDER" || type === "GSM_TOPUP" ? type : undefined;
   const rows = await getSubmissions(active, purpose);
-  const typeTabs: Array<{ key?: "WALLET_TOPUP" | "ORDER"; label: string }> = [
+  const typeTabs: Array<{ key?: "WALLET_TOPUP" | "ORDER" | "GSM_TOPUP"; label: string }> = [
     { label: p.all },
     { key: "WALLET_TOPUP", label: p.topup },
+    { key: "GSM_TOPUP", label: p.gsmTopup },
     { key: "ORDER", label: p.order },
   ];
 

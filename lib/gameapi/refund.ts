@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/db";
 import { notifyOrderStatus } from "@/lib/orders/notify";
+import { notifyUser } from "@/lib/notify";
 
 /**
  * The customer already paid (wallet was decremented at checkout) but the
@@ -45,4 +46,11 @@ export async function refundFailedTopUp(orderId: string, reason: string): Promis
   });
 
   await notifyOrderStatus(orderId, "REFUNDED");
+  if (order.userId) {
+    void notifyUser(order.userId, {
+      title: `Order ${order.ref} could not be completed`,
+      body: `The top-up failed (${reason}). ${(order.total / 100).toFixed(2)} ج.س was added back to your wallet.`,
+      href: "/dashboard/wallet",
+    });
+  }
 }

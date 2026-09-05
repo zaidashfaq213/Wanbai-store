@@ -7,12 +7,13 @@ import type { Currency } from "@/lib/data/catalog";
 import {
   getUserDetail,
   adjustWallet,
+  adjustGsmWallet,
   deleteUser,
   type UserDetail,
   type AdminState,
 } from "@/lib/actions/admin";
 import { ConfirmButton } from "@/components/ui/confirm-button";
-import { formatCents, cn } from "@/lib/utils";
+import { formatCents, formatUsd, cn } from "@/lib/utils";
 
 type Labels = {
   orderStatus: Record<string, string>;
@@ -60,6 +61,10 @@ export function UserDetailModal({
   const [loading, startLoad] = useTransition();
   const [adjustState, adjustAction, adjusting] = useActionState<AdminState, FormData>(
     adjustWallet,
+    { ok: false },
+  );
+  const [gsmAdjustState, gsmAdjustAction, gsmAdjusting] = useActionState<AdminState, FormData>(
+    adjustGsmWallet,
     { ok: false },
   );
 
@@ -141,6 +146,44 @@ export function UserDetailModal({
                       )}
                     </form>
                   </div>
+                </Section>
+
+                {/* GSM Wallet + adjust — a separate USD balance, never mixed
+                    with the SDG wallet above. */}
+                <Section title={d.gsmWallet}>
+                  <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface-2 p-3">
+                    <span className="text-lg font-black text-primary">
+                      {formatUsd(data.gsmWalletBalance, locale)}
+                    </span>
+                    <form action={gsmAdjustAction} className="flex flex-wrap items-end gap-2">
+                      <input type="hidden" name="locale" value={locale} />
+                      <input type="hidden" name="userId" value={user.id} />
+                      <input name="amountUsd" type="number" step="0.01" placeholder={d.amountUsd} required className="h-9 w-28 rounded-lg border border-border bg-surface px-2.5 text-sm outline-none focus:border-primary/50" />
+                      <input name="reference" placeholder={dict.reason} className="h-9 w-32 rounded-lg border border-border bg-surface px-2.5 text-sm outline-none focus:border-primary/50" />
+                      <button type="submit" disabled={gsmAdjusting} className="h-9 rounded-lg brand-gradient px-3 text-xs font-bold text-white disabled:opacity-60">
+                        {dict.apply}
+                      </button>
+                      {gsmAdjustState.ok && gsmAdjustState.code === "saved" && (
+                        <span className="pb-2 text-xs font-bold text-emerald-500">✓</span>
+                      )}
+                    </form>
+                  </div>
+                  {data.gsmWalletTransactions.length > 0 && (
+                    <ul className="mt-2 flex flex-col gap-1.5">
+                      {data.gsmWalletTransactions.map((t, i) => (
+                        <li key={i} className="flex items-center justify-between gap-2 text-sm">
+                          <span className="text-muted">
+                            {labels.txType[t.type] ?? t.type}
+                            {t.description ? ` · ${t.description}` : ""}
+                            {t.reference ? ` (${t.reference})` : ""}
+                          </span>
+                          <span className={cn("font-bold", t.amount >= 0 ? "text-emerald-500" : "text-red-500")}>
+                            {t.amount >= 0 ? "+" : "−"}{formatUsd(Math.abs(t.amount), locale)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </Section>
 
                 {/* Orders */}

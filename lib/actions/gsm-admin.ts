@@ -9,6 +9,7 @@ import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { imageToDataUrl, GSM_FILE_MAX_BYTES, GSM_FILE_ALLOWED } from "@/lib/upload";
 import { notifyGsmOrderStatus } from "@/lib/gsm/notify";
 import { GSM_ALLOWED_NEXT } from "@/lib/gsm/status";
+import { notifyUser } from "@/lib/notify";
 import type { GsmOrderStatus } from "@prisma/client";
 
 function loc(v: string): Locale {
@@ -304,6 +305,13 @@ export async function setGsmOrderStatus(
     return { ok: false, code: "invalid_transition" };
   }
 
+  const notificationBody =
+    nextStatus === "COMPLETED"
+      ? `${order.serviceName} is complete.`
+      : REFUNDABLE.includes(nextStatus)
+        ? `${order.serviceName} — refunded to your wallet.`
+        : `${order.serviceName} — status updated.`;
+
   try {
     await prisma.$transaction(async (tx) => {
       await tx.gsmOrder.update({
@@ -313,15 +321,15 @@ export async function setGsmOrderStatus(
       if (REFUNDABLE.includes(nextStatus)) {
         await tx.user.update({
           where: { id: order.userId },
-          data: { walletBalance: { increment: order.price } },
+          data: { gsmWalletBalance: { increment: order.price } },
         });
-        await tx.walletTransaction.create({
+        await tx.gsmWalletTransaction.create({
           data: {
             userId: order.userId,
             amount: order.price,
             type: "REFUND",
             description: `Refund for GSM order ${order.ref}`,
-            orderId: null,
+            gsmOrderId: order.id,
           },
         });
       }
@@ -330,12 +338,7 @@ export async function setGsmOrderStatus(
           userId: order.userId,
           type: "ORDER",
           title: `GSM order ${order.ref} updated`,
-          body:
-            nextStatus === "COMPLETED"
-              ? `${order.serviceName} is complete.`
-              : REFUNDABLE.includes(nextStatus)
-                ? `${order.serviceName} — refunded to your wallet.`
-                : `${order.serviceName} — status updated.`,
+          body: notificationBody,
           href: "/dashboard/gsm-orders",
         },
       });
@@ -346,6 +349,11 @@ export async function setGsmOrderStatus(
   }
 
   await notifyGsmOrderStatus(id, nextStatus);
+  void notifyUser(order.userId, {
+    title: `GSM order ${order.ref} updated`,
+    body: notificationBody,
+    href: "/dashboard/gsm-orders",
+  });
   revalidatePath(`/${locale}/admin/gsm/orders`);
   revalidatePath(`/${locale}/admin/gsm/orders/${id}`);
   return { ok: true, code: "saved" };
@@ -378,6 +386,11 @@ export async function addGsmOrderNote(
       },
     }),
   ]);
+  void notifyUser(order.userId, {
+    title: `New note on GSM order ${order.ref}`,
+    body: body.slice(0, 140),
+    href: "/dashboard/gsm-orders",
+  });
 
   const locale = loc(String(formData.get("locale") ?? ""));
   revalidatePath(`/${locale}/admin/gsm/orders/${orderId}`);

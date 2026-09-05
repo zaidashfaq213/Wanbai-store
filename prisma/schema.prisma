@@ -45,6 +45,12 @@ model User {
   // Wallet balance is stored in USD cents to avoid floating-point drift.
   walletBalance Int @default(0)
 
+  // A second, separate balance used only for GSM Services — those are priced
+  // and topped up in real USD, unlike the main store wallet above (SDG).
+  // Never read/written by anything on the game-top-up side; see
+  // GsmWalletTransaction and lib/gsm/create.ts.
+  gsmWalletBalance Int @default(0)
+
   // Preferences mirrored from the storefront selectors.
   preferredLocale   String? // "ar" | "en"
   preferredCurrency String? // e.g. "USD"
@@ -56,21 +62,28 @@ model User {
   reEngageSentCount  Int       @default(0)
   reEngageLastSentAt DateTime?
 
-  accounts            Account[]
-  sessions            Session[]
-  orders              Order[]
-  favorites           Favorite[]
-  notifications       Notification[]
-  walletTransactions  WalletTransaction[]
-  passwordResetTokens PasswordResetToken[]
-  paymentSubmissions  PaymentSubmission[]  @relation("UserSubmissions")
-  reviewedSubmissions PaymentSubmission[]  @relation("ReviewedSubmissions")
-  supportTickets      SupportTicket[]
-  ticketMessages      TicketMessage[]
-  orderMessages       OrderMessage[]
-  productReviews      ProductReview[]
-  gsmOrders           GsmOrder[]
-  gsmOrderNotes       GsmOrderNote[]
+  // Expo push token for the mobile app (web has no push equivalent — the
+  // dashboard's bell icon + email cover that side). Null until the app
+  // registers one; overwritten on every fresh registration since a token can
+  // change (reinstall, new device) and only the latest one is ever valid.
+  pushToken String?
+
+  accounts              Account[]
+  sessions              Session[]
+  orders                Order[]
+  favorites             Favorite[]
+  notifications         Notification[]
+  walletTransactions    WalletTransaction[]
+  gsmWalletTransactions GsmWalletTransaction[]
+  passwordResetTokens   PasswordResetToken[]
+  paymentSubmissions    PaymentSubmission[]    @relation("UserSubmissions")
+  reviewedSubmissions   PaymentSubmission[]    @relation("ReviewedSubmissions")
+  supportTickets        SupportTicket[]
+  ticketMessages        TicketMessage[]
+  orderMessages         OrderMessage[]
+  productReviews        ProductReview[]
+  gsmOrders             GsmOrder[]
+  gsmOrderNotes         GsmOrderNote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -172,6 +185,40 @@ model WalletTransaction {
 
   @@index([userId])
   @@index([orderId])
+}
+
+// GSM Services run on their own USD-denominated balance, completely separate
+// from the main store wallet (which is SDG) — a customer can have money in
+// one and none in the other. Same shape as WalletTransaction, its own table
+// so the two histories never mix.
+enum GsmWalletTxType {
+  TOPUP // bank-transfer top-up approved by an admin
+  PURCHASE // spent on a GSM order
+  REFUND // credit returned after a rejected/cancelled GSM order
+  ADJUSTMENT // manual admin correction
+}
+
+model GsmWalletTransaction {
+  id          String          @id @default(cuid())
+  userId      String
+  // Signed amount in USD cents: positive = credit, negative = debit.
+  amount      Int
+  type        GsmWalletTxType
+  description String?
+  // Free-text admin note / external transfer reference, shown alongside the
+  // transaction in the admin panel — distinct from `description`, which is
+  // the system-generated line (e.g. "GSM order GSM-XXXX").
+  reference   String?
+  // Optional link to the GSM order this transaction settled.
+  gsmOrderId  String?
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gsmOrder GsmOrder? @relation(fields: [gsmOrderId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([gsmOrderId])
 }
 
 // ---------------------------------------------------------------------------
@@ -349,6 +396,10 @@ model BankAccount {
   logo           String? @db.Text // uploaded bank logo as a base64 data URL
   active         Boolean @default(true)
   sortOrder      Int     @default(0)
+  // Whether this method is offered on the GSM top-up form (customer pays in
+  // USD there) — independent of `active`, which gates the main SDG wallet
+  // top-up form. A bank can be offered on either, both, or neither.
+  forGsm         Boolean @default(false)
 
   submissions PaymentSubmission[]
 
@@ -357,8 +408,9 @@ model BankAccount {
 }
 
 enum PaymentPurpose {
-  WALLET_TOPUP // add funds to the wallet
+  WALLET_TOPUP // add funds to the (SDG) store wallet
   ORDER // pay for a specific order
+  GSM_TOPUP // add funds to the separate USD GSM wallet
 }
 
 enum PaymentStatus {
@@ -851,10 +903,11 @@ model GsmOrder {
   // belong inlined into a JSON blob queried on every order-list render.
   inputs Json?
 
-  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  service GsmService     @relation(fields: [serviceId], references: [id], onDelete: Restrict)
-  files   GsmOrderFile[]
-  notes   GsmOrderNote[]
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service    GsmService             @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  files      GsmOrderFile[]
+  notes      GsmOrderNote[]
+  walletTxns GsmWalletTransaction[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

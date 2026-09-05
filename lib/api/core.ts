@@ -49,6 +49,7 @@ export type ApiUser = {
   username: string | null;
   role: string;
   walletBalance: number;
+  gsmWalletBalance: number;
   preferredLocale: string | null;
   preferredCurrency: string | null;
 };
@@ -73,6 +74,7 @@ export async function getApiUser(req: Request): Promise<ApiUser | null> {
       username: true,
       role: true,
       walletBalance: true,
+      gsmWalletBalance: true,
       preferredLocale: true,
       preferredCurrency: true,
       lastActiveAt: true,

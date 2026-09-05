@@ -7,6 +7,7 @@ import { prisma } from "@/lib/db";
 import { getSessionUser, getStaffUser } from "@/lib/auth/session";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { createTicketForUser } from "@/lib/support/create";
+import { notifyUser } from "@/lib/notify";
 
 function loc(v: string): Locale {
   return isLocale(v) ? v : defaultLocale;
@@ -169,6 +170,11 @@ export async function adminReplyOrder(
         href: `/dashboard/orders/${order.ref}`,
       },
     });
+    void notifyUser(order.userId, {
+      title: `Support replied — ${order.ref}`,
+      body: parsed.data.body.slice(0, 140),
+      href: `/dashboard/orders/${order.ref}`,
+    });
   }
 
   revalidatePath(`/${locale}/admin/orders/${order.ref}`);
@@ -214,6 +220,11 @@ export async function adminReplyTicket(
       },
     }),
   ]);
+  void notifyUser(ticket.userId, {
+    title: `Support replied — ${ticket.ref}`,
+    body: ticket.subject,
+    href: "/dashboard/tickets",
+  });
 
   revalidatePath(`/${locale}/admin/tickets/${ticket.id}`);
   return { ok: true, code: "sent" };

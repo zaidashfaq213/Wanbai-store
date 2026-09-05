@@ -3,9 +3,8 @@ import { notFound } from "next/navigation";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { requireStaff } from "@/lib/auth/session";
-import { getCurrency } from "@/lib/data/currency";
 import { getAdminGsmOrderDetail } from "@/lib/data/gsm";
-import { formatCents } from "@/lib/utils";
+import { formatUsd } from "@/lib/utils";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { GsmOrderDetail } from "@/components/admin/gsm-order-detail";
 
@@ -19,7 +18,6 @@ export default async function AdminGsmOrderDetailPage({
   await requireStaff(locale);
   const dict = await getDictionary(locale);
   const o = dict.admin.gsm.orders;
-  const currency = await getCurrency();
   const order = await getAdminGsmOrderDetail(id);
   if (!order) notFound();
 
@@ -52,7 +50,7 @@ export default async function AdminGsmOrderDetailPage({
           status: order.status,
           serviceName: order.serviceName,
           categoryName: order.categoryName,
-          price: formatCents(order.price, currency.symbol, currency.rate, locale),
+          price: formatUsd(order.price, locale),
           createdAt: new Date(order.createdAt).toLocaleString(locale === "ar" ? "ar-EG-u-nu-latn" : "en-US"),
           customer: order.user?.name ?? order.email,
           customerEmail: order.user?.email ?? order.email,

@@ -5,11 +5,11 @@ import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import type { Currency } from "@/lib/data/catalog";
 import { approveSubmission, rejectSubmission } from "@/lib/actions/payments";
-import { formatCents, cn } from "@/lib/utils";
+import { formatCents, formatUsd, cn } from "@/lib/utils";
 
 export type ReviewSubmission = {
   id: string;
-  purpose: "WALLET_TOPUP" | "ORDER";
+  purpose: "WALLET_TOPUP" | "ORDER" | "GSM_TOPUP";
   amount: number;
   status: "PENDING" | "APPROVED" | "REJECTED";
   senderName: string | null;
@@ -61,7 +61,9 @@ export function PaymentReviewCard({
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="text-lg font-black text-primary">
-            {formatCents(s.amount, currency.symbol, currency.rate, locale)}
+            {s.purpose === "GSM_TOPUP"
+              ? formatUsd(s.amount, locale)
+              : formatCents(s.amount, currency.symbol, currency.rate, locale)}
           </span>
           <span className={cn("rounded-full px-2.5 py-1 text-xs font-bold", STATUS_STYLE[s.status])}>
             {statusLabels[s.status]}
@@ -76,7 +78,11 @@ export function PaymentReviewCard({
             {dict.bank}: <span className="font-semibold text-foreground">{s.bankName}</span>
           </p>
           <p>
-            {s.purpose === "ORDER" ? `${dict.order}: ${s.orderRef ?? "—"}` : dict.topup}
+            {s.purpose === "ORDER"
+              ? `${dict.order}: ${s.orderRef ?? "—"}`
+              : s.purpose === "GSM_TOPUP"
+                ? dict.gsmTopup
+                : dict.topup}
           </p>
           <p>
             {dict.submittedAt}:{" "}

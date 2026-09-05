@@ -71,6 +71,17 @@ export function formatCents(
 }
 
 /**
+ * Format an integer cents amount as literal USD — never converted by the
+ * storefront's selected display currency. GSM Services (price, wallet
+ * balance, top-ups) are always real USD, unlike the rest of the store
+ * (SDG base currency shown via formatCents/formatPrice above), so every GSM
+ * amount goes through this instead.
+ */
+export function formatUsd(cents: number, locale: string): string {
+  return formatPrice(cents / 100, "$", 1, locale);
+}
+
+/**
  * Resolve a product's image `src`. Admin-uploaded images are stored as base64
  * data URLs — embedding those directly means Next.js's RSC flight
  * serialization ships the same blob twice in every page's HTML (once

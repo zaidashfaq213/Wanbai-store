@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { submitGsmOrder, type GsmCheckoutState } from "@/lib/actions/gsm-checkout";
-import { cn, formatCents } from "@/lib/utils";
+import { cn, formatUsd } from "@/lib/utils";
 import { BoltIcon, UserIcon, WalletIcon } from "@/components/ui/icons";
 
 export type GsmField = {
@@ -25,7 +25,6 @@ export function GsmOrderForm({
   dict,
   serviceId,
   priceCents,
-  currency,
   fields,
   isAuthed,
   walletBalanceCents,
@@ -34,9 +33,10 @@ export function GsmOrderForm({
   dict: Dictionary;
   serviceId: string;
   priceCents: number;
-  currency: { symbol: string; rate: number };
   fields: GsmField[];
   isAuthed: boolean;
+  /** GSM wallet balance (USD cents) — the separate balance used only for GSM
+   * Services, never the main store (SDG) wallet. */
   walletBalanceCents: number;
 }) {
   const router = useRouter();
@@ -135,7 +135,7 @@ export function GsmOrderForm({
           {g.walletBalance}
         </span>
         <span className={cn("text-sm font-extrabold", canAfford ? "text-primary" : "text-red-500")}>
-          {formatCents(walletBalanceCents, currency.symbol, currency.rate, locale)}
+          {formatUsd(walletBalanceCents, locale)}
         </span>
       </div>
 
@@ -158,7 +158,7 @@ export function GsmOrderForm({
         <>
           <p className="text-center text-sm font-semibold text-red-500">{g.insufficientFunds}</p>
           <a
-            href={`/${locale}/dashboard/wallet`}
+            href={`/${locale}/dashboard/gsm-wallet`}
             className="flex w-full items-center justify-center gap-2 rounded-xl brand-gradient py-3.5 text-base font-bold text-white shadow-sm transition-transform hover:scale-[1.01]"
           >
             <WalletIcon className="size-5" />

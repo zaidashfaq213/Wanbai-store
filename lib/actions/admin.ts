@@ -6,6 +6,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSessionUser } from "@/lib/auth/session";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
+import { notifyUser } from "@/lib/notify";
 
 function loc(v: string): Locale {
   return isLocale(v) ? v : defaultLocale;
@@ -26,6 +27,14 @@ export type UserDetail = {
   verified: boolean;
   createdAt: string;
   walletBalance: number;
+  gsmWalletBalance: number;
+  gsmWalletTransactions: Array<{
+    amount: number;
+    type: string;
+    description: string | null;
+    reference: string | null;
+    createdAt: string;
+  }>;
   orders: Array<{
     ref: string;
     status: string;
@@ -66,6 +75,7 @@ export async function getUserDetail(userId: string): Promise<UserDetail | null> 
         include: { bankAccount: { select: { nameEn: true, nameAr: true } } },
       },
       walletTransactions: { orderBy: { createdAt: "desc" }, take: 20 },
+      gsmWalletTransactions: { orderBy: { createdAt: "desc" }, take: 20 },
       _count: { select: { favorites: true } },
     },
   });
@@ -80,6 +90,14 @@ export async function getUserDetail(userId: string): Promise<UserDetail | null> 
     verified: Boolean(u.emailVerified),
     createdAt: u.createdAt.toISOString(),
     walletBalance: u.walletBalance,
+    gsmWalletBalance: u.gsmWalletBalance,
+    gsmWalletTransactions: u.gsmWalletTransactions.map((t) => ({
+      amount: t.amount,
+      type: t.type,
+      description: t.description,
+      reference: t.reference,
+      createdAt: t.createdAt.toISOString(),
+    })),
     orders: u.orders.map((o) => ({
       ref: o.ref,
       status: o.status,
@@ -209,6 +227,8 @@ export async function adjustWallet(
   }
   const cents = Math.round(parsed.data.amountUsd * 100);
   const locale = loc(String(formData.get("locale") ?? ""));
+  const title = cents >= 0 ? "Wallet credited" : "Wallet adjusted";
+  const body = `${cents >= 0 ? "+" : "−"}${Math.abs(parsed.data.amountUsd).toFixed(2)} ج.س${parsed.data.reason ? ` — ${parsed.data.reason}` : ""}`;
 
   await prisma.$transaction([
     prisma.user.update({
@@ -224,15 +244,63 @@ export async function adjustWallet(
       },
     }),
     prisma.notification.create({
-      data: {
-        userId: parsed.data.userId,
-        type: "WALLET",
-        title: cents >= 0 ? "Wallet credited" : "Wallet adjusted",
-        body: `${cents >= 0 ? "+" : "−"}${Math.abs(parsed.data.amountUsd).toFixed(2)} ج.س${parsed.data.reason ? ` — ${parsed.data.reason}` : ""}`,
-        href: "/dashboard/wallet",
-      },
+      data: { userId: parsed.data.userId, type: "WALLET", title, body, href: "/dashboard/wallet" },
     }),
   ]);
+  void notifyUser(parsed.data.userId, { title, body, href: "/dashboard/wallet" });
+
+  revalidatePath(`/${locale}/admin/users`);
+  return { ok: true, code: "saved" };
+}
+
+const adjustGsmSchema = z.object({
+  userId: z.string().min(1),
+  amountUsd: z.coerce.number().min(-10_000_000).max(10_000_000),
+  reference: z.string().trim().max(200).optional(),
+});
+
+// Same as adjustWallet above but for the separate USD GSM wallet — a
+// manual admin credit/debit, e.g. correcting a mistaken top-up approval or
+// crediting a customer outside the bank-transfer flow. `reference` is a
+// free-text note/external transfer ref stored on the transaction itself.
+export async function adjustGsmWallet(
+  _prev: AdminState,
+  formData: FormData,
+): Promise<AdminState> {
+  const admin = await requireAdminUser();
+  if (!admin) return { ok: false, code: "requires_auth" };
+  const parsed = adjustGsmSchema.safeParse({
+    userId: formData.get("userId"),
+    amountUsd: formData.get("amountUsd"),
+    reference: formData.get("reference") || undefined,
+  });
+  if (!parsed.success || parsed.data.amountUsd === 0) {
+    return { ok: false, code: "invalid_input" };
+  }
+  const cents = Math.round(parsed.data.amountUsd * 100);
+  const locale = loc(String(formData.get("locale") ?? ""));
+  const title = cents >= 0 ? "GSM balance credited" : "GSM balance adjusted";
+  const body = `${cents >= 0 ? "+" : "−"}$${Math.abs(parsed.data.amountUsd).toFixed(2)}${parsed.data.reference ? ` — ${parsed.data.reference}` : ""}`;
+
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id: parsed.data.userId },
+      data: { gsmWalletBalance: { increment: cents } },
+    }),
+    prisma.gsmWalletTransaction.create({
+      data: {
+        userId: parsed.data.userId,
+        amount: cents,
+        type: "ADJUSTMENT",
+        description: "Admin adjustment",
+        reference: parsed.data.reference || null,
+      },
+    }),
+    prisma.notification.create({
+      data: { userId: parsed.data.userId, type: "WALLET", title, body, href: "/dashboard/gsm-wallet" },
+    }),
+  ]);
+  void notifyUser(parsed.data.userId, { title, body, href: "/dashboard/gsm-wallet" });
 
   revalidatePath(`/${locale}/admin/users`);
   return { ok: true, code: "saved" };
@@ -257,6 +325,7 @@ const bankCreateSchema = z.object({
   accountName: z.string().trim().min(1).max(120),
   accountNumber: z.string().trim().min(1).max(120),
   color: z.string().trim().max(20).optional(),
+  forGsm: z.boolean().optional(),
 });
 
 export async function createBankAccount(
@@ -272,6 +341,7 @@ export async function createBankAccount(
     accountName: formData.get("accountName"),
     accountNumber: formData.get("accountNumber"),
     color: formData.get("color") || undefined,
+    forGsm: formData.get("forGsm") === "on",
   });
   if (!parsed.success) return { ok: false, code: "invalid_input" };
 

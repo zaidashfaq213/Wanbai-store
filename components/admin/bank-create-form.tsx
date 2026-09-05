@@ -58,6 +58,10 @@ export function BankCreateForm({
           <input name="accountNumber" required className={FIELD} />
         </label>
       </div>
+      <label className="flex items-center gap-2 text-sm font-semibold">
+        <input type="checkbox" name="forGsm" className="size-4 accent-[var(--color-primary)]" />
+        {dict.forGsm}
+      </label>
       <button type="submit" disabled={pending} className="self-start rounded-xl brand-gradient px-5 py-2 text-sm font-bold text-white disabled:opacity-60">
         {dict.add}
       </button>

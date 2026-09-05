@@ -2,9 +2,8 @@ import Link from "next/link";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { requireStaff } from "@/lib/auth/session";
-import { getCurrency } from "@/lib/data/currency";
 import { getAdminGsmOrders } from "@/lib/data/gsm";
-import { formatCents, cn } from "@/lib/utils";
+import { formatUsd, cn } from "@/lib/utils";
 import { PageHeader } from "@/components/dashboard/page-header";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -32,7 +31,6 @@ export default async function AdminGsmOrdersPage({
   await requireStaff(locale);
   const dict = await getDictionary(locale);
   const o = dict.admin.gsm.orders;
-  const currency = await getCurrency();
   const filter = (STATUSES as readonly string[]).includes(status ?? "")
     ? (status as (typeof STATUSES)[number])
     : undefined;
@@ -91,7 +89,7 @@ export default async function AdminGsmOrdersPage({
                   <td className="p-3 font-bold">{order.ref}</td>
                   <td className="p-3 text-muted">{order.user?.name ?? order.email}</td>
                   <td className="p-3">{order.serviceName}</td>
-                  <td className="p-3 font-semibold">{formatCents(order.price, currency.symbol, currency.rate, locale)}</td>
+                  <td className="p-3 font-semibold">{formatUsd(order.price, locale)}</td>
                   <td className="p-3">
                     <span className={cn("rounded-full px-2.5 py-1 text-xs font-bold", STATUS_STYLES[order.status])}>
                       {o.statusLabels[order.status]}

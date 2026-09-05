@@ -62,12 +62,17 @@ export function notifyNewTicket(input: { ref: string; subject: string; email: st
 }
 
 export function notifyNewPaymentSubmission(input: {
-  purpose: "WALLET_TOPUP" | "ORDER";
+  purpose: "WALLET_TOPUP" | "ORDER" | "GSM_TOPUP";
   amountCents: number;
   email: string;
   orderRef?: string;
 }) {
-  const label = input.purpose === "WALLET_TOPUP" ? "💰 Wallet top-up request" : "💰 Order payment submitted";
+  const label =
+    input.purpose === "WALLET_TOPUP"
+      ? "💰 Wallet top-up request"
+      : input.purpose === "GSM_TOPUP"
+        ? "💰 GSM wallet top-up request"
+        : "💰 Order payment submitted";
   return notifyAdminTelegram(
     `${label}\n${money(input.amountCents)} · ${esc(input.email)}` +
       (input.orderRef ? `\nOrder: ${esc(input.orderRef)}` : "") +

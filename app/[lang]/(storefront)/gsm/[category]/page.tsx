@@ -4,8 +4,7 @@ import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { getGsmCategoryBySlug } from "@/lib/data/gsm";
-import { getCurrency } from "@/lib/data/currency";
-import { formatCents, fmt } from "@/lib/utils";
+import { formatUsd, fmt } from "@/lib/utils";
 import { Container } from "@/components/ui/container";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { ArrowIcon, ClockIcon } from "@/components/ui/icons";
@@ -34,10 +33,9 @@ export default async function GsmCategoryPage({
 }) {
   const { lang, category } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const [dict, cat, currency] = await Promise.all([
+  const [dict, cat] = await Promise.all([
     getDictionary(locale),
     getGsmCategoryBySlug(category),
-    getCurrency(),
   ]);
   if (!cat) notFound();
   const g = dict.gsm;
@@ -89,7 +87,7 @@ export default async function GsmCategoryPage({
                 <div className="flex items-start justify-between gap-2">
                   <h2 className="text-lg font-extrabold leading-tight">{svcName}</h2>
                   <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-black text-primary">
-                    {formatCents(svc.price, currency.symbol, currency.rate, locale)}
+                    {formatUsd(svc.price, locale)}
                   </span>
                 </div>
                 {desc && <p className="line-clamp-2 flex-1 text-sm text-muted">{desc}</p>}

@@ -16,6 +16,20 @@ export async function getWalletSummary(userId: string) {
   return { balance: user?.walletBalance ?? 0, transactions };
 }
 
+// Same as getWalletSummary but for the separate, USD-only GSM wallet.
+export async function getGsmWalletSummary(userId: string) {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { gsmWalletBalance: true },
+  });
+  const transactions = await prisma.gsmWalletTransaction.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+    take: 20,
+  });
+  return { balance: user?.gsmWalletBalance ?? 0, transactions };
+}
+
 export async function getOrders(userId: string) {
   return prisma.order.findMany({
     where: { userId },

@@ -2,9 +2,8 @@ import Link from "next/link";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { requireUser } from "@/lib/auth/session";
-import { getCurrency } from "@/lib/data/currency";
 import { getGsmOrders } from "@/lib/data/gsm";
-import { formatCents, cn } from "@/lib/utils";
+import { formatUsd, cn } from "@/lib/utils";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { PhoneIcon } from "@/components/ui/icons";
 
@@ -25,7 +24,7 @@ export default async function GsmOrdersPage({
 }) {
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const [user, dict, currency] = await Promise.all([requireUser(locale), getDictionary(locale), getCurrency()]);
+  const [user, dict] = await Promise.all([requireUser(locale), getDictionary(locale)]);
   const d = dict.dashboard.gsmOrders;
   const orders = await getGsmOrders(user.id);
 
@@ -68,7 +67,7 @@ export default async function GsmOrdersPage({
                   {d.statusLabels[order.status]}
                 </span>
                 <span className="font-black text-primary">
-                  {formatCents(order.price, currency.symbol, currency.rate, locale)}
+                  {formatUsd(order.price, locale)}
                 </span>
               </div>
             </div>

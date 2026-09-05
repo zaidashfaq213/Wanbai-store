@@ -10,6 +10,7 @@ import { orderDeliveredEmail } from "@/lib/emails/order-delivered";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { notifyOrderStatus } from "@/lib/orders/notify";
 import { notifyNewPaymentSubmission } from "@/lib/telegram";
+import { notifyUser } from "@/lib/notify";
 
 function loc(v: string): Locale {
   return isLocale(v) ? v : defaultLocale;
@@ -67,6 +68,59 @@ export async function submitWalletTopUp(
   void notifyNewPaymentSubmission({ purpose: "WALLET_TOPUP", amountCents: amount, email: user.email ?? "" });
 
   revalidatePath(`/${locale}/dashboard/wallet`);
+  return { ok: true, code: "submitted" };
+}
+
+// Customer: submit a bank-transfer screenshot to top up the separate GSM
+// (USD) wallet — mirrors submitWalletTopUp above but purpose GSM_TOPUP, and
+// the bank must be one an admin opted into the GSM form (forGsm), not just
+// active on the main one.
+const gsmTopUpSchema = z.object({
+  amountUsd: z.coerce.number().min(1).max(10_000_000),
+  bankAccountId: z.string().min(1),
+  senderName: z.string().trim().max(120).optional(),
+  reference: z.string().trim().max(120).optional(),
+});
+
+export async function submitGsmWalletTopUp(
+  _prev: PaymentState,
+  formData: FormData,
+): Promise<PaymentState> {
+  const user = await getSessionUser();
+  if (!user) return { ok: false, code: "requires_auth" };
+  const locale = loc(String(formData.get("locale") ?? ""));
+
+  const parsed = gsmTopUpSchema.safeParse({
+    amountUsd: formData.get("amountUsd"),
+    bankAccountId: formData.get("bankAccountId"),
+    senderName: formData.get("senderName") || undefined,
+    reference: formData.get("reference") || undefined,
+  });
+  if (!parsed.success) return { ok: false, code: "invalid_input" };
+
+  const bank = await prisma.bankAccount.findUnique({
+    where: { id: parsed.data.bankAccountId },
+  });
+  if (!bank || !bank.forGsm) return { ok: false, code: "invalid_bank" };
+
+  const upload = await imageToDataUrl(formData.get("screenshot"), PROOF_MAX_BYTES);
+  if (!upload.ok) return { ok: false, code: `proof_${upload.error}` };
+
+  const amount = Math.round(parsed.data.amountUsd * 100);
+  await prisma.paymentSubmission.create({
+    data: {
+      userId: user.id,
+      purpose: "GSM_TOPUP",
+      amount,
+      bankAccountId: bank.id,
+      senderName: parsed.data.senderName,
+      reference: parsed.data.reference,
+      proofUrl: upload.dataUrl,
+    },
+  });
+  void notifyNewPaymentSubmission({ purpose: "GSM_TOPUP", amountCents: amount, email: user.email ?? "" });
+
+  revalidatePath(`/${locale}/dashboard/gsm-wallet`);
   return { ok: true, code: "submitted" };
 }
 
@@ -174,6 +228,28 @@ export async function approveSubmission(formData: FormData) {
           href: "/dashboard/wallet",
         },
       });
+    } else if (sub.purpose === "GSM_TOPUP") {
+      await tx.user.update({
+        where: { id: sub.userId },
+        data: { gsmWalletBalance: { increment: sub.amount } },
+      });
+      await tx.gsmWalletTransaction.create({
+        data: {
+          userId: sub.userId,
+          amount: sub.amount,
+          type: "TOPUP",
+          description: "Bank transfer top-up (approved)",
+        },
+      });
+      await tx.notification.create({
+        data: {
+          userId: sub.userId,
+          type: "WALLET",
+          title: "GSM balance top-up approved",
+          body: `$${(sub.amount / 100).toFixed(2)} added to your GSM wallet.`,
+          href: "/dashboard/gsm-wallet",
+        },
+      });
     } else if (sub.orderId) {
       // Mark the order paid; the admin then fulfills it (enters the code).
       await tx.order.update({
@@ -194,6 +270,25 @@ export async function approveSubmission(formData: FormData) {
 
   if (sub.purpose !== "WALLET_TOPUP" && sub.orderId) {
     await notifyOrderStatus(sub.orderId, "PAID");
+  }
+  if (sub.purpose === "WALLET_TOPUP") {
+    void notifyUser(sub.userId, {
+      title: "Wallet top-up approved",
+      body: `${(sub.amount / 100).toFixed(2)} ج.س added to your wallet.`,
+      href: "/dashboard/wallet",
+    });
+  } else if (sub.purpose === "GSM_TOPUP") {
+    void notifyUser(sub.userId, {
+      title: "GSM balance top-up approved",
+      body: `$${(sub.amount / 100).toFixed(2)} added to your GSM wallet.`,
+      href: "/dashboard/gsm-wallet",
+    });
+  } else if (sub.orderId) {
+    void notifyUser(sub.userId, {
+      title: "Payment approved",
+      body: "We're preparing your order now.",
+      href: "/dashboard/orders",
+    });
   }
 
   revalidatePath(`/${locale}/admin`);
@@ -219,14 +314,25 @@ export async function rejectSubmission(formData: FormData) {
       reviewedAt: new Date(),
     },
   });
+  const rejectHref =
+    sub.purpose === "ORDER"
+      ? "/dashboard/orders"
+      : sub.purpose === "GSM_TOPUP"
+        ? "/dashboard/gsm-wallet"
+        : "/dashboard/wallet";
   await prisma.notification.create({
     data: {
       userId: sub.userId,
       type: "WALLET",
       title: "Payment could not be verified",
       body: note || "Please check your transfer and submit again.",
-      href: sub.purpose === "ORDER" ? "/dashboard/orders" : "/dashboard/wallet",
+      href: rejectHref,
     },
+  });
+  void notifyUser(sub.userId, {
+    title: "Payment could not be verified",
+    body: note || "Please check your transfer and submit again.",
+    href: rejectHref,
   });
 
   revalidatePath(`/${locale}/admin/payments`);
@@ -272,6 +378,13 @@ export async function fulfillOrder(formData: FormData) {
       });
     }
   });
+  if (order.userId) {
+    void notifyUser(order.userId, {
+      title: `Order ${order.ref} delivered`,
+      body: "Your order has been delivered. Check your orders.",
+      href: "/dashboard/orders",
+    });
+  }
 
   // Email the delivery (code for gift-card products, or a fulfilment note).
   const item = order.items[0];
@@ -328,6 +441,13 @@ export async function refundOrder(formData: FormData) {
   });
 
   await notifyOrderStatus(orderId, "REFUNDED");
+  if (order.userId) {
+    void notifyUser(order.userId, {
+      title: `Order ${order.ref} refunded`,
+      body: `${(order.total / 100).toFixed(2)} ج.س was added back to your wallet.`,
+      href: "/dashboard/wallet",
+    });
+  }
   revalidatePath(`/${locale}/admin/orders`, "layout");
 }
 
@@ -364,6 +484,7 @@ const bankSchema = z.object({
   instructionsEn: z.string().trim().max(300).optional(),
   instructionsAr: z.string().trim().max(300).optional(),
   active: z.boolean(),
+  forGsm: z.boolean(),
 });
 
 export async function updateBankAccount(
@@ -381,6 +502,7 @@ export async function updateBankAccount(
     instructionsEn: formData.get("instructionsEn") || undefined,
     instructionsAr: formData.get("instructionsAr") || undefined,
     active: formData.get("active") === "on",
+    forGsm: formData.get("forGsm") === "on",
   });
   if (!parsed.success) return { ok: false, code: "invalid_input" };
 

@@ -2,9 +2,8 @@ import Link from "next/link";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { requireAdmin } from "@/lib/auth/session";
-import { getCurrency } from "@/lib/data/currency";
 import { getAdminGsmServices, getAdminGsmCategories } from "@/lib/data/gsm";
-import { formatCents, cn } from "@/lib/utils";
+import { formatUsd, cn } from "@/lib/utils";
 import { PageHeader } from "@/components/dashboard/page-header";
 
 export default async function AdminGsmServicesPage({
@@ -17,7 +16,6 @@ export default async function AdminGsmServicesPage({
   await requireAdmin(locale);
   const dict = await getDictionary(locale);
   const s = dict.admin.gsm.services;
-  const currency = await getCurrency();
   const [services, categories] = await Promise.all([getAdminGsmServices(), getAdminGsmCategories()]);
 
   if (categories.length === 0) {
@@ -80,7 +78,7 @@ export default async function AdminGsmServicesPage({
                     {locale === "ar" ? svc.category.nameAr : svc.category.nameEn}
                   </td>
                   <td className="p-3 font-semibold">
-                    {formatCents(svc.price, currency.symbol, currency.rate, locale)}
+                    {formatUsd(svc.price, locale)}
                   </td>
                   <td className="p-3">
                     <span

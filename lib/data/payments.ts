@@ -10,9 +10,28 @@ export function getActiveBankAccounts() {
   });
 }
 
-export function getUserSubmissions(userId: string) {
+// Banks an admin has opted into the GSM (USD) top-up form — a separate flag
+// from `active` above, since a bank can be offered on one form, both, or
+// neither. See BankAccount.forGsm.
+export function getActiveGsmBankAccounts() {
+  return prisma.bankAccount.findMany({
+    where: { forGsm: true },
+    orderBy: { sortOrder: "asc" },
+  });
+}
+
+// No `purpose` = the main store wallet page's view (WALLET_TOPUP/ORDER only —
+// GSM_TOPUP has its own dashboard page and must never leak into this list).
+// Pass "GSM_TOPUP" explicitly to get that page's submissions instead.
+export function getUserSubmissions(
+  userId: string,
+  purpose?: "WALLET_TOPUP" | "ORDER" | "GSM_TOPUP",
+) {
   return prisma.paymentSubmission.findMany({
-    where: { userId },
+    where: {
+      userId,
+      purpose: purpose ? purpose : { not: "GSM_TOPUP" },
+    },
     orderBy: { createdAt: "desc" },
     take: 20,
     include: { bankAccount: true },
@@ -33,7 +52,7 @@ export function getAllBankAccounts() {
 
 export function getSubmissions(
   status?: "PENDING" | "APPROVED" | "REJECTED",
-  purpose?: "WALLET_TOPUP" | "ORDER",
+  purpose?: "WALLET_TOPUP" | "ORDER" | "GSM_TOPUP",
 ) {
   return prisma.paymentSubmission.findMany({
     where: {
@@ -132,6 +151,7 @@ export function getAllUsers() {
       email: true,
       role: true,
       walletBalance: true,
+      gsmWalletBalance: true,
       emailVerified: true,
       createdAt: true,
     },

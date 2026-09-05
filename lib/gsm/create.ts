@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { imageToDataUrl, GSM_FILE_MAX_BYTES, GSM_FILE_ALLOWED } from "@/lib/upload";
 import { notifyGsmOrderStatus } from "./notify";
 import { notifyNewGsmOrder } from "@/lib/telegram";
+import { notifyUser } from "@/lib/notify";
 
 // Wallet-only checkout for a GSM service — mirrors lib/orders/create.ts's
 // createOrderForUser, but writes to GsmOrder/GsmOrderFile instead of
@@ -28,9 +29,9 @@ export async function createGsmOrderForUser(
 
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { walletBalance: true },
+    select: { gsmWalletBalance: true },
   });
-  if (!dbUser || dbUser.walletBalance < service.price) {
+  if (!dbUser || dbUser.gsmWalletBalance < service.price) {
     return { ok: false, code: "insufficient_funds" };
   }
 
@@ -86,15 +87,15 @@ export async function createGsmOrderForUser(
       });
       await tx.user.update({
         where: { id: user.id },
-        data: { walletBalance: { decrement: service.price } },
+        data: { gsmWalletBalance: { decrement: service.price } },
       });
-      await tx.walletTransaction.create({
+      await tx.gsmWalletTransaction.create({
         data: {
           userId: user.id,
           amount: -service.price,
           type: "PURCHASE",
           description: `GSM order ${ref}`,
-          orderId: null,
+          gsmOrderId: created.id,
         },
       });
       await tx.notification.create({
@@ -116,5 +117,10 @@ export async function createGsmOrderForUser(
 
   await notifyGsmOrderStatus(orderId, "PAID");
   void notifyNewGsmOrder({ ref, serviceName, totalCents: service.price, email: user.email });
+  void notifyUser(user.id, {
+    title: `GSM order ${ref} paid`,
+    body: `${serviceName} — we're reviewing it now.`,
+    href: "/dashboard/gsm-orders",
+  });
   return { ok: true, ref };
 }
