@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { imageToDataUrl, PROOF_MAX_BYTES } from "@/lib/upload";
 import { ok, fail, getApiUser, unauthorized } from "@/lib/api/core";
+import { notifyNewPaymentSubmission } from "@/lib/telegram";
 
 // POST multipart/form-data: amountUsd, bankAccountId, senderName?, reference?, screenshot
 export async function POST(req: Request) {
@@ -24,16 +25,18 @@ export async function POST(req: Request) {
   const upload = await imageToDataUrl(form.get("screenshot"), PROOF_MAX_BYTES);
   if (!upload.ok) return fail(`proof_${upload.error}`, 413);
 
+  const amount = Math.round(amountUsd * 100);
   const submission = await prisma.paymentSubmission.create({
     data: {
       userId: user.id,
       purpose: "WALLET_TOPUP",
-      amount: Math.round(amountUsd * 100),
+      amount,
       bankAccountId: bank.id,
       senderName: (form.get("senderName") as string) || null,
       reference: (form.get("reference") as string) || null,
       proofUrl: upload.dataUrl,
     },
   });
+  void notifyNewPaymentSubmission({ purpose: "WALLET_TOPUP", amountCents: amount, email: user.email });
   return ok({ submissionId: submission.id, status: "submitted" }, 201);
 }

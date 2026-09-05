@@ -41,6 +41,7 @@ export function PurchasePanel({
   dict,
   isAuthed,
   walletBalanceCents,
+  available,
 }: {
   product: { slug: string; name: string; categorySlug: string };
   variantGroups: VariantGroup[];
@@ -51,6 +52,10 @@ export function PurchasePanel({
   dict: Dictionary;
   isAuthed: boolean;
   walletBalanceCents: number;
+  /** Admin-set purchase availability (Admin → Products) — distinct from the
+   * product being active/listed at all. False disables buying but keeps
+   * everything else (browsing, packages, reviews) working normally. */
+  available: boolean;
 }) {
   const router = useRouter();
   const [groupIdx, setGroupIdx] = useState(0);
@@ -66,7 +71,7 @@ export function PurchasePanel({
   const c = dict.checkout;
 
   const totalCents = pkg ? Math.round(pkg.price * 100) : 0;
-  const canAfford = isAuthed && walletBalanceCents >= totalCents;
+  const canAfford = available && isAuthed && walletBalanceCents >= totalCents;
 
   function selectGroup(i: number) {
     setGroupIdx(i);
@@ -84,6 +89,7 @@ export function PurchasePanel({
       requires_auth: c.errors.requiresAuth,
       invalid_input: c.errors.invalidInput,
       topup_failed: c.errors.topupFailed,
+      product_unavailable: c.errors.productUnavailable,
     };
     return (code && map[code]) || c.errors.generic;
   }
@@ -93,6 +99,7 @@ export function PurchasePanel({
   }
 
   function buyNow() {
+    if (!available) return flash(p.unavailableNote);
     if (!isAuthed) return goLogin();
     if (!pkg) return flash(p.needPackage);
     const missing = inputs.some((f) => f.required && !values[f.id]?.trim());
@@ -282,7 +289,32 @@ export function PurchasePanel({
             </span>
           </span>
         </div>
-        {isAuthed ? (
+
+        {/* Availability status — set from Admin → Products, independent of
+            login/wallet state below. */}
+        <p
+          className={cn(
+            "mb-3 flex items-center gap-1.5 text-sm font-bold",
+            available ? "text-emerald-500" : "text-red-500",
+          )}
+        >
+          <span>{available ? "🟢" : "🔴"}</span>
+          {p.availabilityStatus}: {available ? p.available : p.unavailable}
+        </p>
+
+        {!available ? (
+          <>
+            <button
+              type="button"
+              disabled
+              className="flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-muted/20 py-3.5 text-base font-bold text-muted"
+            >
+              <BoltIcon className="size-5" />
+              {p.buyNow}
+            </button>
+            <p className="mt-2 text-center text-xs text-muted">{p.unavailableNote}</p>
+          </>
+        ) : isAuthed ? (
           canAfford ? (
             <>
               <button

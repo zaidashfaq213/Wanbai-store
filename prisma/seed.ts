@@ -118,6 +118,137 @@ async function seedCatalog() {
   );
 }
 
+async function seedGsm() {
+  const categories = [
+    {
+      slug: "network-unlock",
+      nameEn: "Network Unlock",
+      nameAr: "فتح الشبكة",
+      icon: "🔓",
+      sortOrder: 0,
+      services: [
+        {
+          slug: "carrier-unlock",
+          nameEn: "Carrier Network Unlock",
+          nameAr: "فتح شبكة الناقل",
+          priceUsd: 15,
+          descriptionEn: "Permanently unlock your phone from its current carrier so it accepts any SIM card.",
+          descriptionAr: "فتح هاتفك بشكل دائم من شبكة الناقل الحالية ليقبل أي شريحة اتصال.",
+          requirementsEn: "IMEI number, device brand and model.",
+          requirementsAr: "رقم IMEI، نوع الجهاز والموديل.",
+          processingTimeEn: "1-3 business days",
+          processingTimeAr: "1-3 أيام عمل",
+          fields: [
+            { key: "imei", labelEn: "IMEI number", labelAr: "رقم IMEI", placeholderEn: "15-digit IMEI", placeholderAr: "رقم IMEI المكوّن من 15 رقماً", kind: "text", required: true },
+            { key: "device", labelEn: "Device brand & model", labelAr: "نوع الجهاز والموديل", placeholderEn: "e.g. iPhone 13 Pro", placeholderAr: "مثال: آيفون 13 برو", kind: "text", required: true },
+          ],
+        },
+      ],
+    },
+    {
+      slug: "imei-services",
+      nameEn: "IMEI Services",
+      nameAr: "خدمات IMEI",
+      icon: "🔢",
+      sortOrder: 1,
+      services: [
+        {
+          slug: "imei-check",
+          nameEn: "IMEI Blacklist Check",
+          nameAr: "فحص الحظر عبر IMEI",
+          priceUsd: 3,
+          descriptionEn: "Check whether a device's IMEI is blacklisted, reported lost/stolen, or carrier-locked.",
+          descriptionAr: "تحقّق ما إذا كان رقم IMEI الخاص بجهاز محظوراً أو مُبلَّغاً عنه كمفقود/مسروق أو مقفلاً بشبكة.",
+          requirementsEn: "IMEI number.",
+          requirementsAr: "رقم IMEI.",
+          processingTimeEn: "A few hours",
+          processingTimeAr: "بضع ساعات",
+          fields: [
+            { key: "imei", labelEn: "IMEI number", labelAr: "رقم IMEI", placeholderEn: "15-digit IMEI", placeholderAr: "رقم IMEI المكوّن من 15 رقماً", kind: "text", required: true },
+          ],
+        },
+      ],
+    },
+    {
+      slug: "frp-removal",
+      nameEn: "FRP Removal",
+      nameAr: "إزالة FRP",
+      icon: "🔐",
+      sortOrder: 2,
+      services: [
+        {
+          slug: "frp-remote-removal",
+          nameEn: "Remote FRP Removal",
+          nameAr: "إزالة FRP عن بُعد",
+          priceUsd: 12,
+          descriptionEn: "Remove Google Factory Reset Protection (FRP) remotely so you can set up the device again.",
+          descriptionAr: "إزالة حماية إعادة ضبط المصنع من جوجل (FRP) عن بُعد لإعادة إعداد الجهاز.",
+          requirementsEn: "Device brand/model and a photo of the FRP lock screen.",
+          requirementsAr: "نوع/موديل الجهاز وصورة لشاشة قفل FRP.",
+          processingTimeEn: "Same day",
+          processingTimeAr: "في نفس اليوم",
+          fields: [
+            { key: "device", labelEn: "Device brand & model", labelAr: "نوع الجهاز والموديل", placeholderEn: "e.g. Samsung A54", placeholderAr: "مثال: سامسونج A54", kind: "text", required: true },
+            { key: "screenshot", labelEn: "FRP lock screen photo", labelAr: "صورة شاشة قفل FRP", placeholderEn: "", placeholderAr: "", kind: "file", required: true },
+          ],
+        },
+      ],
+    },
+    {
+      slug: "mobile-repair",
+      nameEn: "Mobile Repair",
+      nameAr: "صيانة الجوالات",
+      icon: "🛠️",
+      sortOrder: 3,
+      services: [
+        {
+          slug: "screen-diagnosis",
+          nameEn: "Screen & Hardware Diagnosis",
+          nameAr: "فحص الشاشة والأعطال",
+          priceUsd: 5,
+          descriptionEn: "Remote diagnosis of a screen or hardware issue — our technician reviews photos/videos and advises next steps.",
+          descriptionAr: "تشخيص عن بُعد لمشكلة الشاشة أو العتاد — يراجع فنيّنا الصور/الفيديو ويقترح الخطوة التالية.",
+          requirementsEn: "Photos of the issue and a short description.",
+          requirementsAr: "صور للمشكلة ووصف مختصر.",
+          processingTimeEn: "Within 24 hours",
+          processingTimeAr: "خلال 24 ساعة",
+          fields: [
+            { key: "description", labelEn: "Describe the issue", labelAr: "صف المشكلة", placeholderEn: "What's wrong with the device?", placeholderAr: "ما هي المشكلة في الجهاز؟", kind: "text", required: true },
+            { key: "photo", labelEn: "Photo of the issue", labelAr: "صورة للمشكلة", placeholderEn: "", placeholderAr: "", kind: "file", required: false },
+          ],
+        },
+      ],
+    },
+  ];
+
+  for (const cat of categories) {
+    const { services, ...catData } = cat;
+    const catRow = await prisma.gsmCategory.upsert({
+      where: { slug: cat.slug },
+      update: {},
+      create: catData,
+    });
+    for (let si = 0; si < services.length; si++) {
+      const svc = services[si];
+      const { fields, priceUsd, ...svcData } = svc;
+      const svcRow = await prisma.gsmService.upsert({
+        where: { slug: svc.slug },
+        update: {},
+        create: { ...svcData, price: cents(priceUsd), categoryId: catRow.id, sortOrder: si },
+      });
+      for (let fi = 0; fi < fields.length; fi++) {
+        const f = fields[fi];
+        await prisma.gsmServiceField.upsert({
+          where: { serviceId_key: { serviceId: svcRow.id, key: f.key } },
+          update: {},
+          create: { ...f, serviceId: svcRow.id, sortOrder: fi },
+        });
+      }
+    }
+  }
+  console.log(`Seeded ${categories.length} GSM categories and ${categories.reduce((n, c) => n + c.services.length, 0)} services`);
+}
+
 async function main() {
   const email = "demo@wanbai.store";
   const passwordHash = await bcrypt.hash("password123", 12);
@@ -208,6 +339,7 @@ async function main() {
 
   await seedCatalog();
   await seedContent();
+  await seedGsm();
 }
 
 async function seedContent() {

@@ -223,6 +223,7 @@ export default async function ProductPage({
               dict={dict}
               isAuthed={isAuthed}
               walletBalanceCents={walletBalanceCents}
+              available={product.available}
             />
           </div>
         </div>

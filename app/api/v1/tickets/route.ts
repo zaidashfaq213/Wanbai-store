@@ -1,7 +1,7 @@
-import { randomBytes } from "crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { ok, fail, withAuth } from "@/lib/api/core";
+import { createTicketForUser } from "@/lib/support/create";
 
 export const GET = withAuth(async (_req, user) => {
   const tickets = await prisma.supportTicket.findMany({
@@ -21,13 +21,9 @@ export const POST = withAuth(async (req, user) => {
   const parsed = schema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return fail("invalid_input");
 
-  const ticket = await prisma.supportTicket.create({
-    data: {
-      ref: `TK-${randomBytes(3).toString("hex").toUpperCase()}`,
-      userId: user.id,
-      subject: parsed.data.subject,
-      messages: { create: { authorId: user.id, isStaff: false, body: parsed.data.body } },
-    },
-  });
+  const ticket = await createTicketForUser(
+    { id: user.id, email: user.email },
+    { subject: parsed.data.subject, body: parsed.data.body },
+  );
   return ok({ ticket }, 201);
 });

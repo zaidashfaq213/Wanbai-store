@@ -24,6 +24,7 @@ import {
   BellIcon,
   LockIcon,
   BoltIcon,
+  PhoneIcon,
 } from "@/components/ui/icons";
 
 type NavKey = keyof Dictionary["admin"]["nav"];
@@ -46,6 +47,9 @@ const ICONS: Record<string, typeof GridIcon> = {
   reengagement: BellIcon,
   profile: LockIcon,
   gameapi: BoltIcon,
+  gsmCategories: PhoneIcon,
+  gsmServices: PhoneIcon,
+  gsmOrders: PhoneIcon,
 };
 
 export function AdminChrome({
@@ -81,6 +85,9 @@ export function AdminChrome({
     { key: "orders", href: `${base}/orders` },
     { key: "products", href: `${base}/products` },
     { key: "categories", href: `${base}/categories` },
+    { key: "gsmOrders", href: `${base}/gsm/orders` },
+    { key: "gsmServices", href: `${base}/gsm/services` },
+    { key: "gsmCategories", href: `${base}/gsm/categories` },
     { key: "tickets", href: `${base}/tickets`, badge: openTickets },
     { key: "reviews", href: `${base}/reviews` },
     { key: "pages", href: `${base}/pages` },
@@ -99,7 +106,7 @@ export function AdminChrome({
   // their own account (password change); a Supervisor (ADMIN) sees everything.
   const items =
     role === "MANAGER"
-      ? allItems.filter((i) => i.key === "payments" || i.key === "orders" || i.key === "profile")
+      ? allItems.filter((i) => i.key === "payments" || i.key === "orders" || i.key === "gsmOrders" || i.key === "profile")
       : allItems;
 
   const isActive = (href: string) =>
@@ -177,7 +184,7 @@ export function AdminChrome({
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setOpen(false)} />
-          <div className="absolute inset-y-0 w-64 max-w-[80vw] border-e border-border bg-surface shadow-[var(--shadow-pop)] ltr:left-0 rtl:right-0">
+          <div className="absolute inset-y-0 w-64 max-w-[80vw] overflow-y-auto border-e border-border bg-surface shadow-[var(--shadow-pop)] ltr:left-0 rtl:right-0">
             {sidebar}
           </div>
         </div>

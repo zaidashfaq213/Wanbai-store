@@ -69,6 +69,8 @@ model User {
   ticketMessages      TicketMessage[]
   orderMessages       OrderMessage[]
   productReviews      ProductReview[]
+  gsmOrders           GsmOrder[]
+  gsmOrderNotes       GsmOrderNote[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -440,6 +442,10 @@ model Product {
   howToUseAr      String             @db.Text
   ratingBreakdown Int[] // [5*,4*,3*,2*,1*]
   active          Boolean            @default(true)
+  // Distinct from `active`: an inactive product is hidden from the storefront
+  // entirely. An unavailable one stays fully visible/browsable — only the
+  // purchase button is disabled, with a status line shown under the price.
+  available       Boolean            @default(true)
   sortOrder       Int                @default(0)
 
   category      Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
@@ -734,4 +740,157 @@ model GameApiOrder {
   updatedAt       DateTime @updatedAt
 
   orderItem OrderItem @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// GSM Services — a deliberately separate storefront (own categories, own
+// services, own order pipeline/status set) living inside the same store.
+// Shares User accounts, the wallet, and the admin panel shell with the
+// Game Top-Up side, but nothing else — no Product/Category/Order rows.
+// ---------------------------------------------------------------------------
+
+model GsmCategory {
+  id        String       @id @default(cuid())
+  slug      String       @unique
+  nameEn    String
+  nameAr    String
+  icon      String // emoji, same convention as Category.icon
+  active    Boolean      @default(true)
+  sortOrder Int          @default(0)
+  services  GsmService[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@index([slug])
+}
+
+model GsmService {
+  id               String  @id @default(cuid())
+  categoryId       String
+  slug             String  @unique
+  nameEn           String
+  nameAr           String
+  price            Int // cents, same convention as Package.price
+  descriptionEn    String  @db.Text
+  descriptionAr    String  @db.Text
+  requirementsEn   String  @db.Text
+  requirementsAr   String  @db.Text
+  processingTimeEn String // free text, e.g. "1-3 business days"
+  processingTimeAr String
+  active           Boolean @default(true)
+  sortOrder        Int     @default(0)
+
+  category GsmCategory       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  fields   GsmServiceField[]
+  orders   GsmOrder[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+}
+
+// Dynamic per-service checkout fields — same idea as ProductInput, plus a
+// "file" kind (a real gap in ProductInput: GSM routinely needs a photo of
+// the IMEI screen, a proof of purchase, the device itself).
+model GsmServiceField {
+  id            String  @id @default(cuid())
+  serviceId     String
+  key           String
+  labelEn       String
+  labelAr       String
+  placeholderEn String
+  placeholderAr String
+  kind          String  @default("text") // "text" | "number" | "file"
+  required      Boolean @default(false)
+  sortOrder     Int     @default(0)
+
+  service GsmService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  @@unique([serviceId, key])
+  @@index([serviceId])
+}
+
+enum GsmOrderStatus {
+  PENDING // created, wallet not yet charged (shouldn't normally linger — see lib/gsm/create.ts)
+  PAID // payment captured, awaiting admin review
+  UNDER_REVIEW // admin is checking the submitted details/files
+  IN_PROGRESS // work has started
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+model GsmOrder {
+  id  String @id @default(cuid())
+  // Human-friendly reference, e.g. "GSM-8F3K2A" — mirrors Order.ref but its
+  // own prefix, so the two are never visually confused in support chats.
+  ref String @unique
+
+  userId String
+  email  String
+
+  serviceId    String
+  // Snapshot at purchase time — a later price/name edit on the service must
+  // never rewrite history, same reasoning as OrderItem's product snapshot.
+  serviceName  String
+  categoryName String
+  price        Int // cents, charged from the wallet
+  currency     String @default("USD")
+  locale       String @default("ar")
+
+  status         GsmOrderStatus  @default(PENDING)
+  notifiedStatus GsmOrderStatus?
+
+  // Customer-submitted text/number field answers, keyed by GsmServiceField.key.
+  // File-kind answers live in GsmOrderFile instead — a data-URL doesn't
+  // belong inlined into a JSON blob queried on every order-list render.
+  inputs Json?
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  service GsmService     @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  files   GsmOrderFile[]
+  notes   GsmOrderNote[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}
+
+model GsmOrderFile {
+  id        String   @id @default(cuid())
+  orderId   String
+  // Base64 data URL — same storage model as payment proofs and product
+  // images elsewhere in this schema.
+  data      String   @db.Text
+  filename  String
+  // "customer": part of the original submission (photo of the IMEI, proof
+  // of purchase, ...). "admin": the delivered result (unlock file, report,
+  // ...) attached when the order is completed.
+  source    String // "customer" | "admin"
+  fieldKey  String? // which GsmServiceField this answers, when source = customer
+  createdAt DateTime @default(now())
+
+  order GsmOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+// Admin ↔ customer thread on one order — status explanations, requests for
+// more info, the final result written up in words. Mirrors OrderMessage.
+model GsmOrderNote {
+  id       String  @id @default(cuid())
+  orderId  String
+  authorId String?
+  isStaff  Boolean @default(false)
+  body     String  @db.Text
+
+  order  GsmOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  author User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
 }

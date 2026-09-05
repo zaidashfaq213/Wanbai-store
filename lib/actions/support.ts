@@ -1,12 +1,12 @@
 "use server";
 
-import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getSessionUser, getStaffUser } from "@/lib/auth/session";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
+import { createTicketForUser } from "@/lib/support/create";
 
 function loc(v: string): Locale {
   return isLocale(v) ? v : defaultLocale;
@@ -37,16 +37,10 @@ export async function createTicket(
   });
   if (!parsed.success) return { ok: false, code: "invalid_input" };
 
-  const ticket = await prisma.supportTicket.create({
-    data: {
-      ref: `TK-${randomBytes(3).toString("hex").toUpperCase()}`,
-      userId: user.id,
-      subject: parsed.data.subject,
-      messages: {
-        create: { authorId: user.id, isStaff: false, body: parsed.data.body },
-      },
-    },
-  });
+  const ticket = await createTicketForUser(
+    { id: user.id, email: user.email ?? "" },
+    { subject: parsed.data.subject, body: parsed.data.body },
+  );
 
   redirect(`/${locale}/dashboard/tickets/${ticket.id}`);
 }

@@ -51,7 +51,7 @@ const GAME_TIERS = [
   { units: 6138, mult: 50 },
 ];
 
-function topupPackages(product: Product): Package[] {
+function topupPackages(product: Omit<Product, "available">): Package[] {
   const unit = GAME_UNITS[product.slug] ?? L("وحدة", "Units");
   return GAME_TIERS.map((t, i) => ({
     id: `pkg-${i}`,
@@ -85,7 +85,7 @@ const SUB_TIERS = [
   { months: 6, mult: 5 },
   { months: 12, mult: 9 },
 ];
-function subscriptionPackages(product: Product): Package[] {
+function subscriptionPackages(product: Omit<Product, "available">): Package[] {
   return SUB_TIERS.map((t, i) => ({
     id: `pkg-${i}`,
     label: L(
@@ -105,7 +105,7 @@ const SOCIAL_SERVICES: { id: string; name: Localized; sublabel: Localized; mult:
   { id: "likes", name: L("الإعجابات", "Likes"), sublabel: L("إعجاب", "Likes"), mult: 0.6 },
   { id: "views", name: L("المشاهدات", "Views"), sublabel: L("مشاهدة", "Views"), mult: 0.3 },
 ];
-function serviceGroups(product: Product): VariantGroup[] {
+function serviceGroups(product: Omit<Product, "available">): VariantGroup[] {
   return SOCIAL_SERVICES.map((svc) => ({
     id: svc.id,
     name: svc.name,
@@ -134,7 +134,7 @@ const ACCOUNT_LOGIN_GAMES = new Set(["efootball", "clash-of-clans"]);
 // Games we fulfil by contacting the buyer (email + WhatsApp).
 const CONTACT_GAMES = new Set(["brawl-stars"]);
 
-function buildInputs(product: Product): InputField[] {
+function buildInputs(product: Omit<Product, "available">): InputField[] {
   const cat = product.category;
   if (cat === "game-fill") {
     // Mobile Legends: Player ID + Area/Zone ID.
@@ -166,7 +166,7 @@ export function inputsForProduct(slug: string, categorySlug: string): InputField
   return buildInputs({ slug, category: categorySlug } as Product);
 }
 
-function buildVariantGroups(product: Product): VariantGroup[] {
+function buildVariantGroups(product: Omit<Product, "available">): VariantGroup[] {
   if (product.slug === "free-fire") {
     return [
       { id: "gems", name: L("الجواهر", "Gems"), packages: topupPackages(product) },
@@ -204,7 +204,7 @@ function buildVariantGroups(product: Product): VariantGroup[] {
   return [{ id: "default", name, packages }];
 }
 
-function buildOverview(product: Product): Localized {
+function buildOverview(product: Omit<Product, "available">): Localized {
   return L(
     `اشحن ${product.name.ar} بسرعة وأمان من وانبي ستور. اختر الباقة المناسبة، أكمل عملية الدفع، وسيصلك المنتج فوراً عبر البريد الإلكتروني وداخل حسابك. جميع المنتجات أصلية 100% ومضمونة.`,
     `Top up ${product.name.en} quickly and securely with Wanbi Stoer. Pick the package that suits you, complete checkout, and receive it instantly by email and inside your account. All products are 100% genuine and guaranteed.`,
@@ -223,7 +223,7 @@ function buildHowToUse(fulfillment: Fulfillment): Localized {
   );
 }
 
-function buildFaqs(product: Product, fulfillment: Fulfillment): Faq[] {
+function buildFaqs(product: Omit<Product, "available">, fulfillment: Fulfillment): Faq[] {
   const faqs: Faq[] = [
     { q: L("كم يستغرق الشحن؟", "How long does delivery take?"), a: L("التسليم فوري في معظم الحالات؛ خلال ثوانٍ إلى دقائق بعد تأكيد الدفع.", "Delivery is instant in most cases — within seconds to a few minutes after payment is confirmed.") },
     { q: L("هل العملية آمنة؟", "Is it safe?"), a: L("نعم، جميع المدفوعات مشفّرة والمنتجات أصلية ومصدرها موثوق.", "Yes. All payments are encrypted and every product is genuine and sourced from trusted suppliers.") },
@@ -251,7 +251,7 @@ function hash(s: string): number {
   return h;
 }
 
-function buildReviews(product: Product): { reviews: Review[]; breakdown: number[] } {
+function buildReviews(product: Omit<Product, "available">): { reviews: Review[]; breakdown: number[] } {
   const start = hash(product.slug) % REVIEW_POOL.length;
   const reviews: Review[] = [];
   for (let i = 0; i < Math.min(4, REVIEW_POOL.length); i++) reviews.push(REVIEW_POOL[(start + i) % REVIEW_POOL.length]);
@@ -262,7 +262,10 @@ function buildReviews(product: Product): { reviews: Review[]; breakdown: number[
   return { reviews, breakdown: [five, four, three, 1, 0] };
 }
 
-export function buildDetail(product: Product): ProductDetail {
+// `available` is a live admin toggle, irrelevant to generating a product's
+// derived content (packages/inputs/faqs) — callers building a fresh product
+// spec (admin create form, static seed data) shouldn't need to invent one.
+export function buildDetail(product: Omit<Product, "available">): ProductDetail {
   const fulfillment = FULFILLMENT[product.category] ?? "code";
   const { reviews, breakdown } = buildReviews(product);
   return {

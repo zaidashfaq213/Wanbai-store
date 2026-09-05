@@ -25,6 +25,11 @@ export type Product = {
   rating: number;
   reviews: number;
   image?: string;
+  // Distinct from being listed at all (inactive products are filtered out
+  // upstream and never reach this type) — an unavailable product still
+  // shows, just with purchasing disabled. See prisma/schema.prisma's note
+  // on Product.available.
+  available: boolean;
 };
 
 export type Testimonial = {

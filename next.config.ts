@@ -64,6 +64,25 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Both wanbai-stoer.com and www.wanbai-stoer.com resolve to this server
+  // (see the allowedOrigins note below) and, without this, both served the
+  // exact same content — a classic "duplicate content, different host"
+  // setup that's exactly what Search Console flagged ("Google's search
+  // engine selected a homepage other than the user's choice"): with two
+  // live hosts serving identical pages, a same-page <link rel="canonical">
+  // (lib/seo.ts's SITE_URL, which is the apex host) isn't always enough to
+  // stop Google picking the other one. A permanent redirect removes the
+  // duplicate outright instead of just hinting at a preference.
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.wanbai-stoer.com" }],
+        destination: "https://wanbai-stoer.com/:path*",
+        permanent: true,
+      },
+    ];
+  },
   experimental: {
     serverActions: {
       // Logo/product images are uploaded through Server Actions, which cap the

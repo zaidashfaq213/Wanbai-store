@@ -110,6 +110,7 @@ export default async function AdminEditProductPage({
             howToUseEn: product.howToUseEn,
             howToUseAr: product.howToUseAr,
             active: product.active,
+            available: product.available,
           }}
           categories={categories.map((c) => ({
             id: c.id,

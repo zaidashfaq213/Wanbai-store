@@ -19,6 +19,12 @@ import {
   MenuIcon,
   ShieldIcon,
   SupportIcon,
+  ListIcon,
+  ShareIcon,
+  GlobeIcon,
+  BoltIcon,
+  StarIcon,
+  PhoneIcon,
 } from "@/components/ui/icons";
 
 type NavKey = keyof Dictionary["dashboard"]["nav"];
@@ -26,11 +32,18 @@ type NavKey = keyof Dictionary["dashboard"]["nav"];
 const ICONS: Record<string, typeof GridIcon> = {
   overview: GridIcon,
   orders: BagIcon,
+  gsmOrders: PhoneIcon,
   favorites: HeartIcon,
   notifications: BellIcon,
   wallet: WalletIcon,
   tickets: SupportIcon,
   profile: UserIcon,
+  about: ListIcon,
+  howToUse: GlobeIcon,
+  agents: ShareIcon,
+  customerService: SupportIcon,
+  downloadApp: BoltIcon,
+  games: StarIcon,
 };
 
 export function DashboardChrome({
@@ -59,11 +72,23 @@ export function DashboardChrome({
   const items: Array<{ key: NavKey; href: string; badge?: number }> = [
     { key: "overview", href: base },
     { key: "orders", href: `${base}/orders` },
+    { key: "gsmOrders", href: `${base}/gsm-orders` },
     { key: "favorites", href: `${base}/favorites` },
     { key: "notifications", href: `${base}/notifications`, badge: unread },
     { key: "wallet", href: `${base}/wallet` },
     { key: "tickets", href: `${base}/tickets` },
     { key: "profile", href: `${base}/profile` },
+  ];
+
+  // Site-wide links (not dashboard pages) — a separate, clearly labelled
+  // group so they never get mixed in with the account nav above.
+  const moreItems: Array<{ key: NavKey; href: string }> = [
+    { key: "about", href: `/${locale}/pages/about-us` },
+    { key: "howToUse", href: `/${locale}/help` },
+    { key: "agents", href: `/${locale}/pages/agents` },
+    { key: "customerService", href: `/${locale}/contact` },
+    { key: "downloadApp", href: `/${locale}#app-download` },
+    { key: "games", href: `/${locale}/cards` },
   ];
 
   const isActive = (href: string) =>
@@ -89,6 +114,10 @@ export function DashboardChrome({
         </span>
       </Link>
 
+      <p className="mb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-muted">
+        {dict.title}
+      </p>
+
       {/* Nav */}
       <nav className="flex flex-1 flex-col gap-1">
         {items.map((item) => {
@@ -113,6 +142,25 @@ export function DashboardChrome({
                   {item.badge}
                 </span>
               ) : null}
+            </Link>
+          );
+        })}
+
+        {/* Site-wide links — visually separated from the account nav above */}
+        <p className="mb-1 mt-4 px-3 text-[10px] font-bold uppercase tracking-wider text-muted">
+          {dict.more}
+        </p>
+        {moreItems.map((item) => {
+          const Icon = ICONS[item.key] ?? GridIcon;
+          return (
+            <Link
+              key={item.key}
+              href={item.href}
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-foreground/80 transition-colors hover:bg-surface-2 hover:text-foreground"
+            >
+              <Icon className="size-[18px] shrink-0" />
+              <span className="flex-1">{dict.nav[item.key]}</span>
             </Link>
           );
         })}
@@ -157,7 +205,7 @@ export function DashboardChrome({
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute inset-y-0 w-64 max-w-[80vw] border-e border-border bg-surface shadow-[var(--shadow-pop)] ltr:left-0 rtl:right-0">
+          <div className="absolute inset-y-0 w-64 max-w-[80vw] overflow-y-auto border-e border-border bg-surface shadow-[var(--shadow-pop)] ltr:left-0 rtl:right-0">
             {sidebarBody}
           </div>
         </div>

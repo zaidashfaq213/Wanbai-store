@@ -15,10 +15,35 @@ import { CurrencySelector } from "@/components/ui/currency-selector";
 import {
   ChevronDownIcon,
   CloseIcon,
+  GridIcon,
   MenuIcon,
   SearchIcon,
   UserIcon,
 } from "@/components/ui/icons";
+
+// The site menu is intentionally separate from the product-categories
+// drawer below — different button, different panel — per the explicit
+// requirement that it not be mixed in with Game Top-Up / Game Cards / etc.
+type SiteMenuItem = {
+  key: string;
+  icon: string;
+  href: (locale: Locale) => string;
+  label: (dict: Dictionary) => string;
+  authOnly?: "in" | "out";
+};
+
+const SITE_MENU_ITEMS: SiteMenuItem[] = [
+  { key: "home", icon: "🏠", href: (l) => `/${l}`, label: (d) => d.header.home },
+  { key: "account", icon: "👤", href: (l) => `/${l}/dashboard`, label: (d) => d.header.account, authOnly: "in" },
+  { key: "login", icon: "🔐", href: (l) => `/${l}/login`, label: (d) => d.header.login, authOnly: "out" },
+  { key: "about", icon: "📂", href: (l) => `/${l}/pages/about-us`, label: (d) => d.footer.about },
+  { key: "howToUse", icon: "📖", href: (l) => `/${l}/help`, label: (d) => d.header.howToUse },
+  { key: "agents", icon: "📢", href: (l) => `/${l}/pages/agents`, label: (d) => d.header.ourAgents },
+  { key: "gsm", icon: "🛠️", href: (l) => `/${l}/gsm`, label: (d) => d.gsm.heroTitle },
+  { key: "support", icon: "🎧", href: (l) => `/${l}/contact`, label: (d) => d.header.customerService },
+  { key: "download", icon: "📱", href: (l) => `/${l}#app-download`, label: (d) => d.header.downloadApp },
+  { key: "games", icon: "🎮", href: (l) => `/${l}/cards`, label: (d) => d.header.ourGames },
+];
 
 export function Header({
   dict,
@@ -38,6 +63,7 @@ export function Header({
   const [scrolled, setScrolled] = useState(false);
   const [megaOpen, setMegaOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [siteMenuOpen, setSiteMenuOpen] = useState(false);
   const router = useRouter();
 
   function onSearch(e: React.FormEvent<HTMLFormElement>) {
@@ -63,14 +89,32 @@ export function Header({
       )}
     >
       <Container className="flex h-16 items-center gap-3">
-        {/* Mobile menu button */}
+        {/* Mobile site menu (Home / Account / About / etc — separate from categories) */}
         <button
           type="button"
-          onClick={() => setDrawerOpen(true)}
-          aria-label={dict.header.allCategories}
+          onClick={() => {
+            // Only one mobile drawer can be open at a time — otherwise
+            // tapping this while the categories drawer is open stacks two
+            // overlapping full-height panels on top of each other.
+            setDrawerOpen(false);
+            setSiteMenuOpen(true);
+          }}
+          aria-label={dict.header.siteMenu}
           className="grid size-9 place-items-center rounded-xl border border-border bg-surface lg:hidden"
         >
           <MenuIcon className="size-5" />
+        </button>
+        {/* Mobile categories drawer trigger */}
+        <button
+          type="button"
+          onClick={() => {
+            setSiteMenuOpen(false);
+            setDrawerOpen(true);
+          }}
+          aria-label={dict.header.allCategories}
+          className="grid size-9 place-items-center rounded-xl border border-border bg-surface lg:hidden"
+        >
+          <GridIcon className="size-5" />
         </button>
 
         <Logo locale={locale} name={dict.brand.name} src={logo} />
@@ -82,6 +126,12 @@ export function Header({
             className="rounded-lg px-3 py-2 text-sm font-semibold transition-colors hover:bg-surface-2"
           >
             {dict.header.home}
+          </Link>
+          <Link
+            href={`/${locale}/gsm`}
+            className="rounded-lg px-3 py-2 text-sm font-semibold transition-colors hover:bg-surface-2"
+          >
+            {dict.gsm.heroTitle}
           </Link>
           <div
             className="relative"
@@ -163,6 +213,50 @@ export function Header({
           />
         </form>
       </Container>
+
+      {/* Mobile site menu — Home / Account / About / etc. Deliberately its
+          own drawer, never mixed with the product-categories one below. */}
+      {siteMenuOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setSiteMenuOpen(false)}
+          />
+          <div className="absolute inset-y-0 w-80 max-w-[85vw] overflow-y-auto bg-surface p-4 shadow-[var(--shadow-pop)] ltr:left-0 rtl:right-0">
+            <div className="mb-4 flex items-center justify-between">
+              <Logo locale={locale} name={dict.brand.name} src={logo} />
+              <button
+                type="button"
+                onClick={() => setSiteMenuOpen(false)}
+                aria-label={dict.header.close}
+                className="grid size-9 place-items-center rounded-xl border border-border"
+              >
+                <CloseIcon className="size-5" />
+              </button>
+            </div>
+            <nav className="flex flex-col gap-1">
+              {SITE_MENU_ITEMS.filter(
+                (item) =>
+                  !item.authOnly ||
+                  (item.authOnly === "in" && accountName) ||
+                  (item.authOnly === "out" && !accountName),
+              ).map((item) => (
+                <Link
+                  key={item.key}
+                  href={item.href(locale)}
+                  onClick={() => setSiteMenuOpen(false)}
+                  className="flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-surface-2"
+                >
+                  <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-surface-2 text-lg">
+                    {item.icon}
+                  </span>
+                  <span className="text-sm font-semibold">{item.label(dict)}</span>
+                </Link>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
 
       {/* Mobile categories drawer */}
       {drawerOpen && (

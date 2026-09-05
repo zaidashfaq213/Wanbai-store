@@ -14,15 +14,18 @@ export const STATIC_CATEGORIES: Category[] = [
   { slug: "app-subscriptions", name: { ar: "اشتراكات التطبيقات", en: "App Subscriptions" }, icon: "📺", gradient: "from-red-500 to-fuchsia-500" },
 ];
 
+// These are seed specs consumed by buildDetail() (lib/data/catalog-generate.ts),
+// not live DB records — `available` is a runtime admin toggle that doesn't
+// apply here, hence Omit rather than a fabricated default.
 function p(
   slug: string, ar: string, en: string, category: string, initial: string,
   hue: number, priceFrom: number, rating: number, reviews: number,
   badgeAr = "تسليم فوري", badgeEn = "Instant",
-): Product {
+): Omit<Product, "available"> {
   return { slug, name: { ar, en }, category, initial, hue, priceFrom, rating, reviews, badge: { ar: badgeAr, en: badgeEn } };
 }
 
-export const STATIC_PRODUCTS: Product[] = [
+export const STATIC_PRODUCTS: Omit<Product, "available">[] = [
   // Game Top-Up
   p("free-fire", "فري فاير", "Free Fire", "game-fill", "FF", 280, 1.0, 5.0, 52),
   p("pubg-mobile", "ببجي موبايل", "PUBG Mobile", "game-fill", "PU", 265, 1.5, 4.9, 41),

@@ -65,14 +65,21 @@ export default async function AdminProductsPage({
                     {formatCents(prod.priceFrom, currency.symbol, currency.rate, locale)}
                   </td>
                   <td className="p-3">
-                    <span
-                      className={cn(
-                        "rounded-full px-2.5 py-1 text-xs font-bold",
-                        prod.active ? "bg-emerald-500/10 text-emerald-500" : "bg-muted/10 text-muted",
+                    <div className="flex flex-wrap gap-1.5">
+                      <span
+                        className={cn(
+                          "rounded-full px-2.5 py-1 text-xs font-bold",
+                          prod.active ? "bg-emerald-500/10 text-emerald-500" : "bg-muted/10 text-muted",
+                        )}
+                      >
+                        {prod.active ? p.active : p.inactive}
+                      </span>
+                      {!prod.available && (
+                        <span className="rounded-full bg-red-500/10 px-2.5 py-1 text-xs font-bold text-red-500">
+                          {p.unavailable}
+                        </span>
                       )}
-                    >
-                      {prod.active ? p.active : p.inactive}
-                    </span>
+                    </div>
                   </td>
                   <td className="p-3 text-end">
                     <Link

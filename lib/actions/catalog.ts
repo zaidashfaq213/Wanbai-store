@@ -266,6 +266,7 @@ const productUpdateSchema = z.object({
   howToUseEn: z.string().trim().max(2000),
   howToUseAr: z.string().trim().max(2000),
   active: z.boolean(),
+  available: z.boolean(),
 });
 
 export async function updateProduct(
@@ -290,6 +291,7 @@ export async function updateProduct(
     howToUseEn: formData.get("howToUseEn"),
     howToUseAr: formData.get("howToUseAr"),
     active: formData.get("active") === "on",
+    available: formData.get("available") === "on",
   });
   if (!parsed.success) return { ok: false, code: "invalid_input" };
 

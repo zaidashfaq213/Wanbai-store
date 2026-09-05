@@ -16,7 +16,12 @@ export const BRANDING_MAX_BYTES = 2 * 1024 * 1024; // 2 MB
 // data URL inline in that product's page HTML) the way the old unlimited
 // logo/favicon upload once did.
 export const PRODUCT_IMAGE_MAX_BYTES = 1 * 1024 * 1024; // 1 MB
+// GSM order attachments: IMEI screenshots, proof-of-purchase, delivered
+// unlock files/reports — routinely a photo or a PDF, so images alone
+// (the default ALLOWED list) aren't enough here.
+export const GSM_FILE_MAX_BYTES = 8 * 1024 * 1024; // 8 MB
 const ALLOWED = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+export const GSM_FILE_ALLOWED = [...ALLOWED, "application/pdf"];
 // Favicons are commonly shipped as .ico or .svg — browsers/OSes report a few
 // different MIME types for .ico depending on how the file was saved.
 export const FAVICON_ALLOWED = [

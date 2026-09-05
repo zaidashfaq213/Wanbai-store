@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { attemptAutoTopUp } from "@/lib/gameapi/order";
 import { refundFailedTopUp } from "@/lib/gameapi/refund";
 import { notifyOrderStatus } from "./notify";
+import { notifyNewOrder } from "@/lib/telegram";
 
 // Single source of truth for "buy with wallet balance" — used by BOTH the
 // web checkout (lib/actions/checkout.ts) and the mobile REST API
@@ -39,6 +40,18 @@ export async function createOrderForUser(
   const { locale, currency, item } = input;
   const unitPrice = Math.round(item.unitPriceUsd * 100);
   const total = unitPrice; // single item, quantity 1
+
+  // Defense in depth: the storefront already disables the buy button for an
+  // unavailable product (Admin → Products), but that's UI-only — a direct
+  // POST to /api/v1/orders (or the web action called with a stale page open)
+  // must be rejected here too.
+  const product = await prisma.product.findUnique({
+    where: { slug: item.productSlug },
+    select: { available: true },
+  });
+  if (product && !product.available) {
+    return { ok: false, code: "product_unavailable" };
+  }
 
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
@@ -106,6 +119,15 @@ export async function createOrderForUser(
 
   // "Your order has been received" — every order, the moment it's created.
   await notifyOrderStatus(order.id, "PAID");
+  // Fire-and-forget — notifyAdminTelegram already swallows its own errors,
+  // so this never blocks/fails the order over a Telegram hiccup.
+  void notifyNewOrder({
+    ref: order.ref,
+    productName: item.productName,
+    packageLabel: item.packageLabel,
+    totalCents: total,
+    email: user.email,
+  });
 
   // Auto-fulfilment: only kicks in when this exact package is mapped to a
   // Game API catalogue entry (Admin → Game API). Every other product falls

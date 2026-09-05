@@ -145,6 +145,26 @@ export function productLd(input: {
       priceCurrency: "USD",
       availability: "https://schema.org/InStock",
       url,
+      // Required by Google's merchant-listing structured data even for
+      // digital goods with no physical shipping — every order here is
+      // delivered instantly by email, and one-time codes/top-ups can't be
+      // "returned" once used, so both reflect that instead of retail
+      // defaults (Search Console flagged their absence as an indexing risk).
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        applicableCountry: "SD",
+        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+      },
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        shippingRate: { "@type": "MonetaryAmount", value: "0", currency: "USD" },
+        shippingDestination: { "@type": "DefinedRegion", addressCountry: "SD" },
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 0, unitCode: "DAY" },
+          transitTime: { "@type": "QuantitativeValue", minValue: 0, maxValue: 0, unitCode: "DAY" },
+        },
+      },
     },
     ...(input.reviews && input.reviews > 0 && input.rating
       ? {
@@ -155,5 +175,38 @@ export function productLd(input: {
           },
         }
       : {}),
+  };
+}
+
+/**
+ * Service schema for GSM Services pages — deliberately Service, not Product:
+ * these are hand-done technician jobs (unlock, FRP removal, repair, ...),
+ * not a physical/digital item with shipping or a merchant return policy, so
+ * the Offer here skips the shipping/return fields productLd() needs.
+ */
+export function serviceLd(input: {
+  name: string;
+  description: string;
+  slug: string;
+  categorySlug: string;
+  locale: Locale;
+  priceUsd: number;
+  brandName: string;
+}) {
+  const url = abs(`/${input.locale}/gsm/${input.categorySlug}/${input.slug}`);
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: input.name,
+    description: input.description,
+    provider: { "@type": "Organization", name: input.brandName },
+    url,
+    offers: {
+      "@type": "Offer",
+      price: input.priceUsd.toFixed(2),
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+      url,
+    },
   };
 }

@@ -35,7 +35,14 @@
     "language": "اللغة",
     "theme": "المظهر",
     "themeLight": "فاتح",
-    "themeDark": "داكن"
+    "themeDark": "داكن",
+    "close": "إغلاق",
+    "siteMenu": "القائمة",
+    "howToUse": "كيفية استخدام الموقع",
+    "ourAgents": "وكلاؤنا",
+    "customerService": "خدمة العملاء",
+    "downloadApp": "تحميل التطبيق",
+    "ourGames": "ألعابنا"
   },
   "bottomNav": {
     "home": "الرئيسية",
@@ -119,7 +126,11 @@
     "basedOn": "بناءً على {count} تقييم",
     "writeReview": "اكتب تقييماً",
     "showMore": "عرض المزيد",
-    "related": "منتجات ذات صلة"
+    "related": "منتجات ذات صلة",
+    "availabilityStatus": "حالة التوفر",
+    "available": "متاح",
+    "unavailable": "غير متاح",
+    "unavailableNote": "هذا المنتج غير متاح للشراء حالياً."
   },
   "listing": {
     "gridView": "عرض شبكي",
@@ -257,10 +268,17 @@
       "profile": "الملف الشخصي",
       "logout": "تسجيل الخروج",
       "tickets": "الدعم",
+      "about": "عن وانبي",
+      "howToUse": "كيفية استخدام الموقع",
+      "agents": "وكلاؤنا",
+      "customerService": "خدمة العملاء",
+      "downloadApp": "تحميل التطبيق",
+      "games": "ألعابنا",
       "logoutTitle": "تسجيل الخروج?",
       "logoutBody": "ستحتاج إلى تسجيل الدخول مرة أخرى للوصول إلى حسابك.",
       "logoutConfirm": "تسجيل الخروج",
-      "logoutCancel": "إلغاء"
+      "logoutCancel": "إلغاء",
+      "gsmOrders": "طلبات GSM"
     },
     "overview": {
       "balance": "رصيد المحفظة",
@@ -357,6 +375,7 @@
       "subtitle": "أدر بياناتك الشخصية وتفضيلاتك"
     },
     "portal": "حساب المتجر",
+    "more": "المزيد",
     "backToStore": "العودة للمتجر",
     "roles": {
       "USER": "عضو",
@@ -381,6 +400,36 @@
         "ANSWERED": "تم الرد",
         "CLOSED": "مغلقة"
       }
+    },
+    "gsmOrders": {
+      "title": "طلبات GSM",
+      "subtitle": "تابع طلبات خدمات GSM الخاصة بك",
+      "none": "لا توجد طلبات GSM بعد.",
+      "browse": "تصفح خدمات GSM",
+      "ref": "الطلب",
+      "service": "الخدمة",
+      "price": "السعر",
+      "status": "الحالة",
+      "date": "التاريخ",
+      "view": "عرض",
+      "back": "← طلبات GSM",
+      "submittedDetails": "البيانات المرسلة",
+      "files": "الملفات",
+      "deliveredFiles": "الملفات المُسلَّمة",
+      "notes": "الملاحظات",
+      "noNotes": "لا توجد ملاحظات بعد.",
+      "statusTimelineTitle": "الحالة",
+      "statusLabels": {
+        "PENDING": "قيد الانتظار",
+        "PAID": "تم الاستلام",
+        "UNDER_REVIEW": "قيد المراجعة",
+        "IN_PROGRESS": "قيد التنفيذ",
+        "COMPLETED": "مكتمل",
+        "REJECTED": "مرفوض",
+        "CANCELLED": "ملغى"
+      },
+      "send": "إرسال",
+      "noteBody": "اكتب رسالة..."
     }
   },
   "checkout": {
@@ -397,7 +446,8 @@
       "requiresAuth": "الرجاء تسجيل الدخول للمتابعة.",
       "invalidInput": "الرجاء التحقق من البيانات والمحاولة مرة أخرى.",
       "topupFailed": "تعذّر إتمام الشحن — تم إرجاع المبلغ إلى رصيدك. يرجى التحقق من معرّف اللاعب والمحاولة مرة أخرى.",
-      "generic": "تعذّر إتمام الطلب. حاول مرة أخرى."
+      "generic": "تعذّر إتمام الطلب. حاول مرة أخرى.",
+      "productUnavailable": "هذا المنتج غير متاح حالياً."
     },
     "success": {
       "deliveredTitle": "تم تسليم الطلب!",
@@ -481,7 +531,10 @@
       "staff": "الموظفون",
       "reengagement": "استعادة العملاء",
       "gameapi": "واجهة الألعاب (API)",
-      "profile": "حسابي"
+      "profile": "حسابي",
+      "gsmCategories": "فئات GSM",
+      "gsmServices": "خدمات GSM",
+      "gsmOrders": "طلبات GSM"
     },
     "overview": {
       "subtitle": "نظرة سريعة على عمليات المتجر",
@@ -721,7 +774,11 @@
           "hide": "إخفاء",
           "save": "حفظ",
           "delete": "حذف"
-        }
+        },
+        "availability": "إتاحة الشراء",
+        "available": "متاح",
+        "unavailable": "غير متاح",
+        "availabilityHint": "عند اختيار غير متاح يبقى المنتج ظاهراً في المتجر لكن يتم تعطيل زر الشراء، وتظهر حالة (غير متاح) تحت السعر."
       },
       "errors": {
         "slug_taken": "هذا المعرّف مستخدم بالفعل.",
@@ -973,6 +1030,126 @@
       "belowCost": "⚠ البيع أقل من التكلفة",
       "syncFields": "مزامنة الحقول المطلوبة (معرّف اللاعب / السيرفر)",
       "fieldsSynced": "تمت مزامنة الحقول"
+    },
+    "gsm": {
+      "categories": {
+        "title": "فئات GSM",
+        "subtitle": "إدارة فئات خدمات GSM (فتح الشبكة، IMEI، FRP، الصيانة، ...)",
+        "add": "إضافة فئة",
+        "none": "لا توجد فئات بعد.",
+        "slug": "المعرّف (slug)",
+        "nameEn": "الاسم (إنجليزي)",
+        "nameAr": "الاسم (عربي)",
+        "icon": "الأيقونة (إيموجي)",
+        "order": "الترتيب",
+        "active": "مفعّلة",
+        "save": "حفظ",
+        "saved": "تم الحفظ",
+        "delete": "حذف",
+        "servicesCount": "خدمة"
+      },
+      "services": {
+        "title": "خدمات GSM",
+        "subtitle": "إنشاء خدمات GSM وتسعيرها وحقول الطلب الخاصة بها",
+        "add": "إضافة خدمة",
+        "none": "لا توجد خدمات بعد.",
+        "edit": "تعديل",
+        "back": "← خدمات GSM",
+        "name": "الاسم",
+        "category": "الفئة",
+        "price": "السعر (USD)",
+        "status": "الحالة",
+        "active": "مفعّلة",
+        "inactive": "مخفية",
+        "save": "حفظ التغييرات",
+        "saved": "تم الحفظ",
+        "delete": "حذف الخدمة",
+        "core": "تفاصيل الخدمة",
+        "nameEn": "الاسم (إنجليزي)",
+        "nameAr": "الاسم (عربي)",
+        "slug": "المعرّف (slug)",
+        "categoryLabel": "الفئة",
+        "priceUsd": "السعر (USD)",
+        "descriptionEn": "الوصف (إنجليزي)",
+        "descriptionAr": "الوصف (عربي)",
+        "requirementsEn": "المتطلبات (إنجليزي)",
+        "requirementsAr": "المتطلبات (عربي)",
+        "processingTimeEn": "مدة التنفيذ (إنجليزي)",
+        "processingTimeAr": "مدة التنفيذ (عربي)",
+        "processingTimeHint": "نص حر، مثال: \"1-3 أيام عمل\"",
+        "newService": "خدمة جديدة",
+        "createSubmit": "إنشاء الخدمة",
+        "noCategoriesTitle": "أنشئ فئة GSM أولاً",
+        "noCategoriesBody": "تحتاج إلى فئة GSM واحدة على الأقل قبل إضافة خدمة.",
+        "noCategoriesCta": "الذهاب إلى فئات GSM",
+        "fields": {
+          "title": "حقول الطلب",
+          "subtitle": "ما يجب على العميل تعبئته أو رفعه عند طلب هذه الخدمة — مثل رقم IMEI، نوع الجهاز، صورة إثبات الشراء.",
+          "none": "لا توجد حقول بعد.",
+          "add": "إضافة حقل",
+          "key": "مفتاح الحقل",
+          "keyHint": "أحرف وأرقام وشرطة سفلية فقط — يُستخدم داخلياً، مثال: \"imei\".",
+          "labelEn": "التسمية (إنجليزي)",
+          "labelAr": "التسمية (عربي)",
+          "placeholderEn": "نص توضيحي (إنجليزي)",
+          "placeholderAr": "نص توضيحي (عربي)",
+          "kind": "نوع الحقل",
+          "kindText": "نص",
+          "kindNumber": "رقم",
+          "kindFile": "ملف / صورة",
+          "required": "إلزامي",
+          "save": "إضافة الحقل",
+          "delete": "حذف"
+        }
+      },
+      "orders": {
+        "title": "طلبات GSM",
+        "subtitle": "مراجعة طلبات خدمات GSM والعمل عليها وتحديث حالتها",
+        "none": "لا توجد طلبات GSM بعد.",
+        "ref": "الطلب",
+        "customer": "العميل",
+        "service": "الخدمة",
+        "price": "السعر",
+        "status": "الحالة",
+        "date": "التاريخ",
+        "view": "عرض",
+        "back": "← طلبات GSM",
+        "submittedFields": "البيانات المرسلة",
+        "customerFiles": "ملفات العميل",
+        "resultFiles": "الملفات المُسلَّمة",
+        "uploadResult": "رفع ملف النتيجة",
+        "upload": "رفع",
+        "notes": "الملاحظات",
+        "noNotes": "لا توجد ملاحظات بعد.",
+        "addNote": "إضافة ملاحظة",
+        "noteBody": "اكتب ملاحظة يراها العميل...",
+        "send": "إرسال",
+        "updateStatus": "تحديث الحالة",
+        "noTransitions": "لا توجد تغييرات حالة أخرى متاحة.",
+        "statusLabels": {
+          "PENDING": "قيد الانتظار",
+          "PAID": "مدفوع",
+          "UNDER_REVIEW": "قيد المراجعة",
+          "IN_PROGRESS": "قيد التنفيذ",
+          "COMPLETED": "مكتمل",
+          "REJECTED": "مرفوض",
+          "CANCELLED": "ملغى"
+        },
+        "noFiles": "لا توجد ملفات."
+      },
+      "errors": {
+        "slug_taken": "هذا المعرّف مستخدم بالفعل.",
+        "key_taken": "مفتاح الحقل هذا مستخدم بالفعل في هذه الخدمة.",
+        "invalid_input": "يرجى مراجعة النموذج.",
+        "requires_auth": "غير مصرح.",
+        "saved": "تم الحفظ",
+        "server_error": "حدث خطأ أثناء الحفظ. حاول مرة أخرى.",
+        "not_found": "غير موجود.",
+        "invalid_transition": "لا يمكن تغيير الحالة بهذا الشكل من هنا.",
+        "file_too_large": "حجم الملف أكبر من 8 ميجابايت.",
+        "file_bad_type": "يجب أن يكون الملف صورة أو PDF.",
+        "file_empty": "اختر ملفاً."
+      }
     }
   },
   "help": {
@@ -1118,5 +1295,46 @@
         "a": "استخدم زر واتساب أدناه، أو افتح تذكرة دعم من لوحة التحكم — سيرد عليك عضو حقيقي من الفريق."
       }
     ]
+  },
+  "gsm": {
+    "metaTitle": "خدمات GSM",
+    "heroTitle": "خدمات GSM",
+    "heroSubtitle": "فتح شبكة، خدمات IMEI، إزالة FRP، خدمات الحسابات، البرمجة والفلاشة، وصيانة الجوالات — ينفذها فريقنا الفني.",
+    "categoriesTitle": "تصفح حسب الفئة",
+    "noCategories": "لا توجد خدمات GSM متاحة حالياً.",
+    "servicesIn": "الخدمات",
+    "noServices": "لا توجد خدمات في هذه الفئة بعد.",
+    "priceLabel": "السعر",
+    "processingTime": "مدة التنفيذ",
+    "requirements": "المتطلبات",
+    "description": "الوصف",
+    "orderNow": "اطلب الآن",
+    "backToCategories": "← خدمات GSM",
+    "backToServices": "← رجوع",
+    "checkoutTitle": "تفاصيل الطلب",
+    "checkoutSubtitle": "أدخل التفاصيل التي يحتاجها فريقنا الفني لتنفيذ طلبك.",
+    "submit": "الدفع وإرسال الطلب",
+    "submitting": "جارٍ الإرسال...",
+    "walletBalance": "رصيد المحفظة",
+    "addFunds": "إضافة رصيد",
+    "insufficientFunds": "رصيد محفظتك لا يكفي لهذه الخدمة.",
+    "loginRequired": "يرجى تسجيل الدخول لطلب خدمة GSM.",
+    "login": "تسجيل الدخول",
+    "orderPlacedTitle": "تم استلام الطلب",
+    "orderPlacedBody": "تم استلام طلب GSM الخاص بك وهو الآن قيد المراجعة. سنُحدّثك عبر البريد الإلكتروني ولوحة التحكم.",
+    "viewOrder": "عرض الطلب",
+    "orderAnother": "طلب خدمة أخرى",
+    "errors": {
+      "invalid_input": "يرجى تعبئة جميع الحقول المطلوبة.",
+      "insufficient_funds": "رصيد محفظتك لا يكفي لهذه الخدمة.",
+      "not_found": "هذه الخدمة لم تعد متاحة.",
+      "server_error": "حدث خطأ أثناء إرسال طلبك. حاول مرة أخرى.",
+      "requires_auth": "يرجى تسجيل الدخول أولاً."
+    },
+    "servicesCount": "{count} خدمة",
+    "trustSecure": "آمن وخاص",
+    "trustFast": "تنفيذ سريع",
+    "trustSupport": "فنيون حقيقيون",
+    "categoriesServicesCount": "{categories} فئة · {services} خدمة متاحة"
   }
 }

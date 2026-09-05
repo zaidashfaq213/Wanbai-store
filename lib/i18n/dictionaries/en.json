@@ -35,7 +35,14 @@
     "language": "Language",
     "theme": "Theme",
     "themeLight": "Light",
-    "themeDark": "Dark"
+    "themeDark": "Dark",
+    "close": "Close",
+    "siteMenu": "Menu",
+    "howToUse": "How to Use the Website",
+    "ourAgents": "Our Agents",
+    "customerService": "Customer Service",
+    "downloadApp": "Download the App",
+    "ourGames": "Our Games"
   },
   "bottomNav": {
     "home": "Home",
@@ -119,7 +126,11 @@
     "basedOn": "Based on {count} reviews",
     "writeReview": "Write a review",
     "showMore": "Show more",
-    "related": "Related products"
+    "related": "Related products",
+    "availabilityStatus": "Availability Status",
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "unavailableNote": "This product is currently unavailable for purchase."
   },
   "listing": {
     "gridView": "Grid view",
@@ -257,10 +268,17 @@
       "profile": "Profile",
       "logout": "Log out",
       "tickets": "Support",
+      "about": "About WANBAI",
+      "howToUse": "How to Use the Website",
+      "agents": "Our Agents",
+      "customerService": "Customer Service",
+      "downloadApp": "Download the App",
+      "games": "Our Games",
       "logoutTitle": "Log out?",
       "logoutBody": "You'll need to sign in again to access your account.",
       "logoutConfirm": "Log out",
-      "logoutCancel": "Cancel"
+      "logoutCancel": "Cancel",
+      "gsmOrders": "GSM Orders"
     },
     "overview": {
       "balance": "Wallet balance",
@@ -357,6 +375,7 @@
       "subtitle": "Manage your personal details and preferences"
     },
     "portal": "Store Account",
+    "more": "More",
     "backToStore": "Back to store",
     "roles": {
       "USER": "Member",
@@ -381,6 +400,36 @@
         "ANSWERED": "Answered",
         "CLOSED": "Closed"
       }
+    },
+    "gsmOrders": {
+      "title": "GSM Orders",
+      "subtitle": "Track your GSM service orders",
+      "none": "No GSM orders yet.",
+      "browse": "Browse GSM Services",
+      "ref": "Order",
+      "service": "Service",
+      "price": "Price",
+      "status": "Status",
+      "date": "Date",
+      "view": "View",
+      "back": "← GSM Orders",
+      "submittedDetails": "Submitted details",
+      "files": "Files",
+      "deliveredFiles": "Delivered files",
+      "notes": "Notes",
+      "noNotes": "No notes yet.",
+      "statusTimelineTitle": "Status",
+      "statusLabels": {
+        "PENDING": "Pending",
+        "PAID": "Received",
+        "UNDER_REVIEW": "Under review",
+        "IN_PROGRESS": "In progress",
+        "COMPLETED": "Completed",
+        "REJECTED": "Rejected",
+        "CANCELLED": "Cancelled"
+      },
+      "send": "Send",
+      "noteBody": "Write a message..."
     }
   },
   "checkout": {
@@ -397,7 +446,8 @@
       "requiresAuth": "Please sign in to continue.",
       "invalidInput": "Please check your details and try again.",
       "topupFailed": "The top-up couldn't be completed — your balance was refunded. Please double-check your Player ID and try again.",
-      "generic": "Couldn't complete your order. Please try again."
+      "generic": "Couldn't complete your order. Please try again.",
+      "productUnavailable": "This product is currently unavailable."
     },
     "success": {
       "deliveredTitle": "Order delivered!",
@@ -481,7 +531,10 @@
       "staff": "Staff",
       "reengagement": "Re-engagement",
       "gameapi": "Game API",
-      "profile": "My Account"
+      "profile": "My Account",
+      "gsmCategories": "GSM Categories",
+      "gsmServices": "GSM Services",
+      "gsmOrders": "GSM Orders"
     },
     "overview": {
       "subtitle": "Store operations at a glance",
@@ -721,7 +774,11 @@
           "hide": "Hide",
           "save": "Save",
           "delete": "Delete"
-        }
+        },
+        "availability": "Purchase availability",
+        "available": "Available",
+        "unavailable": "Unavailable",
+        "availabilityHint": "Unavailable keeps the product visible on the store but disables the buy button, with an Unavailable status shown under the price."
       },
       "errors": {
         "slug_taken": "That slug is already used.",
@@ -973,6 +1030,126 @@
       "belowCost": "⚠ selling below cost",
       "syncFields": "Sync required fields (Player ID / Server)",
       "fieldsSynced": "Fields synced"
+    },
+    "gsm": {
+      "categories": {
+        "title": "GSM Categories",
+        "subtitle": "Manage GSM service categories (network unlock, IMEI, FRP, repair, ...)",
+        "add": "Add category",
+        "none": "No categories yet.",
+        "slug": "Slug",
+        "nameEn": "Name (English)",
+        "nameAr": "Name (Arabic)",
+        "icon": "Icon (emoji)",
+        "order": "Order",
+        "active": "Active",
+        "save": "Save",
+        "saved": "Saved",
+        "delete": "Delete",
+        "servicesCount": "services"
+      },
+      "services": {
+        "title": "GSM Services",
+        "subtitle": "Create GSM services, pricing and their checkout fields",
+        "add": "Add service",
+        "none": "No services yet.",
+        "edit": "Edit",
+        "back": "← GSM Services",
+        "name": "Name",
+        "category": "Category",
+        "price": "Price (USD)",
+        "status": "Status",
+        "active": "Active",
+        "inactive": "Hidden",
+        "save": "Save changes",
+        "saved": "Saved",
+        "delete": "Delete service",
+        "core": "Service details",
+        "nameEn": "Name (English)",
+        "nameAr": "Name (Arabic)",
+        "slug": "Slug",
+        "categoryLabel": "Category",
+        "priceUsd": "Price (USD)",
+        "descriptionEn": "Description (English)",
+        "descriptionAr": "Description (Arabic)",
+        "requirementsEn": "Requirements (English)",
+        "requirementsAr": "Requirements (Arabic)",
+        "processingTimeEn": "Processing time (English)",
+        "processingTimeAr": "Processing time (Arabic)",
+        "processingTimeHint": "Free text, e.g. \"1-3 business days\"",
+        "newService": "New service",
+        "createSubmit": "Create service",
+        "noCategoriesTitle": "Create a GSM category first",
+        "noCategoriesBody": "You need at least one GSM category before you can add a service.",
+        "noCategoriesCta": "Go to GSM Categories",
+        "fields": {
+          "title": "Checkout fields",
+          "subtitle": "What the customer must fill in or upload when ordering this service — e.g. IMEI number, device brand, proof-of-purchase photo.",
+          "none": "No fields yet.",
+          "add": "Add field",
+          "key": "Field key",
+          "keyHint": "Letters, numbers, underscore only — used internally, e.g. \"imei\".",
+          "labelEn": "Label (English)",
+          "labelAr": "Label (Arabic)",
+          "placeholderEn": "Placeholder (English)",
+          "placeholderAr": "Placeholder (Arabic)",
+          "kind": "Field type",
+          "kindText": "Text",
+          "kindNumber": "Number",
+          "kindFile": "File / photo",
+          "required": "Required",
+          "save": "Add field",
+          "delete": "Delete"
+        }
+      },
+      "orders": {
+        "title": "GSM Orders",
+        "subtitle": "Review, work and update GSM service orders",
+        "none": "No GSM orders yet.",
+        "ref": "Order",
+        "customer": "Customer",
+        "service": "Service",
+        "price": "Price",
+        "status": "Status",
+        "date": "Date",
+        "view": "View",
+        "back": "← GSM Orders",
+        "submittedFields": "Submitted details",
+        "customerFiles": "Customer files",
+        "resultFiles": "Delivered files",
+        "uploadResult": "Upload result file",
+        "upload": "Upload",
+        "notes": "Notes",
+        "noNotes": "No notes yet.",
+        "addNote": "Add a note",
+        "noteBody": "Write a note for the customer to see...",
+        "send": "Send",
+        "updateStatus": "Update status",
+        "noTransitions": "No further status changes available.",
+        "statusLabels": {
+          "PENDING": "Pending",
+          "PAID": "Paid",
+          "UNDER_REVIEW": "Under review",
+          "IN_PROGRESS": "In progress",
+          "COMPLETED": "Completed",
+          "REJECTED": "Rejected",
+          "CANCELLED": "Cancelled"
+        },
+        "noFiles": "No files."
+      },
+      "errors": {
+        "slug_taken": "That slug is already used.",
+        "key_taken": "That field key is already used on this service.",
+        "invalid_input": "Please check the form.",
+        "requires_auth": "Not authorized.",
+        "saved": "Saved",
+        "server_error": "Something went wrong saving this. Please try again.",
+        "not_found": "Not found.",
+        "invalid_transition": "That status change isn't allowed from here.",
+        "file_too_large": "File is larger than 8 MB.",
+        "file_bad_type": "File must be an image or PDF.",
+        "file_empty": "Choose a file."
+      }
     }
   },
   "help": {
@@ -1118,5 +1295,46 @@
         "a": "Use the WhatsApp button below, or open a support ticket from your dashboard — a real team member will reply."
       }
     ]
+  },
+  "gsm": {
+    "metaTitle": "GSM Services",
+    "heroTitle": "GSM Services",
+    "heroSubtitle": "Network unlocking, IMEI services, FRP removal, account services, software & flashing, and mobile repair — handled by our technicians.",
+    "categoriesTitle": "Browse by category",
+    "noCategories": "No GSM services are available right now.",
+    "servicesIn": "Services",
+    "noServices": "No services in this category yet.",
+    "priceLabel": "Price",
+    "processingTime": "Processing time",
+    "requirements": "Requirements",
+    "description": "Description",
+    "orderNow": "Order now",
+    "backToCategories": "← GSM Services",
+    "backToServices": "← Back",
+    "checkoutTitle": "Order details",
+    "checkoutSubtitle": "Fill in the details our technicians need to process your order.",
+    "submit": "Pay & submit order",
+    "submitting": "Submitting...",
+    "walletBalance": "Wallet balance",
+    "addFunds": "Add funds",
+    "insufficientFunds": "Your wallet balance isn't enough for this service.",
+    "loginRequired": "Please log in to order a GSM service.",
+    "login": "Log in",
+    "orderPlacedTitle": "Order received",
+    "orderPlacedBody": "Your GSM order has been received and is being reviewed. We'll update you by email and in your dashboard.",
+    "viewOrder": "View order",
+    "orderAnother": "Order another service",
+    "errors": {
+      "invalid_input": "Please fill in all required fields.",
+      "insufficient_funds": "Your wallet balance isn't enough for this service.",
+      "not_found": "This service isn't available anymore.",
+      "server_error": "Something went wrong placing your order. Please try again.",
+      "requires_auth": "Please log in first."
+    },
+    "servicesCount": "{count} services",
+    "trustSecure": "Secure & private",
+    "trustFast": "Fast turnaround",
+    "trustSupport": "Real technicians",
+    "categoriesServicesCount": "{categories} categories · {services} services available"
   }
 }

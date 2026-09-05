@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { imageToDataUrl, PROOF_MAX_BYTES } from "@/lib/upload";
 import { ok, fail, getApiUser, unauthorized } from "@/lib/api/core";
+import { notifyNewPaymentSubmission } from "@/lib/telegram";
 
 // POST multipart/form-data: bankAccountId, senderName?, reference?, screenshot
 export async function POST(
@@ -36,5 +37,6 @@ export async function POST(
       proofUrl: upload.dataUrl,
     },
   });
+  void notifyNewPaymentSubmission({ purpose: "ORDER", amountCents: order.total, email: user.email, orderRef: order.ref });
   return ok({ submissionId: submission.id, status: "submitted" }, 201);
 }

@@ -41,6 +41,7 @@ function toProduct(p: DbProduct): Product {
     rating: p.rating,
     reviews: p.reviewCount,
     image: p.image ?? undefined,
+    available: p.available,
   };
 }
 

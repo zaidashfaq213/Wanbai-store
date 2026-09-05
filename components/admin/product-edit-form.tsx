@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import { updateProduct, deleteProduct, type CatalogState } from "@/lib/actions/catalog";
@@ -28,6 +28,7 @@ export type ProductCore = {
   howToUseEn: string;
   howToUseAr: string;
   active: boolean;
+  available: boolean;
 };
 
 export function ProductEditForm({
@@ -51,6 +52,7 @@ export function ProductEditForm({
     updateProduct,
     { ok: false },
   );
+  const [available, setAvailable] = useState(product.available);
 
   return (
     <form action={action} className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5">
@@ -158,6 +160,32 @@ export function ProductEditForm({
         <input type="checkbox" name="active" defaultChecked={product.active} className="size-4 accent-[var(--color-primary)]" />
         {dict.active}
       </label>
+
+      <div className="flex flex-col gap-2">
+        <span className="text-xs font-semibold text-muted">{dict.availability}</span>
+        <input type="checkbox" name="available" checked={available} readOnly hidden />
+        <div className="inline-flex w-fit overflow-hidden rounded-xl border border-border">
+          <button
+            type="button"
+            onClick={() => setAvailable(true)}
+            className={`flex items-center gap-1.5 px-4 py-2 text-sm font-bold transition-colors ${
+              available ? "bg-emerald-500/10 text-emerald-500" : "text-muted hover:bg-surface-2"
+            }`}
+          >
+            🟢 {dict.available}
+          </button>
+          <button
+            type="button"
+            onClick={() => setAvailable(false)}
+            className={`flex items-center gap-1.5 border-s border-border px-4 py-2 text-sm font-bold transition-colors ${
+              !available ? "bg-red-500/10 text-red-500" : "text-muted hover:bg-surface-2"
+            }`}
+          >
+            🔴 {dict.unavailable}
+          </button>
+        </div>
+        <span className="text-[11px] text-muted">{dict.availabilityHint}</span>
+      </div>
 
       <div className="flex items-center gap-2">
         <button type="submit" disabled={pending} className="rounded-xl brand-gradient px-5 py-2 text-sm font-bold text-white disabled:opacity-60">

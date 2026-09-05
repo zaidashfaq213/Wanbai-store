@@ -49,7 +49,7 @@ export function AppDownload({
   const d = dict.appDownload;
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-border bg-surface p-6 sm:p-10">
+    <section id="app-download" className="relative overflow-hidden rounded-3xl border border-border bg-surface p-6 sm:p-10">
       {/* Ambient colour */}
       <div className="pointer-events-none absolute -top-24 size-72 rounded-full bg-primary/20 blur-3xl ltr:-right-16 rtl:-left-16" />
       <div className="pointer-events-none absolute -bottom-24 size-72 rounded-full bg-fuchsia-500/10 blur-3xl ltr:-left-16 rtl:-right-16" />

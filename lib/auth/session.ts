@@ -31,9 +31,19 @@ export const getSessionUser = cache(async () => {
   try {
     const existing = await prisma.user.findUnique({
       where: { id: user.id },
-      select: { id: true, lastActiveAt: true },
+      select: { id: true, role: true, lastActiveAt: true },
     });
     if (!existing) return null;
+    // The JWT only carries the role it was issued with (auth.ts's jwt()
+    // callback sets it once, at sign-in, from the `user` param) — it's never
+    // re-derived on later requests. If a role is ever changed in the DB
+    // (promoted/demoted) while that session is still alive, every page that
+    // trusted session.user.role directly would keep showing the OLD role
+    // until the browser's cookie is replaced by a fresh login. Overriding it
+    // here with the live DB value closes that gap for every caller
+    // (requireAdmin, requireStaff, the dashboard admin badge, ...) without
+    // needing a full sign-out — this check already runs on every request.
+    if (existing.role !== user.role) user.role = existing.role;
     if (!existing.lastActiveAt || Date.now() - existing.lastActiveAt.getTime() > ACTIVITY_THROTTLE_MS) {
       // Fire-and-forget — never let this add latency to a page load.
       prisma.user

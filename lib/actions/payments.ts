@@ -9,6 +9,7 @@ import { sendMail } from "@/lib/mail";
 import { orderDeliveredEmail } from "@/lib/emails/order-delivered";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { notifyOrderStatus } from "@/lib/orders/notify";
+import { notifyNewPaymentSubmission } from "@/lib/telegram";
 
 function loc(v: string): Locale {
   return isLocale(v) ? v : defaultLocale;
@@ -51,17 +52,19 @@ export async function submitWalletTopUp(
   const upload = await imageToDataUrl(formData.get("screenshot"), PROOF_MAX_BYTES);
   if (!upload.ok) return { ok: false, code: `proof_${upload.error}` };
 
+  const amount = Math.round(parsed.data.amountUsd * 100);
   await prisma.paymentSubmission.create({
     data: {
       userId: user.id,
       purpose: "WALLET_TOPUP",
-      amount: Math.round(parsed.data.amountUsd * 100),
+      amount,
       bankAccountId: bank.id,
       senderName: parsed.data.senderName,
       reference: parsed.data.reference,
       proofUrl: upload.dataUrl,
     },
   });
+  void notifyNewPaymentSubmission({ purpose: "WALLET_TOPUP", amountCents: amount, email: user.email ?? "" });
 
   revalidatePath(`/${locale}/dashboard/wallet`);
   return { ok: true, code: "submitted" };
@@ -115,6 +118,7 @@ export async function submitOrderPayment(
       proofUrl: upload.dataUrl,
     },
   });
+  void notifyNewPaymentSubmission({ purpose: "ORDER", amountCents: order.total, email: user.email ?? "", orderRef: order.ref });
 
   revalidatePath(`/${locale}/dashboard/orders`, "layout");
   return { ok: true, code: "submitted" };
