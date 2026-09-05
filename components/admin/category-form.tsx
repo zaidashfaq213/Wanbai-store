@@ -86,7 +86,7 @@ export function CategoryForm({
             <input
               name="slug"
               required
-              pattern="[a-z0-9-]+"
+              pattern="[a-z0-9\-]+"
               placeholder="e.g. game-fill"
               value={slug}
               onChange={(e) => {

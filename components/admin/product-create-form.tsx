@@ -47,7 +47,7 @@ export function ProductCreateForm({
           <input
             name="slug"
             required
-            pattern="[a-z0-9-]+"
+            pattern="[a-z0-9\-]+"
             placeholder="e.g. free-fire"
             value={slug}
             onChange={(e) => {

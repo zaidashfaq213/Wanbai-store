@@ -341,6 +341,10 @@ function GameRow({
 }) {
   const [active, setActive] = useState(game.active);
   const [, startTransition] = useTransition();
+  const [createState, createAction, createPending] = useActionState<GameApiState, FormData>(
+    createProductFromGame,
+    { ok: false },
+  );
 
   function onToggleActive(next: boolean) {
     setActive(next);
@@ -384,7 +388,7 @@ function GameRow({
           </button>
         </form>
         {!game.product && (
-          <form action={createProductFromGame} className="mt-1.5 flex items-center gap-2">
+          <form action={createAction} className="mt-1.5 flex flex-wrap items-center gap-2">
             <input type="hidden" name="gameId" value={game.id} />
             <input type="hidden" name="locale" value={locale} />
             <span className="text-[11px] text-muted">{dict.orCreate}</span>
@@ -397,11 +401,14 @@ function GameRow({
             </select>
             <button
               type="submit"
-              disabled={categories.length === 0}
+              disabled={categories.length === 0 || createPending}
               className="rounded-lg brand-gradient px-2.5 py-1.5 text-xs font-bold text-white disabled:opacity-60"
             >
               {dict.createProduct}
             </button>
+            {!createState.ok && createState.code && (
+              <span className="text-[11px] font-bold text-red-500">{createState.code}</span>
+            )}
           </form>
         )}
       </td>

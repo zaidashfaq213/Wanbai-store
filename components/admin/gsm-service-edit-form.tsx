@@ -62,7 +62,7 @@ export function GsmServiceEditForm({
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1">
           <span className="text-xs font-semibold text-muted">{dict.slug}</span>
-          <input name="slug" defaultValue={service.slug} required pattern="[a-z0-9-]+" className={FIELD} />
+          <input name="slug" defaultValue={service.slug} required pattern="[a-z0-9\-]+" className={FIELD} />
         </label>
         <label className="flex flex-col gap-1">
           <span className="text-xs font-semibold text-muted">{dict.categoryLabel}</span>

@@ -35,7 +35,7 @@ export function BankCreateForm({
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1">
           <span className="text-xs font-semibold text-muted">{dict.key}</span>
-          <input name="key" required pattern="[a-z0-9-]+" placeholder="e.g. o-cash" className={FIELD} />
+          <input name="key" required pattern="[a-z0-9\-]+" placeholder="e.g. o-cash" className={FIELD} />
         </label>
         <label className="flex flex-col gap-1">
           <span className="text-xs font-semibold text-muted">{dict.color}</span>

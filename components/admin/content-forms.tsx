@@ -77,7 +77,7 @@ export function PageForm({
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1">
           <span className="text-xs font-semibold text-muted">{dict.slug}</span>
-          <input name="slug" defaultValue={page?.slug} required pattern="[a-z0-9-]+" className={FIELD} />
+          <input name="slug" defaultValue={page?.slug} required pattern="[a-z0-9\-]+" className={FIELD} />
         </label>
         <label className="flex items-end gap-2 pb-2 text-sm font-semibold">
           <input type="checkbox" name="published" defaultChecked={page?.published ?? true} className="size-4 accent-[var(--color-primary)]" />
@@ -141,7 +141,7 @@ export function PostForm({
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1">
           <span className="text-xs font-semibold text-muted">{dict.slug}</span>
-          <input name="slug" defaultValue={post?.slug} required pattern="[a-z0-9-]+" className={FIELD} />
+          <input name="slug" defaultValue={post?.slug} required pattern="[a-z0-9\-]+" className={FIELD} />
         </label>
         <label className="flex items-end gap-2 pb-2 text-sm font-semibold">
           <input type="checkbox" name="published" defaultChecked={post?.published ?? true} className="size-4 accent-[var(--color-primary)]" />

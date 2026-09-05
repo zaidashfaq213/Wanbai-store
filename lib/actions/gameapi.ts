@@ -124,19 +124,25 @@ export async function mapCatalogueToPackage(formData: FormData) {
 // checkout fields it needs. See lib/gameapi/create-product.ts for the shared
 // logic — also used by the bulk "Create all" action below.
 
-export async function createProductFromGame(formData: FormData) {
-  if (!(await requireAdminUser())) return;
+export async function createProductFromGame(
+  _prev: GameApiState,
+  formData: FormData,
+): Promise<GameApiState> {
+  if (!(await requireAdminUser())) return { ok: false, code: "requires_auth" };
   const gameId = String(formData.get("gameId") ?? "");
   const categoryId = String(formData.get("categoryId") ?? "");
   const locale = loc(String(formData.get("locale") ?? ""));
-  if (!gameId || !categoryId) return;
+  if (!gameId || !categoryId) return { ok: false, code: "invalid_input" };
 
   const result = await createProductForGame(gameId, categoryId);
   updateTag("products");
   revalidatePath(path(locale));
   if (!result.ok) {
+    // Surface the real reason to the admin instead of only logging it — this
+    // used to fail completely silently (nothing changed on screen, no clue
+    // why), which is exactly what looked like a broken/unresponsive button.
     console.error("[createProductFromGame] failed:", result.reason);
-    return;
+    return { ok: false, code: result.reason };
   }
   redirect(`/${locale}/admin/products/${result.productId}`);
 }

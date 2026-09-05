@@ -8,6 +8,7 @@ import { getSessionUser, isStaff } from "@/lib/auth/session";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { imageToDataUrl, GSM_FILE_MAX_BYTES, GSM_FILE_ALLOWED } from "@/lib/upload";
 import { notifyGsmOrderStatus } from "@/lib/gsm/notify";
+import { GSM_ALLOWED_NEXT } from "@/lib/gsm/status";
 import type { GsmOrderStatus } from "@prisma/client";
 
 function loc(v: string): Locale {
@@ -286,18 +287,6 @@ export async function deleteGsmServiceField(formData: FormData) {
 // --- Orders (staff, not admin-only — same as lib/actions/payments.ts) -----
 
 const REFUNDABLE: GsmOrderStatus[] = ["REJECTED", "CANCELLED"];
-// Forward-only workflow, mirrors the GSM spec's status pipeline. PENDING is
-// never reachable from here (createGsmOrderForUser writes orders in as PAID).
-// Exported so the order-detail page can render only the valid next steps.
-export const GSM_ALLOWED_NEXT: Record<GsmOrderStatus, GsmOrderStatus[]> = {
-  PENDING: ["PAID", "CANCELLED"],
-  PAID: ["UNDER_REVIEW", "IN_PROGRESS", "REJECTED", "CANCELLED"],
-  UNDER_REVIEW: ["IN_PROGRESS", "REJECTED", "CANCELLED"],
-  IN_PROGRESS: ["COMPLETED", "REJECTED", "CANCELLED"],
-  COMPLETED: [],
-  REJECTED: [],
-  CANCELLED: [],
-};
 
 export async function setGsmOrderStatus(
   _prev: GsmState,

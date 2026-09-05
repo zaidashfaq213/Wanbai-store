@@ -45,7 +45,7 @@ export function GsmServiceCreateForm({
           <input
             name="slug"
             required
-            pattern="[a-z0-9-]+"
+            pattern="[a-z0-9\-]+"
             placeholder="e.g. imei-unlock"
             value={slug}
             onChange={(e) => {

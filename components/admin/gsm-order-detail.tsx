@@ -8,9 +8,9 @@ import {
   addGsmOrderNote,
   uploadGsmResultFile,
   deleteGsmOrderFile,
-  GSM_ALLOWED_NEXT,
   type GsmState,
 } from "@/lib/actions/gsm-admin";
+import { GSM_ALLOWED_NEXT } from "@/lib/gsm/status";
 import { cn } from "@/lib/utils";
 import type { GsmOrderStatus } from "@prisma/client";
 
