@@ -53,6 +53,20 @@ export async function createOrderForUser(
     return { ok: false, code: "product_unavailable" };
   }
 
+  // Same defense in depth for the package-level toggle — a specific
+  // denomination/tier can be turned off while the rest of the product stays
+  // purchasable, so this needs its own check (item.packageId is already
+  // sent by every client for exactly this kind of lookup).
+  if (item.packageId) {
+    const pkg = await prisma.package.findUnique({
+      where: { id: item.packageId },
+      select: { available: true },
+    });
+    if (pkg && !pkg.available) {
+      return { ok: false, code: "package_unavailable" };
+    }
+  }
+
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
     select: { walletBalance: true },

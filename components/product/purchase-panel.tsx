@@ -71,7 +71,12 @@ export function PurchasePanel({
   const c = dict.checkout;
 
   const totalCents = pkg ? Math.round(pkg.price * 100) : 0;
-  const canAfford = available && isAuthed && walletBalanceCents >= totalCents;
+  // Both must hold: the product overall, AND the specific package selected
+  // right now — a package-level toggle (Admin → Products → package row)
+  // disables just that one denomination while the rest of the product stays
+  // purchasable.
+  const effectiveAvailable = available && (pkg?.available ?? true);
+  const canAfford = effectiveAvailable && isAuthed && walletBalanceCents >= totalCents;
 
   function selectGroup(i: number) {
     setGroupIdx(i);
@@ -90,6 +95,7 @@ export function PurchasePanel({
       invalid_input: c.errors.invalidInput,
       topup_failed: c.errors.topupFailed,
       product_unavailable: c.errors.productUnavailable,
+      package_unavailable: c.errors.packageUnavailable,
     };
     return (code && map[code]) || c.errors.generic;
   }
@@ -99,7 +105,7 @@ export function PurchasePanel({
   }
 
   function buyNow() {
-    if (!available) return flash(p.unavailableNote);
+    if (!effectiveAvailable) return flash(p.unavailableNote);
     if (!isAuthed) return goLogin();
     if (!pkg) return flash(p.needPackage);
     const missing = inputs.some((f) => f.required && !values[f.id]?.trim());
@@ -197,14 +203,21 @@ export function PurchasePanel({
                 onClick={() => setPkgId(option.id)}
                 className={cn(
                   "relative flex flex-col items-start gap-1 rounded-xl border p-3 text-start transition-all",
-                  active
-                    ? "border-primary bg-primary/5 ring-2 ring-primary/30"
-                    : "border-border bg-surface hover:border-primary/40",
+                  !option.available
+                    ? "border-border bg-surface opacity-60"
+                    : active
+                      ? "border-primary bg-primary/5 ring-2 ring-primary/30"
+                      : "border-border bg-surface hover:border-primary/40",
                 )}
               >
-                {option.popular && (
+                {option.popular && option.available && (
                   <span className="absolute -top-2 rounded-full brand-gradient px-2 py-0.5 text-[10px] font-bold text-white ltr:right-2 rtl:left-2">
                     {p.popular}
+                  </span>
+                )}
+                {!option.available && (
+                  <span className="absolute -top-2 rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-bold text-white ltr:right-2 rtl:left-2">
+                    {p.unavailable}
                   </span>
                 )}
                 <span className="text-sm font-bold leading-tight">{option.label[locale]}</span>
@@ -295,14 +308,14 @@ export function PurchasePanel({
         <p
           className={cn(
             "mb-3 flex items-center gap-1.5 text-sm font-bold",
-            available ? "text-emerald-500" : "text-red-500",
+            effectiveAvailable ? "text-emerald-500" : "text-red-500",
           )}
         >
-          <span>{available ? "🟢" : "🔴"}</span>
-          {p.availabilityStatus}: {available ? p.available : p.unavailable}
+          <span>{effectiveAvailable ? "🟢" : "🔴"}</span>
+          {p.availabilityStatus}: {effectiveAvailable ? p.available : p.unavailable}
         </p>
 
-        {!available ? (
+        {!effectiveAvailable ? (
           <>
             <button
               type="button"

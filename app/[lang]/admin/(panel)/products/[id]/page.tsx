@@ -74,6 +74,7 @@ export default async function AdminEditProductPage({
       compareAtPriceUsd: pk.compareAtPrice != null ? pk.compareAtPrice / 100 : null,
       compareAtEnabled: pk.compareAtEnabled,
       popular: pk.popular,
+      available: pk.available,
     })),
   }));
 

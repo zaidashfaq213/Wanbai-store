@@ -447,7 +447,8 @@
       "invalidInput": "Please check your details and try again.",
       "topupFailed": "The top-up couldn't be completed — your balance was refunded. Please double-check your Player ID and try again.",
       "generic": "Couldn't complete your order. Please try again.",
-      "productUnavailable": "This product is currently unavailable."
+      "productUnavailable": "This product is currently unavailable.",
+      "packageUnavailable": "This package is currently unavailable. Please choose another."
     },
     "success": {
       "deliveredTitle": "Order delivered!",

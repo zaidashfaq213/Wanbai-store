@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import {
@@ -31,6 +31,7 @@ export type PkgGroup = {
     compareAtPriceUsd: number | null;
     compareAtEnabled: boolean;
     popular: boolean;
+    available: boolean;
   }>;
 };
 
@@ -48,11 +49,13 @@ function PackageRow({
   pkg: PkgGroup["packages"][number];
 }) {
   const [state, action, pending] = useActionState<CatalogState, FormData>(updatePackage, { ok: false });
+  const [available, setAvailable] = useState(pkg.available);
   return (
     <div className="flex flex-wrap items-end gap-2 rounded-xl border border-border bg-surface p-2.5">
       <form action={action} className="flex flex-1 flex-wrap items-end gap-2">
         <input type="hidden" name="locale" value={locale} />
         <input type="hidden" name="id" value={pkg.id} />
+        <input type="checkbox" name="available" checked={available} readOnly hidden />
         <label className="flex flex-col gap-0.5">
           <span className="text-[10px] font-semibold text-muted">{dict.labelEn}</span>
           <input name="labelEn" defaultValue={pkg.labelEn} className={`${FIELD} w-32`} />
@@ -90,6 +93,29 @@ function PackageRow({
           <input type="checkbox" name="popular" defaultChecked={pkg.popular} className="size-3.5 accent-[var(--color-primary)]" />
           {dict.popular}
         </label>
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[10px] font-semibold text-muted">{dict.availability}</span>
+          <div className="inline-flex overflow-hidden rounded-lg border border-border">
+            <button
+              type="button"
+              onClick={() => setAvailable(true)}
+              className={`px-2.5 py-1.5 text-xs font-bold transition-colors ${
+                available ? "bg-emerald-500/10 text-emerald-500" : "text-muted hover:bg-surface-2"
+              }`}
+            >
+              🟢 {dict.available}
+            </button>
+            <button
+              type="button"
+              onClick={() => setAvailable(false)}
+              className={`border-s border-border px-2.5 py-1.5 text-xs font-bold transition-colors ${
+                !available ? "bg-red-500/10 text-red-500" : "text-muted hover:bg-surface-2"
+              }`}
+            >
+              🔴 {dict.unavailable}
+            </button>
+          </div>
+        </div>
         <button type="submit" disabled={pending} className="h-9 rounded-lg brand-gradient px-3 text-xs font-bold text-white disabled:opacity-60">
           {dict.save}
         </button>

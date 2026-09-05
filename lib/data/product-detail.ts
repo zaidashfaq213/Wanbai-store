@@ -14,6 +14,10 @@ export type Package = {
   // truthiness rather than also checking a separate "enabled" flag.
   compareAtPrice?: number; // base USD
   popular?: boolean;
+  // Admin → Products → package-level toggle, distinct from Product.available
+  // — turns off buying just this one denomination/tier, the rest of the
+  // product's packages stay purchasable.
+  available: boolean;
 };
 export type VariantGroup = { id: string; name: Localized; packages: Package[] };
 export type InputField = {

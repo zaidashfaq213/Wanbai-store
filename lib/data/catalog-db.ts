@@ -242,6 +242,7 @@ export const getProductDetail = cache(
           ? pk.compareAtPrice / 100
           : undefined,
       popular: pk.popular,
+      available: pk.available,
     })),
   }));
 

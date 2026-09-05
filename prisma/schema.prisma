@@ -489,6 +489,10 @@ model Package {
   compareAtPrice   Int? // USD cents
   compareAtEnabled Boolean           @default(false)
   popular          Boolean           @default(false)
+  // Same idea as Product.available, one level down: turning a specific
+  // package/tier off disables buying just that one (still shown, greyed
+  // out) while every other package on the product keeps selling normally.
+  available        Boolean           @default(true)
   sortOrder        Int               @default(0)
   variantGroup     VariantGroup      @relation(fields: [variantGroupId], references: [id], onDelete: Cascade)
   // Set when this exact denomination auto-fulfils through a provider

@@ -345,6 +345,7 @@ const packageSchema = z.object({
   compareAtPriceUsd: z.coerce.number().min(0).max(10_000_000).optional(),
   compareAtEnabled: z.boolean(),
   popular: z.boolean(),
+  available: z.boolean(),
 });
 
 export async function updatePackage(
@@ -360,6 +361,7 @@ export async function updatePackage(
     compareAtPriceUsd: formData.get("compareAtPriceUsd") || undefined,
     compareAtEnabled: formData.get("compareAtEnabled") === "on",
     popular: formData.get("popular") === "on",
+    available: formData.get("available") === "on",
   });
   if (!parsed.success) return { ok: false, code: "invalid_input" };
 

@@ -58,6 +58,7 @@ function topupPackages(product: Omit<Product, "available">): Package[] {
     label: L(`${t.units} ${unit.ar}`, `${t.units} ${unit.en}`),
     price: r2(product.priceFrom * t.mult),
     popular: t.popular,
+    available: true,
   }));
 }
 
@@ -67,6 +68,7 @@ function valueCardPackages(values: number[], popularIndex = 2): Package[] {
     label: L(`بطاقة ${v}$`, `$${v} Card`),
     price: v,
     popular: i === popularIndex,
+    available: true,
   }));
 }
 
@@ -76,6 +78,7 @@ function rechargePackages(values: number[]): Package[] {
     label: L(`${v}$ رصيد`, `$${v} Credit`),
     price: v,
     popular: i === 1,
+    available: true,
   }));
 }
 
@@ -94,6 +97,7 @@ function subscriptionPackages(product: Omit<Product, "available">): Package[] {
     ),
     price: r2(product.priceFrom * t.mult),
     popular: t.popular,
+    available: true,
   }));
 }
 
@@ -117,6 +121,7 @@ function serviceGroups(product: Omit<Product, "available">): VariantGroup[] {
       sublabel: svc.sublabel,
       price: r2(product.priceFrom * (q / 1000) * svc.mult),
       popular: i === 1,
+      available: true,
     })),
   }));
 }
@@ -173,17 +178,17 @@ function buildVariantGroups(product: Omit<Product, "available">): VariantGroup[]
       {
         id: "memberships", name: L("العضويات", "Memberships"),
         packages: [
-          { id: "m1", label: L("العضوية الأسبوعية", "Weekly Membership"), price: 1.5, popular: true },
-          { id: "m2", label: L("العضوية الشهرية", "Monthly Membership"), price: 7.0 },
-          { id: "m3", label: L("بطاقة المستوى", "Level Pass"), price: 4.0 },
+          { id: "m1", label: L("العضوية الأسبوعية", "Weekly Membership"), price: 1.5, popular: true, available: true },
+          { id: "m2", label: L("العضوية الشهرية", "Monthly Membership"), price: 7.0, available: true },
+          { id: "m3", label: L("بطاقة المستوى", "Level Pass"), price: 4.0, available: true },
         ],
       },
       {
         id: "level", name: L("ترقية المستوى", "Level Upgrade"),
         packages: [
-          { id: "l1", label: L("ترقية +5 مستويات", "+5 Levels"), price: 2.0 },
-          { id: "l2", label: L("ترقية +10 مستويات", "+10 Levels"), price: 3.5, popular: true },
-          { id: "l3", label: L("ترقية +20 مستوى", "+20 Levels"), price: 6.0 },
+          { id: "l1", label: L("ترقية +5 مستويات", "+5 Levels"), price: 2.0, available: true },
+          { id: "l2", label: L("ترقية +10 مستويات", "+10 Levels"), price: 3.5, popular: true, available: true },
+          { id: "l3", label: L("ترقية +20 مستوى", "+20 Levels"), price: 6.0, available: true },
         ],
       },
     ];
