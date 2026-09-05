@@ -146,6 +146,11 @@ export async function createOrderForUser(
       await refundFailedTopUp(order.id, attempt.reason);
       return { ok: false, code: "topup_failed", orderRef: order.ref };
     }
+  } else if (item.deliveryType === "TOPUP") {
+    // The other blind spot: a TOPUP item whose client request never included
+    // a packageId at all (stale/cached page, a client bug) never even calls
+    // attemptAutoTopUp — falls through to manual fulfilment with zero trace.
+    console.warn(`[createOrderForUser] order ${ref} is TOPUP but has no packageId — auto top-up was never attempted (product: ${item.productSlug})`);
   }
 
   return { ok: true, code: "order_paid", orderRef: order.ref };

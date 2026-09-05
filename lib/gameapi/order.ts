@@ -27,16 +27,27 @@ export async function attemptAutoTopUp(input: {
   serverId?: string;
   charname?: string;
 }): Promise<TopUpAttempt> {
-  if (!isConfigured()) return { attempted: false };
+  // Every silent-skip branch below used to return {attempted:false} with
+  // zero trace anywhere — when one fires (e.g. a game briefly toggled
+  // inactive, the global switch off for a moment), there was no way to
+  // confirm after the fact why a paid order never reached G2Bulk. Logging
+  // each one means `pm2 logs wanbai` shows exactly why, going forward.
+  const skip = (reason: string) => {
+    console.warn(`[attemptAutoTopUp] skipped for order ${input.orderRef} (item ${input.orderItemId}, package ${input.packageId}): ${reason}`);
+    return { attempted: false as const };
+  };
+
+  if (!isConfigured()) return skip("G2BULK_API_KEY not set");
 
   const settings = await prisma.storeSettings.findUnique({ where: { id: "store" } });
-  if (!settings?.gameApiEnabled) return { attempted: false };
+  if (!settings?.gameApiEnabled) return skip("StoreSettings.gameApiEnabled is off");
 
   const mapping = await prisma.gameApiCatalogue.findUnique({
     where: { packageId: input.packageId },
     include: { game: true },
   });
-  if (!mapping || !mapping.game.active) return { attempted: false };
+  if (!mapping) return skip("no Game API catalogue mapping for this package");
+  if (!mapping.game.active) return skip(`mapped game "${mapping.game.nameEn}" (${mapping.game.code}) is inactive`);
 
   // The package IS mapped for auto top-up, so from here on a failure must be
   // reported (and refunded) — never silently fall back to manual delivery,
