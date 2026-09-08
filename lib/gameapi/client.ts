@@ -1,23 +1,18 @@
 import "server-only";
+import { resolveG2BulkConfig, isG2BulkActive, applyAuth, recordProviderError } from "./provider-config";
 
 // Thin typed client for the G2Bulk game top-up API
-// (https://api.g2bulk.com/docs). The API key is a private credential, never
-// exposed to the frontend — it's read straight from the server env here.
+// (https://api.g2bulk.com/docs). Credentials/base URL/auth method are
+// resolved from the ApiProvider row (admin-editable at /admin/api-providers,
+// falling back to G2BULK_API_KEY/G2BULK_BASE_URL env vars) — see
+// ./provider-config. The key itself is still never exposed to the frontend,
+// only read here on the server.
 //
-// Auth: most endpoints are public (games, catalogue, fields, servers, eta,
-// checkPlayerId); getMe, order-creation and order history require the
-// X-API-Key header.
+// Auth: most endpoints are public (games, catalogue, fields, servers,
+// checkPlayerId); getMe, order-creation and order history require auth.
 
-const BASE_URL = (process.env.G2BULK_BASE_URL || "https://api.g2bulk.com/v1").replace(/\/$/, "");
-
-function apiKey(): string {
-  const key = process.env.G2BULK_API_KEY;
-  if (!key) throw new Error("G2BULK_API_KEY is not set");
-  return key;
-}
-
-export function isConfigured(): boolean {
-  return Boolean(process.env.G2BULK_API_KEY);
+export async function isConfigured(): Promise<boolean> {
+  return isG2BulkActive();
 }
 
 export class G2BulkError extends Error {
@@ -36,17 +31,25 @@ async function request<T>(
   init: RequestInit & { auth?: boolean } = {},
 ): Promise<T> {
   const { auth = true, headers, ...rest } = init;
+  const config = await resolveG2BulkConfig();
+  const url = new URL(`${config.baseUrl}${path}`);
   const finalHeaders: Record<string, string> = {
     "Content-Type": "application/json",
     ...(headers as Record<string, string> | undefined),
   };
-  if (auth) finalHeaders["X-API-Key"] = apiKey();
+  if (auth) {
+    if (!config.apiKey) throw new Error("G2Bulk API key is not set (see /admin/api-providers)");
+    applyAuth(config, url, finalHeaders);
+  }
 
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...rest,
-    headers: finalHeaders,
-    cache: "no-store",
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, { ...rest, headers: finalHeaders, cache: "no-store" });
+  } catch (e) {
+    const message = e instanceof Error ? e.message : "Network request failed";
+    void recordProviderError(message);
+    throw e;
+  }
 
   const text = await res.text();
   let data: unknown;
@@ -59,6 +62,7 @@ async function request<T>(
   if (!res.ok) {
     const message =
       (data as { message?: string })?.message || `G2Bulk request failed (HTTP ${res.status})`;
+    void recordProviderError(message);
     throw new G2BulkError(message, res.status, data);
   }
   return data as T;

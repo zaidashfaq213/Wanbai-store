@@ -37,7 +37,7 @@ export async function attemptAutoTopUp(input: {
     return { attempted: false as const };
   };
 
-  if (!isConfigured()) return skip("G2BULK_API_KEY not set");
+  if (!(await isConfigured())) return skip("provider not configured/active (see /admin/api-providers)");
 
   const settings = await prisma.storeSettings.findUnique({ where: { id: "store" } });
   if (!settings?.gameApiEnabled) return skip("StoreSettings.gameApiEnabled is off");

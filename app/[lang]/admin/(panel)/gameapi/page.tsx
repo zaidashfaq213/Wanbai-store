@@ -32,7 +32,8 @@ export default async function AdminGameApiPage({
     getAdminCategories(),
   ]);
 
-  const connection = isConfigured()
+  const configured = await isConfigured();
+  const connection = configured
     ? await getMe()
         .then((r) => ({ ok: true as const, username: r.username, balance: r.balance }))
         .catch((e) => ({ ok: false as const, message: e instanceof Error ? e.message : "" }))
@@ -46,7 +47,7 @@ export default async function AdminGameApiPage({
         dict={d}
         confirm={dict.admin.confirm}
         enabled={settings.gameApiEnabled}
-        configured={isConfigured()}
+        configured={configured}
         connection={connection}
         games={games.map((g) => ({
           id: g.id,

@@ -737,15 +737,75 @@ model ReEngagementSettings {
 }
 
 // ---------------------------------------------------------------------------
-// Game top-up provider integration (G2Bulk) — auto-fulfils TOPUP orders
-// instead of requiring an admin to deliver them by hand. See lib/gameapi/.
+// Game top-up provider integration — auto-fulfils TOPUP orders instead of
+// requiring an admin to deliver them by hand. See lib/gameapi/. Was G2Bulk-
+// only (hardcoded env vars); ApiProvider below generalizes the credentials/
+// config so the admin panel can register and manage other providers too.
 // ---------------------------------------------------------------------------
+
+enum ApiAuthMethod {
+  API_KEY_HEADER // a custom header, e.g. "X-API-Key: <key>" (G2Bulk)
+  BEARER_TOKEN // "Authorization: Bearer <key>"
+  BASIC_AUTH // "Authorization: Basic base64(key)"
+  QUERY_PARAM // "?api_key=<key>" appended to every request
+}
+
+// One external top-up provider's credentials + config. A new provider is
+// added by (1) an admin filling in this row via /admin/api-providers, and
+// (2) a developer writing a small adapter under lib/gameapi/providers/ that
+// implements that provider's actual endpoints/response shapes — the part
+// that genuinely can't be made zero-code, since every provider's API is
+// different. This row is what makes step (1) possible without touching code:
+// base URL, key, auth method and the on/off switch all live here instead of
+// being hardcoded per provider.
+model ApiProvider {
+  id               String        @id @default(cuid())
+  // Stable slug an adapter registers itself under (lib/gameapi/providers/registry.ts),
+  // e.g. "g2bulk". Never shown to the customer, admin-facing only.
+  key              String        @unique
+  name             String
+  baseUrl          String
+  // Provider's secret key. Stored here (not env) so it's admin-editable —
+  // this is the trade-off for that convenience; treat DB backups accordingly.
+  apiKey           String?       @db.Text
+  authMethod       ApiAuthMethod @default(API_KEY_HEADER)
+  // Header name for API_KEY_HEADER/BEARER_TOKEN (defaults to "X-API-Key" /
+  // "Authorization" per adapter when left blank).
+  authHeaderName   String?
+  // Endpoint the "Test connection" button hits, relative to baseUrl.
+  testPath         String        @default("/games")
+  active           Boolean       @default(false)
+  // Shared secret for providers whose webhooks aren't per-order-tokenized
+  // like G2Bulk's (see GameApiOrder.webhookToken).
+  webhookSecret    String?
+  lastTestedAt     DateTime?
+  lastTestOk       Boolean?
+  lastTestMessage  String?       @db.Text
+  lastErrorAt      DateTime?
+  lastErrorMessage String?       @db.Text
+  notes            String?       @db.Text
+
+  games GameApiGame[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
 // A game as listed by the provider (synced from GET /v1/games). Optionally
 // linked to one of our own Products — that's what turns "just a synced game"
 // into "actually sells and auto-delivers on this store".
 model GameApiGame {
   id           String             @id @default(cuid())
+  // Nullable only so existing rows survive the migration without a manual
+  // backfill step — application code resolves a missing providerId to the
+  // "g2bulk" ApiProvider on first read and patches it in, so in practice
+  // this is always set going forward. code stays globally unique (not
+  // scoped per-provider): with one real provider today that's a non-issue,
+  // and two providers' game codes colliding is unlikely enough not to be
+  // worth the wider blast radius of a composite key everywhere `code` is
+  // looked up.
+  providerId   String?
+  provider     ApiProvider?       @relation(fields: [providerId], references: [id], onDelete: Cascade)
   code         String             @unique // provider's game code, e.g. "pubgm"
   nameEn       String
   imageUrl     String?

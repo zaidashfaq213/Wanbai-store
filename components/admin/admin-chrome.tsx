@@ -47,6 +47,7 @@ const ICONS: Record<string, typeof GridIcon> = {
   reengagement: BellIcon,
   profile: LockIcon,
   gameapi: BoltIcon,
+  apiProviders: LockIcon,
   gsmCategories: PhoneIcon,
   gsmServices: PhoneIcon,
   gsmOrders: PhoneIcon,
@@ -98,6 +99,7 @@ export function AdminChrome({
     { key: "staff", href: `${base}/staff` },
     { key: "reengagement", href: `${base}/reengagement` },
     { key: "gameapi", href: `${base}/gameapi` },
+    { key: "apiProviders", href: `${base}/api-providers` },
     { key: "settings", href: `${base}/settings` },
     { key: "profile", href: `${base}/profile` },
   ];
