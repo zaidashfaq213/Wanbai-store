@@ -80,6 +80,21 @@ export async function recordProviderError(message: string): Promise<void> {
   }
 }
 
+/** Same as recordProviderError, but for any provider by id — used by the
+ * generic multi-provider browsing code (generic-provider.ts), which isn't
+ * necessarily talking to G2Bulk. */
+export async function recordProviderErrorFor(providerId: string, message: string): Promise<void> {
+  try {
+    await prisma.apiProvider.update({
+      where: { id: providerId },
+      data: { lastErrorAt: new Date(), lastErrorMessage: message.slice(0, 2000) },
+    });
+    invalidateProviderCache();
+  } catch {
+    // Never let logging a provider error itself throw.
+  }
+}
+
 export async function recordProviderTest(ok: boolean, message: string): Promise<void> {
   await prisma.apiProvider.update({
     where: { key: G2BULK_PROVIDER_KEY },

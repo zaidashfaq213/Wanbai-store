@@ -785,6 +785,34 @@ model ApiProvider {
   lastErrorMessage String?       @db.Text
   notes            String?       @db.Text
 
+  // --- Generic catalogue browsing config -----------------------------------
+  // Lets the "Browse & Create" page (lib/gameapi/generic-provider.ts, one
+  // shared implementation for ANY provider) list this provider's products
+  // and denominations from plain field-mapping config instead of bespoke
+  // code — for any provider whose API is a two-step "list of items" then
+  // "list of priced sub-items per item" shape (games→catalogue, products→
+  // variants, tools→plans, ...). Genuinely different shapes (a different
+  // auth flow for placing orders, a non-JSON response, GraphQL, ...) still
+  // need a real adapter; this only covers the read-only listing/mapping
+  // step, which is the part that's actually generalizable.
+  //
+  // Dot-paths address nested JSON, e.g. "data.items" or "result.games".
+  // Blank itemsPath/catalogueItemsPath means the response body IS the array.
+  listEndpoint         String? // path relative to baseUrl, e.g. "/games"
+  listMethod           String  @default("GET")
+  itemsPath            String?
+  itemIdField          String  @default("code")
+  itemNameField        String  @default("name")
+  itemImageField       String?
+  // {id} in catalogueEndpoint is substituted with each item's id field
+  // value, e.g. "/games/{id}/catalogue".
+  catalogueEndpoint    String?
+  catalogueMethod      String  @default("GET")
+  catalogueItemsPath   String?
+  catalogueIdField     String  @default("id")
+  catalogueNameField   String  @default("name")
+  catalogueAmountField String  @default("amount")
+
   games GameApiGame[]
 
   createdAt DateTime @default(now())

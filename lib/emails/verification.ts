@@ -2,7 +2,7 @@
 // mobile API. A proper HTML document + a balanced plain-text part and a clear
 // transactional subject noticeably improve inbox placement (vs. thin, all-caps
 // snippets which spam filters penalise).
-const BRAND = "WANBI STOER";
+const BRAND = "WANBAI STORE";
 const SUPPORT = "wanbaistoer.tech@gmail.com";
 const NAVY = "#0a2e5c";
 const GOLD = "#e2a025";

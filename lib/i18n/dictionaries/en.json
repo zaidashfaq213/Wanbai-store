@@ -17,7 +17,7 @@
     ]
   },
   "brand": {
-    "name": "Wanbi Stoer",
+    "name": "Wanbai Store",
     "tagline": "Your digital goods destination"
   },
   "header": {
@@ -1093,7 +1093,34 @@
       "testFailed": "Failed",
       "errorLog": "Recent errors",
       "noErrors": "No errors recorded.",
-      "lastError": "Last error"
+      "lastError": "Last error",
+      "browseProducts": "Browse & create products",
+      "browseTitle": "Browse products",
+      "browseSubtitle": "List this provider's products and create them as store products — driven by the config below, no code required for this part. Placing customer orders through this provider still needs a small adapter.",
+      "back": "Back",
+      "configTitle": "Catalogue browsing config",
+      "configHint": "Tell the system how to read this provider's product list and pricing. Dot-paths address nested JSON, e.g. \"data.items\" — leave a path blank if the response body is already the array.",
+      "listEndpoint": "Product list endpoint",
+      "listEndpointPlaceholder": "/products",
+      "listMethod": "Method",
+      "itemsPath": "Items path",
+      "itemIdField": "Item id field",
+      "itemNameField": "Item name field",
+      "itemImageField": "Item image field (optional)",
+      "catalogueSection": "Per-item variants / pricing",
+      "catalogueEndpoint": "Variants endpoint ({id} = item id)",
+      "catalogueEndpointPlaceholder": "/products/{id}/variants",
+      "catalogueMethod": "Method",
+      "catalogueItemsPath": "Variant items path",
+      "catalogueIdField": "Variant id field",
+      "catalogueNameField": "Variant name field",
+      "catalogueAmountField": "Variant price field",
+      "saveConfig": "Save config",
+      "configSaved": "Saved",
+      "notConfiguredYet": "Set the product list endpoint above and save, then sync.",
+      "syncItems": "Sync products now",
+      "syncingItems": "Syncing…",
+      "syncedItems": "Synced {count} products"
     },
     "gsm": {
       "categories": {

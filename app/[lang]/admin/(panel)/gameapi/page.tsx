@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { getSettings } from "@/lib/data/content";
 import { getAdminProducts, getAdminCategories } from "@/lib/data/catalog-db";
 import { getMe, isConfigured } from "@/lib/gameapi/client";
+import { getG2BulkProvider } from "@/lib/gameapi/provider-config";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { GameApiOverview } from "@/components/admin/gameapi-overview";
 
@@ -19,9 +20,17 @@ export default async function AdminGameApiPage({
   const dict = await getDictionary(locale);
   const d = dict.admin.gameapi;
 
+  // Scoped to G2Bulk's own games only — now that GameApiGame can also be
+  // populated by other providers (see /admin/api-providers/[key], the
+  // generic browse page), this page must not show their rows mixed in with
+  // G2Bulk's. Every row synced before that feature existed has providerId
+  // null, so it's included here too (this is a no-op today: every existing
+  // row already belongs to g2bulk).
+  const g2bulkProvider = await getG2BulkProvider();
   const [settings, games, products, categories] = await Promise.all([
     getSettings(),
     prisma.gameApiGame.findMany({
+      where: { OR: [{ providerId: g2bulkProvider.id }, { providerId: null }] },
       orderBy: { nameEn: "asc" },
       include: {
         product: { select: { id: true, nameEn: true, nameAr: true } },

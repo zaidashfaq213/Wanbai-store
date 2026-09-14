@@ -1,18 +1,28 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
+import { redirect } from "next/navigation";
 import { randomBytes } from "crypto";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getAdminUser } from "@/lib/auth/session";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { invalidateProviderCache } from "@/lib/gameapi/provider-config";
+import {
+  syncGenericProviderGames,
+  syncGenericProviderCatalogue,
+  GenericProviderError,
+} from "@/lib/gameapi/generic-provider";
+import { createProductForGame } from "@/lib/gameapi/create-product";
 
 function loc(v: string): Locale {
   return isLocale(v) ? v : defaultLocale;
 }
 function path(locale: Locale) {
   return `/${locale}/admin/api-providers`;
+}
+function providerPath(locale: Locale, key: string) {
+  return `/${locale}/admin/api-providers/${key}`;
 }
 
 export type ApiProviderState = { ok: boolean; code?: string };
@@ -184,4 +194,118 @@ export async function testApiProviderConnection(
   invalidateProviderCache();
   revalidatePath(path(loc(String(formData.get("locale") ?? ""))));
   return { ok, code: message };
+}
+
+// ---------------------------------------------------------------------------
+// Generic catalogue browsing — see lib/gameapi/generic-provider.ts. Config
+// for how to list THIS provider's products and their priced sub-items, kept
+// separate from the connection-credentials form above since it's a distinct
+// concern (and most providers never need more than the fields above).
+// ---------------------------------------------------------------------------
+
+const browseConfigSchema = z.object({
+  listEndpoint: z.string().trim().max(300).optional(),
+  listMethod: z.enum(["GET", "POST"]).default("GET"),
+  itemsPath: z.string().trim().max(200).optional(),
+  itemIdField: z.string().trim().min(1).max(100).default("code"),
+  itemNameField: z.string().trim().min(1).max(100).default("name"),
+  itemImageField: z.string().trim().max(100).optional(),
+  catalogueEndpoint: z.string().trim().max(300).optional(),
+  catalogueMethod: z.enum(["GET", "POST"]).default("GET"),
+  catalogueItemsPath: z.string().trim().max(200).optional(),
+  catalogueIdField: z.string().trim().min(1).max(100).default("id"),
+  catalogueNameField: z.string().trim().min(1).max(100).default("name"),
+  catalogueAmountField: z.string().trim().min(1).max(100).default("amount"),
+});
+
+export async function updateProviderBrowseConfig(
+  _prev: ApiProviderState,
+  formData: FormData,
+): Promise<ApiProviderState> {
+  const admin = await getAdminUser();
+  if (!admin) return { ok: false, code: "requires_auth" };
+  const id = String(formData.get("id") ?? "");
+  const key = String(formData.get("key") ?? "");
+  if (!id) return { ok: false, code: "invalid_input" };
+
+  const parsed = browseConfigSchema.safeParse({
+    listEndpoint: formData.get("listEndpoint") || undefined,
+    listMethod: formData.get("listMethod") || undefined,
+    itemsPath: formData.get("itemsPath") || undefined,
+    itemIdField: formData.get("itemIdField") || undefined,
+    itemNameField: formData.get("itemNameField") || undefined,
+    itemImageField: formData.get("itemImageField") || undefined,
+    catalogueEndpoint: formData.get("catalogueEndpoint") || undefined,
+    catalogueMethod: formData.get("catalogueMethod") || undefined,
+    catalogueItemsPath: formData.get("catalogueItemsPath") || undefined,
+    catalogueIdField: formData.get("catalogueIdField") || undefined,
+    catalogueNameField: formData.get("catalogueNameField") || undefined,
+    catalogueAmountField: formData.get("catalogueAmountField") || undefined,
+  });
+  if (!parsed.success) return { ok: false, code: "invalid_input" };
+
+  await prisma.apiProvider.update({ where: { id }, data: parsed.data });
+  invalidateProviderCache();
+  revalidatePath(providerPath(loc(String(formData.get("locale") ?? "")), key));
+  return { ok: true, code: "saved" };
+}
+
+export type GenericSyncState = { ok: boolean; code?: string; count?: number };
+
+export async function syncProviderGamesAction(
+  _prev: GenericSyncState,
+  formData: FormData,
+): Promise<GenericSyncState> {
+  const admin = await getAdminUser();
+  if (!admin) return { ok: false, code: "requires_auth" };
+  const providerId = String(formData.get("providerId") ?? "");
+  const key = String(formData.get("key") ?? "");
+  if (!providerId) return { ok: false, code: "invalid_input" };
+
+  try {
+    const count = await syncGenericProviderGames(providerId);
+    revalidatePath(providerPath(loc(String(formData.get("locale") ?? "")), key));
+    return { ok: true, code: "synced", count };
+  } catch (e) {
+    return { ok: false, code: e instanceof GenericProviderError ? e.message : "server_error" };
+  }
+}
+
+export async function syncProviderCatalogueAction(formData: FormData) {
+  const admin = await getAdminUser();
+  if (!admin) return;
+  const gameId = String(formData.get("gameId") ?? "");
+  const key = String(formData.get("key") ?? "");
+  if (!gameId) return;
+  try {
+    await syncGenericProviderCatalogue(gameId);
+  } catch (e) {
+    console.error("[syncProviderCatalogueAction] failed:", e);
+  }
+  revalidatePath(providerPath(loc(String(formData.get("locale") ?? "")), key));
+}
+
+// Same as lib/actions/gameapi.ts's createProductFromGame, just revalidating
+// this provider's own page instead of /admin/gameapi — createProductForGame
+// itself already doesn't care which provider synced the game.
+export async function createProductFromProviderGame(
+  _prev: GenericSyncState,
+  formData: FormData,
+): Promise<GenericSyncState> {
+  const admin = await getAdminUser();
+  if (!admin) return { ok: false, code: "requires_auth" };
+  const gameId = String(formData.get("gameId") ?? "");
+  const categoryId = String(formData.get("categoryId") ?? "");
+  const key = String(formData.get("key") ?? "");
+  const locale = loc(String(formData.get("locale") ?? ""));
+  if (!gameId || !categoryId) return { ok: false, code: "invalid_input" };
+
+  const result = await createProductForGame(gameId, categoryId);
+  updateTag("products");
+  revalidatePath(providerPath(locale, key));
+  if (!result.ok) {
+    console.error("[createProductFromProviderGame] failed:", result.reason);
+    return { ok: false, code: result.reason };
+  }
+  redirect(`/${locale}/admin/products/${result.productId}`);
 }

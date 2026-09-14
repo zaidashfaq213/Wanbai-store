@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/db";
 import { listGames, getCatalogue } from "./client";
+import { getG2BulkProvider } from "./provider-config";
 
 /** Pull the full game list from the provider and upsert it into GameApiGame.
  * Never deletes a locally-mapped game the provider stops listing — it just
@@ -11,14 +12,20 @@ export async function syncGames(): Promise<number> {
   // Same defensive fallback as syncCatalogue below — don't trust the
   // provider's response to always match its declared type.
   const list = games ?? [];
+  // Tags every row as g2bulk's — matters now that GameApiGame can also be
+  // populated by other providers (see /admin/api-providers/[key]), so their
+  // rows never get mixed into this same, code-unique table without a clear
+  // owner.
+  const provider = await getG2BulkProvider();
   for (const g of list) {
     await prisma.gameApiGame.upsert({
       where: { code: g.code },
-      update: { nameEn: g.name, imageUrl: g.image_url, lastSyncedAt: new Date() },
+      update: { nameEn: g.name, imageUrl: g.image_url, providerId: provider.id, lastSyncedAt: new Date() },
       create: {
         code: g.code,
         nameEn: g.name,
         imageUrl: g.image_url,
+        providerId: provider.id,
         lastSyncedAt: new Date(),
       },
     });

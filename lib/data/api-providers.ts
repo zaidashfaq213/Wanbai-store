@@ -13,6 +13,40 @@ export async function getAllApiProviders() {
   });
 }
 
+export async function getApiProviderByKey(key: string) {
+  return prisma.apiProvider.findUnique({ where: { key } });
+}
+
+// Games/products synced under one provider — powers the generic "Browse &
+// Create" page (lib/gameapi/generic-provider.ts populates these rows).
+export async function getProviderGames(providerId: string) {
+  return prisma.gameApiGame.findMany({
+    where: { providerId },
+    orderBy: { nameEn: "asc" },
+    include: {
+      product: { select: { id: true, nameEn: true, nameAr: true } },
+      _count: { select: { catalogues: true } },
+    },
+  });
+}
+
+export async function getProviderGameDetail(gameId: string) {
+  return prisma.gameApiGame.findUnique({
+    where: { id: gameId },
+    include: {
+      catalogues: { orderBy: { amount: "asc" }, include: { package: true } },
+      product: {
+        include: {
+          variantGroups: {
+            orderBy: { sortOrder: "asc" },
+            include: { packages: { orderBy: { sortOrder: "asc" } } },
+          },
+        },
+      },
+    },
+  });
+}
+
 export async function getApiProviderErrorLog(providerId: string, take = 10) {
   // Recent FAILED provider orders for games under this provider — the
   // per-order detail (GameApiOrder.errorMessage) alongside the provider-

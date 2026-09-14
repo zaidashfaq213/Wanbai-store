@@ -3,7 +3,7 @@
 // never emails a customer twice (see Order.notifiedStatus in the schema).
 import { SITE_URL } from "@/lib/seo";
 
-const BRAND = "WANBI STOER";
+const BRAND = "WANBAI STORE";
 const NAVY = "#0a2e5c";
 const GOLD = "#e2a025";
 

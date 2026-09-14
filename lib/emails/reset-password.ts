@@ -2,7 +2,7 @@
 // the mobile REST API (app/api/v1/auth/forgot). Used to be two separately
 // hand-written, drifted copies (the mobile one had no locale support and
 // thinner copy) — unified here so both always look and read the same.
-const BRAND = "WANBI STOER";
+const BRAND = "WANBAI STORE";
 const NAVY = "#0a2e5c";
 const GOLD = "#e2a025";
 

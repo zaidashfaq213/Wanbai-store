@@ -40,6 +40,23 @@ export function GsmServiceCreateForm({
       )}
 
       <div className="grid gap-3 sm:grid-cols-2">
+        {/* Product name comes first — the admin names the product before
+            anything else about it (slug, category, price...). */}
+        <label className="flex flex-col gap-1">
+          <span className="text-xs font-semibold text-muted">{dict.nameEn}</span>
+          <input
+            name="nameEn"
+            required
+            className={FIELD}
+            onChange={(e) => {
+              if (!slugTouched) setSlug(slugify(e.target.value));
+            }}
+          />
+        </label>
+        <label className="flex flex-col gap-1">
+          <span className="text-xs font-semibold text-muted">{dict.nameAr}</span>
+          <input name="nameAr" required dir="rtl" className={FIELD} />
+        </label>
         <label className="flex flex-col gap-1">
           <span className="text-xs font-semibold text-muted">{dict.slug}</span>
           <input
@@ -62,21 +79,6 @@ export function GsmServiceCreateForm({
               <option key={c.id} value={c.id}>{c.label}</option>
             ))}
           </select>
-        </label>
-        <label className="flex flex-col gap-1">
-          <span className="text-xs font-semibold text-muted">{dict.nameEn}</span>
-          <input
-            name="nameEn"
-            required
-            className={FIELD}
-            onChange={(e) => {
-              if (!slugTouched) setSlug(slugify(e.target.value));
-            }}
-          />
-        </label>
-        <label className="flex flex-col gap-1">
-          <span className="text-xs font-semibold text-muted">{dict.nameAr}</span>
-          <input name="nameAr" required dir="rtl" className={FIELD} />
         </label>
         <label className="flex flex-col gap-1">
           <span className="text-xs font-semibold text-muted">{dict.priceUsd}</span>

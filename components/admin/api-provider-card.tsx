@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import Link from "next/link";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
 import {
@@ -94,9 +95,15 @@ export function ApiProviderCard({
       </div>
 
       {!isBuiltIn && (
-        <p className="rounded-xl bg-amber-500/10 px-3 py-2 text-xs font-medium text-amber-600">
-          {dict.notIntegrated}
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-amber-500/10 px-3 py-2 text-xs font-medium text-amber-600">
+          <span>{dict.notIntegrated}</span>
+          <Link
+            href={`/${locale}/admin/api-providers/${provider.key}`}
+            className="shrink-0 rounded-lg bg-amber-500/20 px-2.5 py-1 font-bold hover:bg-amber-500/30"
+          >
+            {dict.browseProducts}
+          </Link>
+        </div>
       )}
 
       <form action={action} className="flex flex-col gap-3">
