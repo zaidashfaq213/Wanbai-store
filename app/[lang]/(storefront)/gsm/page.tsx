@@ -2,12 +2,34 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
-import { getGsmCategories } from "@/lib/data/gsm";
-import { cn, fmt } from "@/lib/utils";
+import { getGsmCategoriesWithServices } from "@/lib/data/gsm";
+import { formatUsd, fmt, cn } from "@/lib/utils";
 import { Container } from "@/components/ui/container";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
-import { ArrowIcon, BoltIcon, ShieldIcon, SupportIcon } from "@/components/ui/icons";
+import { BoltIcon, ClockIcon, ShieldIcon, SupportIcon } from "@/components/ui/icons";
 import { abs } from "@/lib/seo";
+
+// Same "brand tile" look as a reseller panel: a small initials badge per
+// category (e.g. "TM" for TMT Pro Tool) shown to the left of every one of
+// its services, colour picked deterministically from the category slug so
+// it's stable across renders/locales.
+const TINTS = [
+  "from-sky-500 to-blue-600",
+  "from-emerald-500 to-teal-600",
+  "from-fuchsia-500 to-purple-600",
+  "from-amber-500 to-orange-600",
+  "from-rose-500 to-pink-600",
+  "from-violet-500 to-indigo-600",
+];
+function tintFor(slug: string) {
+  let h = 0;
+  for (const ch of slug) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return TINTS[h % TINTS.length];
+}
+function initialsFor(name: string) {
+  const letters = name.replace(/[^A-Za-z؀-ۿ]/g, "");
+  return (letters.slice(0, 2) || name.slice(0, 2)).toUpperCase();
+}
 
 export async function generateMetadata({
   params,
@@ -24,21 +46,11 @@ export async function generateMetadata({
   };
 }
 
-const CARD_TINTS = [
-  "from-sky-500/15 to-sky-500/5 text-sky-500",
-  "from-violet-500/15 to-violet-500/5 text-violet-500",
-  "from-amber-500/15 to-amber-500/5 text-amber-500",
-  "from-emerald-500/15 to-emerald-500/5 text-emerald-500",
-  "from-fuchsia-500/15 to-fuchsia-500/5 text-fuchsia-500",
-  "from-rose-500/15 to-rose-500/5 text-rose-500",
-];
-
-function tintFor(slug: string) {
-  let h = 0;
-  for (const ch of slug) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
-  return CARD_TINTS[h % CARD_TINTS.length];
-}
-
+// Every category is rendered on this one page — its name as a section
+// heading, its services listed directly underneath — rather than a grid of
+// category tiles that each link out to their own page. Matches how a
+// reseller-panel catalogue is usually laid out: one continuous scroll,
+// grouped by category.
 export default async function GsmLandingPage({
   params,
 }: {
@@ -46,9 +58,9 @@ export default async function GsmLandingPage({
 }) {
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const [dict, categories] = await Promise.all([getDictionary(locale), getGsmCategories()]);
+  const [dict, categories] = await Promise.all([getDictionary(locale), getGsmCategoriesWithServices()]);
   const g = dict.gsm;
-  const totalServices = categories.reduce((n, c) => n + c._count.services, 0);
+  const totalServices = categories.reduce((n, c) => n + c.services.length, 0);
 
   const trust = [
     { Icon: ShieldIcon, label: g.trustSecure },
@@ -98,36 +110,72 @@ export default async function GsmLandingPage({
           {g.noCategories}
         </div>
       ) : (
-        <>
-          <h2 className="mb-4 text-lg font-extrabold">{g.categoriesTitle}</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {categories.map((c) => {
-              const tint = tintFor(c.slug);
-              return (
-                <Link
-                  key={c.slug}
-                  href={`/${locale}/gsm/${c.slug}`}
-                  className="group relative overflow-hidden rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)] transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-[var(--shadow-pop)]"
-                >
-                  <div
-                    className={cn(
-                      "grid size-14 place-items-center rounded-2xl bg-gradient-to-br text-3xl shadow-sm transition-transform group-hover:scale-110",
-                      tint,
-                    )}
-                  >
-                    {c.icon}
-                  </div>
-                  <h3 className="mt-4 text-lg font-extrabold">{locale === "ar" ? c.nameAr : c.nameEn}</h3>
-                  <p className="mt-0.5 text-sm text-muted">{fmt(g.servicesCount, { count: c._count.services })}</p>
-                  <span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary">
-                    {g.orderNow}
-                    <ArrowIcon className="size-4 transition-transform group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
+        <div className="flex flex-col gap-10">
+          {categories.map((cat) => {
+            const catName = locale === "ar" ? cat.nameAr : cat.nameEn;
+            const tint = tintFor(cat.slug);
+            const initials = initialsFor(catName);
+            return (
+              <section key={cat.slug} id={cat.slug}>
+                <div className="mb-4 flex items-center gap-3">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 text-2xl shadow-sm">
+                    {cat.icon}
                   </span>
-                </Link>
-              );
-            })}
-          </div>
-        </>
+                  <div>
+                    <h2 className="text-lg font-extrabold">{catName}</h2>
+                    <p className="text-xs font-bold text-muted">
+                      {fmt(g.servicesCount, { count: cat.services.length })}
+                    </p>
+                  </div>
+                </div>
+
+                {cat.services.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-border bg-surface p-8 text-center text-sm text-muted">
+                    {g.noServices}
+                  </div>
+                ) : (
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {cat.services.map((svc) => {
+                      const svcName = locale === "ar" ? svc.nameAr : svc.nameEn;
+                      const processingTime = locale === "ar" ? svc.processingTimeAr : svc.processingTimeEn;
+                      return (
+                        <Link
+                          key={svc.slug}
+                          href={`/${locale}/gsm/${cat.slug}/${svc.slug}`}
+                          className="group flex items-start gap-3 rounded-2xl border border-border bg-surface p-4 shadow-[var(--shadow-card)] transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-[var(--shadow-pop)]"
+                        >
+                          <span
+                            className={cn(
+                              "grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br text-sm font-black text-white shadow-sm",
+                              tint,
+                            )}
+                          >
+                            {initials}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="text-sm font-extrabold leading-tight">{svcName}</h3>
+                            <p className="mt-0.5 truncate text-xs text-muted">{catName}</p>
+                            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                              <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-black text-emerald-500">
+                                {formatUsd(svc.price, locale)}
+                              </span>
+                              {processingTime && (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-bold text-amber-600">
+                                  <ClockIcon className="size-3" />
+                                  {processingTime}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            );
+          })}
+        </div>
       )}
     </Container>
   );

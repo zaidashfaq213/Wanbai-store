@@ -12,6 +12,18 @@ export const getGsmCategories = cache(async () => {
   });
 });
 
+// Everything the GSM landing page needs to render every category's services
+// inline on one page (category heading, then its service cards, repeated) —
+// unlike getGsmCategories() above, which only carries a services count for
+// the "browse by category" tiles.
+export const getGsmCategoriesWithServices = cache(async () => {
+  return prisma.gsmCategory.findMany({
+    where: { active: true },
+    orderBy: { sortOrder: "asc" },
+    include: { services: { where: { active: true }, orderBy: { sortOrder: "asc" } } },
+  });
+});
+
 export const getGsmCategoryBySlug = cache(async (slug: string) => {
   return prisma.gsmCategory.findFirst({
     where: { slug, active: true },
