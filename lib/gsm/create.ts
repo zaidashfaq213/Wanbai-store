@@ -17,21 +17,35 @@ export type CreateGsmOrderResult =
 
 export async function createGsmOrderForUser(
   user: { id: string; email: string },
-  input: { locale: string; serviceId: string; formData: FormData },
+  input: { locale: string; serviceId: string; variantId?: string; formData: FormData },
 ): Promise<CreateGsmOrderResult> {
   const { locale, serviceId, formData } = input;
 
   const service = await prisma.gsmService.findFirst({
     where: { id: serviceId, active: true },
-    include: { fields: true, category: { select: { nameEn: true, nameAr: true } } },
+    include: {
+      fields: true,
+      category: { select: { nameEn: true, nameAr: true } },
+      variants: { where: { active: true } },
+    },
   });
   if (!service) return { ok: false, code: "not_found" };
+
+  // A service with products (variants) must be ordered through one of them —
+  // its own `price` isn't sellable directly anymore once it has any. A
+  // service with none keeps selling at its own price exactly as before.
+  let variant: { id: string; nameEn: string; nameAr: string; price: number } | null = null;
+  if (service.variants.length > 0) {
+    variant = service.variants.find((v) => v.id === input.variantId) ?? null;
+    if (!variant) return { ok: false, code: "invalid_input" };
+  }
+  const price = variant ? variant.price : service.price;
 
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
     select: { gsmWalletBalance: true },
   });
-  if (!dbUser || dbUser.gsmWalletBalance < service.price) {
+  if (!dbUser || dbUser.gsmWalletBalance < price) {
     return { ok: false, code: "insufficient_funds" };
   }
 
@@ -58,6 +72,10 @@ export async function createGsmOrderForUser(
   const ref = `GSM-${randomBytes(4).toString("hex").toUpperCase()}`;
   const categoryName = locale === "ar" ? service.category.nameAr : service.category.nameEn;
   const serviceName = locale === "ar" ? service.nameAr : service.nameEn;
+  const variantName = variant ? (locale === "ar" ? variant.nameAr : variant.nameEn) : null;
+  // What shows in notifications/emails — includes the product name when one
+  // was picked, e.g. "IMEI Service — Honor".
+  const displayName = variantName ? `${serviceName} — ${variantName}` : serviceName;
 
   let orderId: string;
   try {
@@ -70,7 +88,9 @@ export async function createGsmOrderForUser(
           serviceId: service.id,
           serviceName,
           categoryName,
-          price: service.price,
+          variantId: variant?.id,
+          variantName,
+          price,
           currency: "USD",
           locale,
           status: "PAID",
@@ -87,12 +107,12 @@ export async function createGsmOrderForUser(
       });
       await tx.user.update({
         where: { id: user.id },
-        data: { gsmWalletBalance: { decrement: service.price } },
+        data: { gsmWalletBalance: { decrement: price } },
       });
       await tx.gsmWalletTransaction.create({
         data: {
           userId: user.id,
-          amount: -service.price,
+          amount: -price,
           type: "PURCHASE",
           description: `GSM order ${ref}`,
           gsmOrderId: created.id,
@@ -103,7 +123,7 @@ export async function createGsmOrderForUser(
           userId: user.id,
           type: "ORDER",
           title: `GSM order ${ref} paid`,
-          body: `${serviceName} — we're reviewing it now.`,
+          body: `${displayName} — we're reviewing it now.`,
           href: "/dashboard/gsm-orders",
         },
       });
@@ -116,10 +136,10 @@ export async function createGsmOrderForUser(
   }
 
   await notifyGsmOrderStatus(orderId, "PAID");
-  void notifyNewGsmOrder({ ref, serviceName, totalCents: service.price, email: user.email });
+  void notifyNewGsmOrder({ ref, serviceName: displayName, totalCents: price, email: user.email });
   void notifyUser(user.id, {
     title: `GSM order ${ref} paid`,
-    body: `${serviceName} — we're reviewing it now.`,
+    body: `${displayName} — we're reviewing it now.`,
     href: "/dashboard/gsm-orders",
   });
   return { ok: true, ref };

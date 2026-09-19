@@ -61,6 +61,34 @@ export default async function GsmServicePage({
     ...(requirements ? [{ title: g.requirements, content: requirements }] : []),
   ];
 
+  const hasVariants = svc.variants.length > 0;
+  const variants = svc.variants.map((v) => ({
+    id: v.id,
+    name: locale === "ar" ? v.nameAr : v.nameEn,
+    priceCents: v.price,
+  }));
+  const fromPrice = hasVariants ? Math.min(...svc.variants.map((v) => v.price)) : svc.price;
+
+  const orderForm = (
+    <GsmOrderForm
+      locale={locale}
+      dict={dict}
+      serviceId={svc.id}
+      priceCents={svc.price}
+      variants={hasVariants ? variants : undefined}
+      isAuthed={Boolean(user)}
+      walletBalanceCents={walletBalanceCents}
+      fields={svc.fields.map((f) => ({
+        id: f.id,
+        key: f.key,
+        label: locale === "ar" ? f.labelAr : f.labelEn,
+        placeholder: locale === "ar" ? f.placeholderAr : f.placeholderEn,
+        kind: f.kind,
+        required: f.required,
+      }))}
+    />
+  );
+
   return (
     <Container className="py-6 sm:py-8">
       <JsonLd
@@ -71,7 +99,7 @@ export default async function GsmServicePage({
             slug: svc.slug,
             categorySlug: category,
             locale,
-            priceUsd: svc.price / 100,
+            priceUsd: fromPrice / 100,
             brandName: dict.brand.name,
           }),
           breadcrumbLd([
@@ -91,21 +119,26 @@ export default async function GsmServicePage({
         ]}
       />
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_22rem]">
-        <div className="flex flex-col gap-5">
-          <header className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-surface to-surface p-6 sm:p-8">
-            <div aria-hidden className="pointer-events-none absolute -top-10 text-8xl opacity-[0.08] ltr:-right-4 rtl:-left-4">
-              {svc.category.icon}
-            </div>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
-              {svc.category.icon} {categoryName}
-            </span>
-            <h1 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">{name}</h1>
-            <p className="mt-3 text-3xl font-black text-primary">
-              {formatUsd(svc.price, locale)}
-            </p>
-          </header>
+      {/* Name at the top, always — its products (if any) come immediately
+          after it, full width, rather than tucked into a side column, so a
+          service with several priced options reads clearly as "this is the
+          service, here's what's under it" instead of a bare price. */}
+      <header className="relative mb-5 overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-surface to-surface p-6 sm:p-8">
+        <div aria-hidden className="pointer-events-none absolute -top-10 text-8xl opacity-[0.08] ltr:-right-4 rtl:-left-4">
+          {svc.category.icon}
+        </div>
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+          {svc.category.icon} {categoryName}
+        </span>
+        <h1 className="mt-3 text-2xl font-black leading-tight sm:text-3xl">{name}</h1>
+        <p className="mt-3 text-3xl font-black text-primary">
+          {hasVariants ? `${g.fromPrice} ${formatUsd(fromPrice, locale)}` : formatUsd(svc.price, locale)}
+        </p>
+      </header>
 
+      {hasVariants ? (
+        <div className="flex flex-col gap-5">
+          {orderForm}
           <div className="grid grid-cols-3 gap-2">
             {[
               { Icon: ClockIcon, label: processingTime || "—" },
@@ -121,29 +154,31 @@ export default async function GsmServicePage({
               </div>
             ))}
           </div>
-
           {accordionItems.length > 0 && <Accordion items={accordionItems} />}
         </div>
-
-        <div className="lg:sticky lg:top-24 lg:self-start">
-          <GsmOrderForm
-            locale={locale}
-            dict={dict}
-            serviceId={svc.id}
-            priceCents={svc.price}
-            isAuthed={Boolean(user)}
-            walletBalanceCents={walletBalanceCents}
-            fields={svc.fields.map((f) => ({
-              id: f.id,
-              key: f.key,
-              label: locale === "ar" ? f.labelAr : f.labelEn,
-              placeholder: locale === "ar" ? f.placeholderAr : f.placeholderEn,
-              kind: f.kind,
-              required: f.required,
-            }))}
-          />
+      ) : (
+        <div className="grid gap-8 lg:grid-cols-[1fr_22rem]">
+          <div className="flex flex-col gap-5">
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { Icon: ClockIcon, label: processingTime || "—" },
+                { Icon: ShieldIcon, label: g.trustSecure },
+                { Icon: SupportIcon, label: g.trustSupport },
+              ].map(({ Icon, label }, i) => (
+                <div
+                  key={i}
+                  className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-surface p-3 text-center"
+                >
+                  <Icon className="size-5 text-primary" />
+                  <span className="text-[11px] font-bold leading-tight">{label}</span>
+                </div>
+              ))}
+            </div>
+            {accordionItems.length > 0 && <Accordion items={accordionItems} />}
+          </div>
+          <div className="lg:sticky lg:top-24 lg:self-start">{orderForm}</div>
         </div>
-      </div>
+      )}
     </Container>
   );
 }

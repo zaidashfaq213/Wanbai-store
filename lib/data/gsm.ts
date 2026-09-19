@@ -20,7 +20,13 @@ export const getGsmCategoriesWithServices = cache(async () => {
   return prisma.gsmCategory.findMany({
     where: { active: true },
     orderBy: { sortOrder: "asc" },
-    include: { services: { where: { active: true }, orderBy: { sortOrder: "asc" } } },
+    include: {
+      services: {
+        where: { active: true },
+        orderBy: { sortOrder: "asc" },
+        include: { variants: { where: { active: true }, select: { price: true } } },
+      },
+    },
   });
 });
 
@@ -28,7 +34,11 @@ export const getGsmCategoryBySlug = cache(async (slug: string) => {
   return prisma.gsmCategory.findFirst({
     where: { slug, active: true },
     include: {
-      services: { where: { active: true }, orderBy: { sortOrder: "asc" } },
+      services: {
+        where: { active: true },
+        orderBy: { sortOrder: "asc" },
+        include: { variants: { where: { active: true }, select: { price: true } } },
+      },
     },
   });
 });
@@ -50,6 +60,7 @@ export const getGsmServiceBySlug = cache(async (slug: string) => {
     include: {
       category: true,
       fields: { orderBy: { sortOrder: "asc" } },
+      variants: { where: { active: true }, orderBy: { sortOrder: "asc" } },
     },
   });
 });
@@ -97,7 +108,11 @@ export function getAdminGsmServices() {
 export function getAdminGsmService(id: string) {
   return prisma.gsmService.findUnique({
     where: { id },
-    include: { fields: { orderBy: { sortOrder: "asc" } }, category: true },
+    include: {
+      fields: { orderBy: { sortOrder: "asc" } },
+      variants: { orderBy: { sortOrder: "asc" } },
+      category: true,
+    },
   });
 }
 

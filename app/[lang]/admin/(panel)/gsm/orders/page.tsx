@@ -88,7 +88,10 @@ export default async function AdminGsmOrdersPage({
                 <tr key={order.id} className="border-b border-border last:border-0">
                   <td className="p-3 font-bold">{order.ref}</td>
                   <td className="p-3 text-muted">{order.user?.name ?? order.email}</td>
-                  <td className="p-3">{order.serviceName}</td>
+                  <td className="p-3">
+                    {order.serviceName}
+                    {order.variantName && <span className="text-muted"> — {order.variantName}</span>}
+                  </td>
                   <td className="p-3 font-semibold">{formatUsd(order.price, locale)}</td>
                   <td className="p-3">
                     <span className={cn("rounded-full px-2.5 py-1 text-xs font-bold", STATUS_STYLES[order.status])}>

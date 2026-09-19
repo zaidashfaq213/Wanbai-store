@@ -26,6 +26,7 @@ export type GsmOrderView = {
   ref: string;
   status: GsmOrderStatus;
   serviceName: string;
+  variantName: string | null;
   price: string;
   createdAt: string;
   fieldAnswers: Array<{ label: string; value: string }>;
@@ -52,7 +53,10 @@ export function GsmOrderDetailView({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <p className="text-lg font-black">{order.ref}</p>
-            <p className="text-sm text-muted">{order.serviceName}</p>
+            <p className="text-sm text-muted">
+              {order.serviceName}
+              {order.variantName && ` — ${order.variantName}`}
+            </p>
           </div>
           <span className={cn("rounded-full px-3 py-1.5 text-sm font-bold", STATUS_STYLES[order.status])}>
             {dict.statusLabels[order.status]}

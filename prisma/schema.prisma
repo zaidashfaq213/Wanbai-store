@@ -924,14 +924,39 @@ model GsmService {
   active           Boolean @default(true)
   sortOrder        Int     @default(0)
 
-  category GsmCategory       @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  category GsmCategory         @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   fields   GsmServiceField[]
   orders   GsmOrder[]
+  // Optional priced sub-items under this service (e.g. "IMEI Service" →
+  // Honor/Samsung/iPhone, each its own price) — same idea as Product →
+  // Package. A service with zero variants still sells directly at its own
+  // `price` above exactly as before; this is purely additive so every
+  // existing service keeps working unchanged. When a service DOES have
+  // variants, checkout requires picking one and its price is used instead.
+  variants GsmServiceVariant[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([categoryId])
+}
+
+model GsmServiceVariant {
+  id        String  @id @default(cuid())
+  serviceId String
+  nameEn    String
+  nameAr    String
+  price     Int // cents, same convention as GsmService.price
+  active    Boolean @default(true)
+  sortOrder Int     @default(0)
+
+  service GsmService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  orders  GsmOrder[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([serviceId])
 }
 
 // Dynamic per-service checkout fields — same idea as ProductInput, plus a
@@ -983,6 +1008,11 @@ model GsmOrder {
   currency     String @default("USD")
   locale       String @default("ar")
 
+  // Set only when the service had a picked variant (see GsmServiceVariant) —
+  // null for the (still fully supported) flat, no-variant services.
+  variantId   String?
+  variantName String?
+
   status         GsmOrderStatus  @default(PENDING)
   notifiedStatus GsmOrderStatus?
 
@@ -993,6 +1023,7 @@ model GsmOrder {
 
   user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
   service    GsmService             @relation(fields: [serviceId], references: [id], onDelete: Restrict)
+  variant    GsmServiceVariant?     @relation(fields: [variantId], references: [id], onDelete: SetNull)
   files      GsmOrderFile[]
   notes      GsmOrderNote[]
   walletTxns GsmWalletTransaction[]

@@ -7,6 +7,7 @@ import { getAdminGsmService, getAdminGsmCategories } from "@/lib/data/gsm";
 import { PageHeader } from "@/components/dashboard/page-header";
 import { GsmServiceEditForm } from "@/components/admin/gsm-service-edit-form";
 import { GsmServiceFieldsEditor } from "@/components/admin/gsm-service-fields-editor";
+import { GsmServiceVariantsEditor } from "@/components/admin/gsm-service-variants-editor";
 
 export default async function EditGsmServicePage({
   params,
@@ -53,6 +54,19 @@ export default async function EditGsmServicePage({
           processingTimeAr: service.processingTimeAr,
           active: service.active,
         }}
+      />
+      <GsmServiceVariantsEditor
+        locale={locale}
+        dict={s.variants}
+        confirm={dict.admin.confirm}
+        serviceId={service.id}
+        variants={service.variants.map((v) => ({
+          id: v.id,
+          nameEn: v.nameEn,
+          nameAr: v.nameAr,
+          priceUsd: v.price / 100,
+          active: v.active,
+        }))}
       />
       <GsmServiceFieldsEditor
         locale={locale}

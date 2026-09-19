@@ -32,6 +32,7 @@ export type GsmOrderDetailData = {
   ref: string;
   status: GsmOrderStatus;
   serviceName: string;
+  variantName: string | null;
   categoryName: string;
   price: string;
   createdAt: string;
@@ -118,7 +119,7 @@ export function GsmOrderDetail({
           </span>
         </div>
         <div className="mt-3 grid gap-2 border-t border-border pt-3 text-sm sm:grid-cols-3">
-          <p><span className="text-muted">{dict.service}:</span> <span className="font-semibold">{order.serviceName}</span></p>
+          <p><span className="text-muted">{dict.service}:</span> <span className="font-semibold">{order.serviceName}{order.variantName ? ` — ${order.variantName}` : ""}</span></p>
           <p><span className="text-muted">{dict.price}:</span> <span className="font-semibold">{order.price}</span></p>
           <p><span className="text-muted">{dict.date}:</span> <span className="font-semibold">{order.createdAt}</span></p>
         </div>

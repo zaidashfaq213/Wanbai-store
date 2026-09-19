@@ -219,6 +219,77 @@ export async function deleteGsmService(formData: FormData) {
   redirect(`/${locale}/admin/gsm/services`);
 }
 
+// --- Service variants (optional priced sub-items, e.g. Honor/Samsung under
+// "IMEI Service") — same idea as Package under a store Product. A service
+// with zero variants keeps selling directly at its own price, unchanged. ---
+
+const variantSchema = z.object({
+  id: z.string().min(1),
+  nameEn: z.string().trim().min(1).max(100),
+  nameAr: z.string().trim().min(1).max(100),
+  priceUsd: z.coerce.number().min(0).max(10_000_000),
+  active: z.boolean(),
+});
+
+export async function addGsmServiceVariant(formData: FormData) {
+  if (!(await requireAdminUser())) return;
+  const serviceId = String(formData.get("serviceId") ?? "");
+  const service = await prisma.gsmService.findUnique({
+    where: { id: serviceId },
+    include: { variants: true },
+  });
+  if (!service) return;
+  await prisma.gsmServiceVariant.create({
+    data: {
+      serviceId,
+      nameEn: "New product",
+      nameAr: "منتج جديد",
+      price: service.price,
+      sortOrder: service.variants.length,
+    },
+  });
+  const locale = loc(String(formData.get("locale") ?? ""));
+  revalidatePath(`/${locale}/admin/gsm/services/${serviceId}`);
+  revalidateGsmStorefront(locale);
+}
+
+export async function updateGsmServiceVariant(
+  _prev: GsmState,
+  formData: FormData,
+): Promise<GsmState> {
+  if (!(await requireAdminUser())) return { ok: false, code: "requires_auth" };
+  const parsed = variantSchema.safeParse({
+    id: formData.get("id"),
+    nameEn: formData.get("nameEn"),
+    nameAr: formData.get("nameAr"),
+    priceUsd: formData.get("priceUsd"),
+    active: formData.get("active") === "on",
+  });
+  if (!parsed.success) return { ok: false, code: "invalid_input" };
+  const { id, priceUsd, ...rest } = parsed.data;
+  try {
+    await prisma.gsmServiceVariant.update({ where: { id }, data: { ...rest, price: cents(priceUsd) } });
+  } catch (err) {
+    console.error("[updateGsmServiceVariant] failed:", err);
+    return { ok: false, code: "server_error" };
+  }
+  const serviceId = String(formData.get("serviceId") ?? "");
+  const locale = loc(String(formData.get("locale") ?? ""));
+  revalidatePath(`/${locale}/admin/gsm/services/${serviceId}`);
+  revalidateGsmStorefront(locale);
+  return { ok: true, code: "saved" };
+}
+
+export async function deleteGsmServiceVariant(formData: FormData) {
+  if (!(await requireAdminUser())) return;
+  const id = String(formData.get("id") ?? "");
+  const serviceId = String(formData.get("serviceId") ?? "");
+  await prisma.gsmServiceVariant.delete({ where: { id } });
+  const locale = loc(String(formData.get("locale") ?? ""));
+  revalidatePath(`/${locale}/admin/gsm/services/${serviceId}`);
+  revalidateGsmStorefront(locale);
+}
+
 // --- Service fields (dynamic checkout fields, incl. file uploads) ----------
 
 const fieldSchema = z.object({

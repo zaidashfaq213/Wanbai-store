@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/dictionaries";
@@ -17,6 +17,8 @@ export type GsmField = {
   required: boolean;
 };
 
+export type GsmVariant = { id: string; name: string; priceCents: number };
+
 const FIELD =
   "h-11 w-full rounded-xl border border-border bg-surface-2 px-3 text-sm outline-none transition-colors placeholder:text-muted focus:border-primary/50 focus:bg-surface";
 
@@ -25,6 +27,7 @@ export function GsmOrderForm({
   dict,
   serviceId,
   priceCents,
+  variants,
   fields,
   isAuthed,
   walletBalanceCents,
@@ -32,7 +35,13 @@ export function GsmOrderForm({
   locale: Locale;
   dict: Dictionary;
   serviceId: string;
+  /** The service's own flat price — only actually charged when `variants` is
+   * empty. Ignored once the service has products to choose from. */
   priceCents: number;
+  /** Optional priced products under this service (see GsmServiceVariant) —
+   * when present, the customer must pick one and its price is charged
+   * instead of `priceCents`. */
+  variants?: GsmVariant[];
   fields: GsmField[];
   isAuthed: boolean;
   /** GSM wallet balance (USD cents) — the separate balance used only for GSM
@@ -42,7 +51,11 @@ export function GsmOrderForm({
   const router = useRouter();
   const g = dict.gsm;
   const [state, action, pending] = useActionState<GsmCheckoutState, FormData>(submitGsmOrder, { ok: false, code: "" });
-  const canAfford = isAuthed && walletBalanceCents >= priceCents;
+  const hasVariants = Boolean(variants && variants.length > 0);
+  const [selectedVariantId, setSelectedVariantId] = useState(hasVariants ? variants![0].id : "");
+  const selectedVariant = hasVariants ? variants!.find((v) => v.id === selectedVariantId) : undefined;
+  const effectivePrice = hasVariants ? (selectedVariant?.priceCents ?? 0) : priceCents;
+  const canAfford = isAuthed && walletBalanceCents >= effectivePrice;
 
   function errorFor(code: string) {
     const map = g.errors as Record<string, string>;
@@ -92,11 +105,41 @@ export function GsmOrderForm({
     <form action={action} className="flex flex-col gap-4 rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)]">
       <input type="hidden" name="serviceId" value={serviceId} />
       <input type="hidden" name="locale" value={locale} />
+      {hasVariants && <input type="hidden" name="variantId" value={selectedVariantId} />}
 
       <div>
         <h3 className="font-extrabold">{g.checkoutTitle}</h3>
         <p className="mt-0.5 text-xs text-muted">{g.checkoutSubtitle}</p>
       </div>
+
+      {hasVariants && (
+        <div className="flex flex-col gap-2">
+          <span className="text-xs font-semibold text-muted">{g.chooseProduct}</span>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {variants!.map((v) => {
+              const active = v.id === selectedVariantId;
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => setSelectedVariantId(v.id)}
+                  className={cn(
+                    "flex items-center justify-between gap-2 rounded-xl border p-3 text-start transition-all",
+                    active
+                      ? "border-primary bg-primary/5 ring-2 ring-primary/30"
+                      : "border-border bg-surface hover:border-primary/40",
+                  )}
+                >
+                  <span className="text-sm font-bold">{v.name}</span>
+                  <span className="shrink-0 text-sm font-black text-primary">
+                    {formatUsd(v.priceCents, locale)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {fields.length > 0 && (
         <div className="flex flex-col gap-3">
@@ -126,6 +169,13 @@ export function GsmOrderForm({
               )}
             </label>
           ))}
+        </div>
+      )}
+
+      {hasVariants && (
+        <div className="flex items-center justify-between px-0.5 text-sm">
+          <span className="font-semibold text-muted">{g.priceLabel}</span>
+          <span className="font-black text-primary">{formatUsd(effectivePrice, locale)}</span>
         </div>
       )}
 

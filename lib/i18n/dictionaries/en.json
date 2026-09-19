@@ -1191,6 +1191,19 @@
           "required": "Required",
           "save": "Add field",
           "delete": "Delete"
+        },
+        "variants": {
+          "title": "Products",
+          "subtitle": "Optional — add priced products under this service (e.g. Honor / Samsung / iPhone under \"IMEI Service\"), each with its own price. Leave empty to keep selling this service directly at its own price above.",
+          "none": "No products yet — this service sells directly at its own price.",
+          "add": "Add product",
+          "nameEn": "Name (English)",
+          "nameAr": "Name (Arabic)",
+          "priceUsd": "Price (USD)",
+          "availability": "Availability",
+          "active": "Active",
+          "inactive": "Hidden",
+          "save": "Save"
         }
       },
       "orders": {
@@ -1396,6 +1409,8 @@
     "servicesIn": "Services",
     "noServices": "No services in this category yet.",
     "priceLabel": "Price",
+    "fromPrice": "From",
+    "chooseProduct": "Choose a product",
     "processingTime": "Processing time",
     "requirements": "Requirements",
     "description": "Description",

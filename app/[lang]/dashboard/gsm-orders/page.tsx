@@ -72,7 +72,10 @@ export default async function GsmOrdersPage({
               </div>
             </div>
             <div className="mt-3 flex flex-1 flex-col gap-1 border-t border-border pt-3 text-sm">
-              <p className="font-semibold">{order.serviceName}</p>
+              <p className="font-semibold">
+                {order.serviceName}
+                {order.variantName && <span className="text-muted"> — {order.variantName}</span>}
+              </p>
             </div>
             <span className="ms-auto mt-2 text-sm font-bold text-primary group-hover:underline">
               {d.view} →

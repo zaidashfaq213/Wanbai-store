@@ -78,6 +78,8 @@ export default async function GsmCategoryPage({
             const svcName = locale === "ar" ? svc.nameAr : svc.nameEn;
             const desc = locale === "ar" ? svc.descriptionAr : svc.descriptionEn;
             const processingTime = locale === "ar" ? svc.processingTimeAr : svc.processingTimeEn;
+            const fromPrice =
+              svc.variants.length > 0 ? Math.min(...svc.variants.map((v) => v.price)) : svc.price;
             return (
               <Link
                 key={svc.slug}
@@ -87,7 +89,9 @@ export default async function GsmCategoryPage({
                 <div className="flex items-start justify-between gap-2">
                   <h2 className="text-lg font-extrabold leading-tight">{svcName}</h2>
                   <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-black text-primary">
-                    {formatUsd(svc.price, locale)}
+                    {svc.variants.length > 0
+                      ? `${g.fromPrice} ${formatUsd(fromPrice, locale)}`
+                      : formatUsd(fromPrice, locale)}
                   </span>
                 </div>
                 {desc && <p className="line-clamp-2 flex-1 text-sm text-muted">{desc}</p>}

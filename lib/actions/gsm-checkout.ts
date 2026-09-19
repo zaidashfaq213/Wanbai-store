@@ -27,12 +27,13 @@ export async function submitGsmOrder(
   if (!user) return { ok: false, code: "requires_auth" };
 
   const serviceId = String(formData.get("serviceId") ?? "");
+  const variantId = String(formData.get("variantId") ?? "") || undefined;
   const locale = loc(String(formData.get("locale") ?? ""));
   if (!serviceId) return { ok: false, code: "invalid_input" };
 
   const result = await createGsmOrderForUser(
     { id: user.id, email: user.email ?? "" },
-    { locale, serviceId, formData },
+    { locale, serviceId, variantId, formData },
   );
 
   if (!result.ok) return { ok: false, code: result.code };

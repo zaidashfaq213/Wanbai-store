@@ -20,12 +20,13 @@ export const POST = withAuth(async (req, user) => {
   if (!formData) return fail("invalid_input");
 
   const serviceId = String(formData.get("serviceId") ?? "");
+  const variantId = String(formData.get("variantId") ?? "") || undefined;
   const locale = String(formData.get("locale") ?? "ar");
   if (!serviceId) return fail("invalid_input");
 
   const result = await createGsmOrderForUser(
     { id: user.id, email: user.email },
-    { locale, serviceId, formData },
+    { locale, serviceId, variantId, formData },
   );
   if (!result.ok) {
     return fail(result.code, result.code === "insufficient_funds" ? 402 : 400);

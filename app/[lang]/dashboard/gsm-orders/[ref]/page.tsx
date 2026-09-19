@@ -46,6 +46,7 @@ export default async function GsmOrderDetailPage({
           ref: order.ref,
           status: order.status,
           serviceName: order.serviceName,
+          variantName: order.variantName,
           price: formatUsd(order.price, locale),
           createdAt: new Date(order.createdAt).toLocaleString(locale === "ar" ? "ar-EG-u-nu-latn" : "en-US"),
           fieldAnswers,

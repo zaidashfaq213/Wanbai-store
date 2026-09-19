@@ -138,6 +138,10 @@ export default async function GsmLandingPage({
                     {cat.services.map((svc) => {
                       const svcName = locale === "ar" ? svc.nameAr : svc.nameEn;
                       const processingTime = locale === "ar" ? svc.processingTimeAr : svc.processingTimeEn;
+                      const fromPrice =
+                        svc.variants.length > 0
+                          ? Math.min(...svc.variants.map((v) => v.price))
+                          : svc.price;
                       return (
                         <Link
                           key={svc.slug}
@@ -157,7 +161,9 @@ export default async function GsmLandingPage({
                             <p className="mt-0.5 truncate text-xs text-muted">{catName}</p>
                             <div className="mt-2 flex flex-wrap items-center gap-1.5">
                               <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-xs font-black text-emerald-500">
-                                {formatUsd(svc.price, locale)}
+                                {svc.variants.length > 0
+                                  ? `${g.fromPrice} ${formatUsd(fromPrice, locale)}`
+                                  : formatUsd(fromPrice, locale)}
                               </span>
                               {processingTime && (
                                 <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-xs font-bold text-amber-600">
