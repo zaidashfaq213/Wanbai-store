@@ -18,7 +18,8 @@ export async function generateMetadata({
   if (!page) return {};
   const title = locale === "ar" ? page.titleAr : page.titleEn;
   return {
-    title: `${title} | ${dict.brand.name}`,
+    // Root layout's title template already appends " | <brand>".
+    title,
     alternates: { canonical: `/${locale}/pages/${slug}` },
     openGraph: { title: `${title} | ${dict.brand.name}`, type: "article" },
   };

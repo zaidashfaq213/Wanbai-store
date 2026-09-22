@@ -33,10 +33,12 @@ export async function generateMetadata({
 
 export default async function GsmServicePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ lang: string; category: string; service: string }>;
+  searchParams: Promise<{ product?: string }>;
 }) {
-  const { lang, category, service } = await params;
+  const [{ lang, category, service }, { product: initialVariantId }] = await Promise.all([params, searchParams]);
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
   const [dict, svc, user] = await Promise.all([
     getDictionary(locale),
@@ -76,6 +78,7 @@ export default async function GsmServicePage({
       serviceId={svc.id}
       priceCents={svc.price}
       variants={hasVariants ? variants : undefined}
+      initialVariantId={initialVariantId}
       isAuthed={Boolean(user)}
       walletBalanceCents={walletBalanceCents}
       fields={svc.fields.map((f) => ({

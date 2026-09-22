@@ -28,6 +28,7 @@ export function GsmOrderForm({
   serviceId,
   priceCents,
   variants,
+  initialVariantId,
   fields,
   isAuthed,
   walletBalanceCents,
@@ -42,6 +43,9 @@ export function GsmOrderForm({
    * when present, the customer must pick one and its price is charged
    * instead of `priceCents`. */
   variants?: GsmVariant[];
+  /** Pre-select this product (e.g. arriving from a category page where the
+   * customer already tapped a specific product). Falls back to the first. */
+  initialVariantId?: string;
   fields: GsmField[];
   isAuthed: boolean;
   /** GSM wallet balance (USD cents) — the separate balance used only for GSM
@@ -52,7 +56,11 @@ export function GsmOrderForm({
   const g = dict.gsm;
   const [state, action, pending] = useActionState<GsmCheckoutState, FormData>(submitGsmOrder, { ok: false, code: "" });
   const hasVariants = Boolean(variants && variants.length > 0);
-  const [selectedVariantId, setSelectedVariantId] = useState(hasVariants ? variants![0].id : "");
+  const [selectedVariantId, setSelectedVariantId] = useState(() => {
+    if (!hasVariants) return "";
+    const wanted = initialVariantId && variants!.find((v) => v.id === initialVariantId);
+    return wanted ? wanted.id : variants![0].id;
+  });
   const selectedVariant = hasVariants ? variants!.find((v) => v.id === selectedVariantId) : undefined;
   const effectivePrice = hasVariants ? (selectedVariant?.priceCents ?? 0) : priceCents;
   const canAfford = isAuthed && walletBalanceCents >= effectivePrice;

@@ -16,7 +16,8 @@ export async function generateMetadata({
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
   const dict = await getDictionary(locale);
   return {
-    title: `${dict.blog.title} | ${dict.brand.name}`,
+    // Root layout's title template already appends " | <brand>".
+    title: dict.blog.title,
     description: dict.blog.subtitle,
     alternates: { canonical: `/${locale}/blog` },
   };

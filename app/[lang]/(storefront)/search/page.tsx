@@ -17,7 +17,8 @@ export async function generateMetadata({
   const { lang } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
   const dict = await getDictionary(locale);
-  return { title: `${dict.search.title} | ${dict.brand.name}` };
+  // Root layout's title template already appends " | <brand>".
+  return { title: dict.search.title };
 }
 
 export default async function SearchPage({

@@ -40,7 +40,8 @@ export async function generateMetadata({
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
   const dict = await getDictionary(locale);
   return {
-    title: `${dict.gsm.metaTitle} | ${dict.brand.name}`,
+    // Root layout's title template already appends " | <brand>".
+    title: dict.gsm.metaTitle,
     description: dict.gsm.heroSubtitle,
     alternates: { canonical: abs(`/${locale}/gsm`) },
   };

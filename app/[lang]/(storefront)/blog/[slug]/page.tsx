@@ -17,12 +17,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang, slug } = await params;
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
-  const [post, dict] = await Promise.all([getPost(slug), getDictionary(locale)]);
+  const post = await getPost(slug);
   if (!post) return {};
   const title = locale === "ar" ? post.titleAr : post.titleEn;
   const description = locale === "ar" ? post.excerptAr : post.excerptEn;
   return {
-    title: `${title} | ${dict.brand.name}`,
+    // Root layout's title template already appends " | <brand>".
+    title,
     description,
     alternates: { canonical: `/${locale}/blog/${slug}` },
     openGraph: { title, description, type: "article" },

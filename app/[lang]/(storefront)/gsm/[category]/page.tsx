@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n/dictionaries";
 import { isLocale, defaultLocale, type Locale } from "@/lib/i18n/config";
 import { getGsmCategoryBySlug } from "@/lib/data/gsm";
-import { formatUsd, fmt } from "@/lib/utils";
+import { formatUsd, fmt, cn } from "@/lib/utils";
 import { Container } from "@/components/ui/container";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { ArrowIcon, ClockIcon } from "@/components/ui/icons";
@@ -26,6 +26,31 @@ export async function generateMetadata({
   };
 }
 
+// Same initials badge as the GSM landing page — one per service here, so a
+// customer scanning the list can tell services apart at a glance.
+const TINTS = [
+  "from-sky-500 to-blue-600",
+  "from-emerald-500 to-teal-600",
+  "from-fuchsia-500 to-purple-600",
+  "from-amber-500 to-orange-600",
+  "from-rose-500 to-pink-600",
+  "from-violet-500 to-indigo-600",
+];
+function tintFor(slug: string) {
+  let h = 0;
+  for (const ch of slug) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return TINTS[h % TINTS.length];
+}
+function initialsFor(name: string) {
+  const letters = name.replace(/[^A-Za-z؀-ۿ]/g, "");
+  return (letters.slice(0, 2) || name.slice(0, 2)).toUpperCase();
+}
+
+// Every service in this category is a labelled section: the service's name
+// as a heading, then its products listed right under it — never a bare list
+// of products with no indication of which service they belong to. A service
+// with no products of its own is shown as a single row (itself, at its own
+// price), so the page reads the same way top to bottom.
 export default async function GsmCategoryPage({
   params,
 }: {
@@ -73,43 +98,72 @@ export default async function GsmCategoryPage({
           {g.noServices}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col gap-8">
           {cat.services.map((svc) => {
             const svcName = locale === "ar" ? svc.nameAr : svc.nameEn;
             const desc = locale === "ar" ? svc.descriptionAr : svc.descriptionEn;
             const processingTime = locale === "ar" ? svc.processingTimeAr : svc.processingTimeEn;
-            const fromPrice =
-              svc.variants.length > 0 ? Math.min(...svc.variants.map((v) => v.price)) : svc.price;
+            const serviceHref = `/${locale}/gsm/${category}/${svc.slug}`;
+            const tint = tintFor(svc.slug);
+            // Rows to list under this service's heading: its products, or —
+            // for a flat single-price service — the service itself.
+            const rows =
+              svc.variants.length > 0
+                ? svc.variants.map((v) => ({
+                    key: v.id,
+                    name: locale === "ar" ? v.nameAr : v.nameEn,
+                    price: v.price,
+                    href: `${serviceHref}?product=${v.id}`,
+                  }))
+                : [{ key: svc.id, name: svcName, price: svc.price, href: serviceHref }];
+
             return (
-              <Link
-                key={svc.slug}
-                href={`/${locale}/gsm/${category}/${svc.slug}`}
-                className="group flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5 shadow-[var(--shadow-card)] transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-[var(--shadow-pop)]"
-              >
-                <div className="flex items-start justify-between gap-2">
-                  <h2 className="text-lg font-extrabold leading-tight">{svcName}</h2>
-                  <span className="shrink-0 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-black text-primary">
-                    {svc.variants.length > 0
-                      ? `${g.fromPrice} ${formatUsd(fromPrice, locale)}`
-                      : formatUsd(fromPrice, locale)}
+              <section key={svc.slug} id={svc.slug} className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[var(--shadow-card)]">
+                {/* Service heading */}
+                <Link href={serviceHref} className="group flex items-start gap-3 border-b border-border bg-surface-2/60 p-4 transition-colors hover:bg-surface-2">
+                  <span
+                    className={cn(
+                      "grid size-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br text-sm font-black text-white shadow-sm",
+                      tint,
+                    )}
+                  >
+                    {initialsFor(svcName)}
                   </span>
-                </div>
-                {desc && <p className="line-clamp-2 flex-1 text-sm text-muted">{desc}</p>}
-                <div className="flex items-center justify-between border-t border-border pt-3">
-                  {processingTime ? (
-                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted">
-                      <ClockIcon className="size-3.5" />
-                      {processingTime}
-                    </span>
-                  ) : (
-                    <span />
-                  )}
-                  <span className="inline-flex items-center gap-1 text-sm font-bold text-primary">
-                    {g.orderNow}
-                    <ArrowIcon className="size-4 transition-transform group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
-                  </span>
-                </div>
-              </Link>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-base font-extrabold leading-tight">{svcName}</h2>
+                    {desc && <p className="mt-0.5 line-clamp-1 text-xs text-muted">{desc}</p>}
+                    {processingTime && (
+                      <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-bold text-amber-600">
+                        <ClockIcon className="size-3" />
+                        {processingTime}
+                      </span>
+                    )}
+                  </div>
+                  <ArrowIcon className="mt-1 size-4 shrink-0 text-muted transition-transform group-hover:translate-x-1 rtl:rotate-180 rtl:group-hover:-translate-x-1" />
+                </Link>
+
+                {/* Its products, directly under the heading */}
+                <ul className="divide-y divide-border">
+                  {rows.map((row) => (
+                    <li key={row.key}>
+                      <Link
+                        href={row.href}
+                        className="group flex items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-surface-2"
+                      >
+                        <span className="text-sm font-semibold">{row.name}</span>
+                        <span className="flex shrink-0 items-center gap-2">
+                          <span className="rounded-full bg-emerald-500/15 px-2.5 py-0.5 text-xs font-black text-emerald-500">
+                            {formatUsd(row.price, locale)}
+                          </span>
+                          <span className="text-xs font-bold text-primary opacity-0 transition-opacity group-hover:opacity-100">
+                            {g.orderNow}
+                          </span>
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
             );
           })}
         </div>

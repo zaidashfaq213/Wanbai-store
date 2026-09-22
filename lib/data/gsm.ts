@@ -37,7 +37,9 @@ export const getGsmCategoryBySlug = cache(async (slug: string) => {
       services: {
         where: { active: true },
         orderBy: { sortOrder: "asc" },
-        include: { variants: { where: { active: true }, select: { price: true } } },
+        // Full variant rows (not just price) — the category page lists each
+        // service as a heading with its products directly underneath.
+        include: { variants: { where: { active: true }, orderBy: { sortOrder: "asc" } } },
       },
     },
   });

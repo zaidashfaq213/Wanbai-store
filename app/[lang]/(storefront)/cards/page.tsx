@@ -17,7 +17,10 @@ export async function generateMetadata({
   const locale: Locale = isLocale(lang) ? lang : defaultLocale;
   const dict = await getDictionary(locale);
   return {
-    title: `${dict.catalog.title} | ${dict.brand.name}`,
+    // Root layout's title template already appends " | <brand>" to every
+    // page — appending it here too used to show the brand name twice in the
+    // browser tab / Google search title.
+    title: dict.catalog.title,
     description: dict.catalog.subtitle,
     alternates: { canonical: `/${locale}/cards` },
   };
