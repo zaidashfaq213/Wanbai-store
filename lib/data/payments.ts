@@ -1,4 +1,5 @@
 import "server-only";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 
 // --- Customer-facing ---
@@ -140,22 +141,56 @@ export async function getAdminOrderDetail(ref: string) {
   return order;
 }
 
-export function getAllUsers() {
-  return prisma.user.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 200,
-    select: {
-      id: true,
-      name: true,
-      username: true,
-      email: true,
-      role: true,
-      walletBalance: true,
-      gsmWalletBalance: true,
-      emailVerified: true,
-      createdAt: true,
-    },
-  });
+export const USERS_PER_PAGE = 50;
+
+/**
+ * Customers for the admin Users page — searched and paged in the DATABASE,
+ * not in the browser. This used to be a blind `take: 200` with the search
+ * box filtering only those loaded rows, which meant every customer outside
+ * the 200 newest was both invisible and unfindable (an admin searching a
+ * real customer's email got "no results" and reasonably concluded the
+ * account didn't exist).
+ *
+ * `query` matches email / username / name case-insensitively, plus an exact
+ * customer id — admins paste all four.
+ */
+export async function getAllUsers(opts: { query?: string; page?: number } = {}) {
+  const query = opts.query?.trim() ?? "";
+  const page = Math.max(1, opts.page ?? 1);
+
+  const where: Prisma.UserWhereInput = query
+    ? {
+        OR: [
+          { email: { contains: query, mode: "insensitive" } },
+          { username: { contains: query, mode: "insensitive" } },
+          { name: { contains: query, mode: "insensitive" } },
+          { id: query },
+        ],
+      }
+    : {};
+
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * USERS_PER_PAGE,
+      take: USERS_PER_PAGE,
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        email: true,
+        role: true,
+        walletBalance: true,
+        gsmWalletBalance: true,
+        emailVerified: true,
+        createdAt: true,
+      },
+    }),
+    prisma.user.count({ where }),
+  ]);
+
+  return { users, total, page, perPage: USERS_PER_PAGE };
 }
 
 export function getAdminCounts() {
